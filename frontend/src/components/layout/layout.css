@@ -1,0 +1,11 @@
+.app-layout__main {
+  width: min(100% - 32px, 1120px);
+  margin: 0 auto;
+  padding: var(--spacing-lg) 0;
+}
+
+@media (min-width: 768px) {
+  .app-layout__main {
+    padding: var(--spacing-xl) 0;
+  }
+}

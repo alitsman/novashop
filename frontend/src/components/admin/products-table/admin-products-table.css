@@ -1,0 +1,205 @@
+.admin-products-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+}
+
+.admin-products-table {
+  width: 100%;
+  min-width: 48rem;
+  border-collapse: collapse;
+}
+
+.admin-products-table th,
+.admin-products-table td {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-products-table thead th {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-products-table tbody tr:last-child th,
+.admin-products-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-products-table__product-cell {
+  width: 40%;
+}
+
+.admin-products-table__product {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: var(--spacing-md);
+  align-items: start;
+}
+
+.admin-products-table__image {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background-color: var(--color-bg);
+}
+
+.admin-products-table__product-text {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.admin-products-table__product-title {
+  color: var(--color-text);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.admin-products-table__product-description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.admin-products-table__actions-heading,
+.admin-products-table__actions-cell {
+  text-align: left;
+}
+
+.admin-products-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  justify-content: flex-start;
+}
+
+.admin-products-table__edit-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease,
+    transform 100ms ease;
+}
+
+.admin-products-table__edit-link:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.admin-products-table__edit-link:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 767px) {
+  .admin-products-table-wrapper {
+    overflow-x: visible;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  .admin-products-table {
+    display: block;
+    min-width: 0;
+    border-collapse: separate;
+  }
+
+  .admin-products-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .admin-products-table tbody {
+    display: grid;
+    gap: var(--spacing-md);
+  }
+
+  .admin-products-table tbody tr {
+    display: grid;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+  }
+
+  .admin-products-table th,
+  .admin-products-table td {
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  .admin-products-table__product-cell {
+    width: auto;
+  }
+
+  .admin-products-table__product {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+
+  .admin-products-table__image {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
+  .admin-products-table td:not(.admin-products-table__actions-cell) {
+    display: grid;
+    grid-template-columns: minmax(5rem, 8rem) minmax(0, 1fr);
+    gap: var(--spacing-sm);
+    align-items: start;
+    line-height: 1.5;
+  }
+
+  .admin-products-table td:not(.admin-products-table__actions-cell)::before {
+    content: attr(data-label);
+    color: var(--color-muted);
+    font-weight: 700;
+  }
+
+  .admin-products-table__actions-cell {
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+  }
+
+  .admin-products-table__actions {
+    justify-content: center;
+  }
+
+  .admin-products-table__actions > * {
+    min-width: 7rem;
+  }
+}

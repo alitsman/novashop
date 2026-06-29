@@ -1,0 +1,32 @@
+.admin-product-delete-section {
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
+}
+
+.admin-product-delete-section__content {
+  display: grid;
+  gap: var(--spacing-sm);
+  justify-items: start;
+}
+
+.admin-product-delete-section__title {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 1.125rem;
+  line-height: 1.3;
+}
+
+.admin-product-delete-section__description {
+  margin: 0;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.admin-product-delete-section__error {
+  margin: 0;
+  color: var(--color-danger);
+  font-weight: 600;
+  line-height: 1.5;
+}

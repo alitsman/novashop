@@ -1,0 +1,25 @@
+.cross-icon {
+  position: relative;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.cross-icon::before,
+.cross-icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.875rem;
+  height: 2px;
+  border-radius: 999px;
+  background-color: currentColor;
+}
+
+.cross-icon::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.cross-icon::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}

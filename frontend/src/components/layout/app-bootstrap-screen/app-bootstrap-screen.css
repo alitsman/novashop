@@ -1,0 +1,15 @@
+.app-bootstrap-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.app-bootstrap-screen__main {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  width: min(100% - 32px, 1120px);
+  margin: 0 auto;
+  padding: var(--spacing-xl) 0;
+}

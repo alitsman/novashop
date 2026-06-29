@@ -1,0 +1,38 @@
+.admin-product-create-page {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.admin-product-create-page__header {
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+.admin-product-create-page__title {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.admin-product-create-page__description {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.admin-product-create-page__layout {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.admin-product-create-page__sidebar {
+  min-width: 0;
+}
+
+@media (min-width: 960px) {
+  .admin-product-create-page__layout {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+    align-items: start;
+  }
+}

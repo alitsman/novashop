@@ -1,0 +1,41 @@
+.error-state {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--spacing-md);
+  min-height: 58vh;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  text-align: center;
+}
+
+.error-state__image {
+  width: min(220px, 70vw);
+  height: auto;
+}
+
+.error-state__content {
+  display: grid;
+  gap: var(--spacing-sm);
+  justify-items: center;
+}
+
+.error-state__title {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+.error-state__description {
+  max-width: 32rem;
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.error-state__action {
+  display: flex;
+  justify-content: center;
+}
