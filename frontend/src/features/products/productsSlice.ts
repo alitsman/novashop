@@ -315,6 +315,18 @@ export const selectCategories = createSelector([selectProducts], (products) => {
   return Array.from(new Set(categories));
 });
 
+export const selectAdminProducts = createSelector(
+  [selectProducts],
+  (products) => {
+    return [...products].sort((firstProduct, secondProduct) => {
+      const firstCreatedAt = firstProduct.createdAt ?? "";
+      const secondCreatedAt = secondProduct.createdAt ?? "";
+
+      return secondCreatedAt.localeCompare(firstCreatedAt);
+    });
+  },
+);
+
 export const selectFilteredProducts = createSelector(
   [selectProducts, selectSearchQuery, selectSelectedCategory, selectSortOrder],
   (products, searchQueryValue, selectedCategory, sortOrder) => {

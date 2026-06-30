@@ -12,7 +12,7 @@ import {
   clearProductsDeleteError,
   fetchProducts,
   ProductsRequestStatus,
-  selectProducts,
+  selectAdminProducts,
   selectProductsDeleteError,
   selectProductsError,
   selectProductsListStatus,
@@ -23,7 +23,7 @@ export function AdminProductsPage() {
   const dispatch = useAppDispatch();
   const showToast = useToast();
 
-  const products = useAppSelector(selectProducts);
+  const products = useAppSelector(selectAdminProducts);
   const listStatus = useAppSelector(selectProductsListStatus);
   const loadError = useAppSelector(selectProductsError);
   const deleteError = useAppSelector(selectProductsDeleteError);
