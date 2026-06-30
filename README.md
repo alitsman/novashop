@@ -4,6 +4,10 @@ Frontend diploma e-commerce project built with React and TypeScript.
 
 Current stage: **frontend implementation**.
 
+## Live demo
+
+[Open NovaShop](https://novashop-phi.vercel.app)
+
 ## Frontend
 
 The frontend application includes:

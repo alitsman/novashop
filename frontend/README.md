@@ -2,6 +2,10 @@
 
 Frontend diploma project. A fully functional e-commerce application built with React and TypeScript, featuring product catalog, cart, checkout, order history, and a complete admin panel for product management.
 
+## Live demo
+
+[Open NovaShop](https://novashop-phi.vercel.app)
+
 ## Demo accounts
 
 Open the application and use these credentials on the sign-in page:
