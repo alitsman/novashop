@@ -1,0 +1,33 @@
+{
+  "name": "novashop-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend API for the NovaShop full-stack diploma project.",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint .",
+    "format": "prettier --write . --config ../.prettierrc.json --ignore-path ../.prettierignore",
+    "format:check": "prettier --check . --config ../.prettierrc.json --ignore-path ../.prettierignore"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.0.1",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.4",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.1"
+  }
+}
