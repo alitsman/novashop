@@ -1,6 +1,7 @@
 import cors from "cors";
 import express from "express";
 
+import { checkDbConnection } from "./db/check-db-connection.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { notFoundHandler } from "./middleware/not-found-handler.js";
 
@@ -14,6 +15,20 @@ app.get("/health", (_request, response) => {
     status: "ok",
     service: "novashop-backend",
   });
+});
+
+app.get("/health/db", async (_request, response, next) => {
+  try {
+    await checkDbConnection();
+
+    response.json({
+      status: "ok",
+      service: "novashop-backend",
+      database: "connected",
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.use(notFoundHandler);

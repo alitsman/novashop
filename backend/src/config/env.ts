@@ -14,6 +14,15 @@ const parsePort = (value: string | undefined): number => {
   return parsedPort;
 };
 
+const requireEnv = (name: string, value: string | undefined): string => {
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
+};
+
 export const env = {
   port: parsePort(process.env.PORT),
+  databaseUrl: requireEnv("DATABASE_URL", process.env.DATABASE_URL),
 };
