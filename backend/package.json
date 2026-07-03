@@ -6,6 +6,7 @@
   "description": "Backend API for the NovaShop full-stack diploma project.",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "migrate": "tsx src/db/run-migrations.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint .",
