@@ -34,3 +34,14 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Test / coverage artifacts
+coverage/
+**/coverage/
+test-results/
+**/test-results/
+playwright-report/
+**/playwright-report/
+
+# Vercel local config
+.vercel/
