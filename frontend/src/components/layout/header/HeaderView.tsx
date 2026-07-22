@@ -21,9 +21,7 @@ type HeaderBrandProps = {
 };
 
 const getNavLinkClassName = ({ isActive }: { isActive: boolean }) => {
-  return isActive
-    ? "app-header__link app-header__link--active"
-    : "app-header__link";
+  return isActive ? "app-header__link app-header__link--active" : "app-header__link";
 };
 
 const getManagementNavLinkClassName = ({ isActive }: { isActive: boolean }) => {
@@ -111,19 +109,11 @@ export function HeaderView(props: HeaderViewProps) {
             </nav>
 
             {props.isAdmin && (
-              <nav
-                className="app-header__management-nav"
-                aria-label="Management navigation"
-              >
-                <span className="app-header__management-title">
-                  Management tools:
-                </span>
+              <nav className="app-header__management-nav" aria-label="Management navigation">
+                <span className="app-header__management-title">Management tools:</span>
 
                 <div className="app-header__management-links">
-                  <NavLink
-                    className={getManagementNavLinkClassName}
-                    to="/admin/products"
-                  >
+                  <NavLink className={getManagementNavLinkClassName} to="/admin/products">
                     Manage products
                   </NavLink>
                 </div>

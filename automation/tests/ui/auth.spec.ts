@@ -1,47 +1,33 @@
 import { test, expect } from "@playwright/test";
+import { LoginPage } from "../../src/pages/login.page";
+import { ProductCatalogPage } from "../../src/pages/product-catalog.page";
 
 test.describe("login", () => {
+  let loginPage: LoginPage;
+
   test.beforeEach(async ({ page }) => {
-    await page.goto("/login");
+    loginPage = new LoginPage(page);
+    await loginPage.open();
   });
 
-  test("invalid credentials: shows an error", async ({ page }) => {
-    const emailInput = page.getByLabel("Email address");
-    const passwordInput = page.getByLabel("Password");
-    const signInButton = page.getByRole("button", {
-      name: "Sign in",
-      exact: true,
-    });
-    const loginError = page.getByRole("alert");
+  test("invalid credentials: shows an error", async () => {
+    await loginPage.signIn("admin@test.com", "wrongPassword");
 
-    await emailInput.fill("admin@test.com");
-    await passwordInput.fill("wrongPassword");
-    await signInButton.click();
-
-    await expect(page).toHaveURL("/login");
-    await expect(loginError).toHaveText("Email address or password is incorrect.");
+    await expect(loginPage.errorMessage).toHaveText(
+      "Email address or password is incorrect.",
+    );
+    await expect(loginPage.heading).toBeVisible();
+    await expect(loginPage.signInButton).toBeEnabled();
   });
 
   test("regular user: signs in successfully", async ({ page }) => {
-    const emailInput = page.getByLabel("Email address");
-    const passwordInput = page.getByLabel("Password");
-    const signInButton = page.getByRole("button", {
-      name: "Sign in",
-      exact: true,
-    });
-
-    await emailInput.fill("user@test.com");
-    await passwordInput.fill("user123");
-    await signInButton.click();
-
-    const userName = page.locator(".app-header__user-name");
-    const logoutButton = page.getByRole("button", {
-      name: "Logout",
-      exact: true,
-    });
+    await loginPage.signIn("user@test.com", "user123");
 
     await expect(page).toHaveURL("/products");
-    await expect(userName).toHaveText("Regular User");
-    await expect(logoutButton).toBeVisible();
+
+    const catalogPage = new ProductCatalogPage(page);
+
+    await expect(catalogPage.header.currentUserName).toHaveText("Regular User");
+    await expect(catalogPage.header.logoutButton).toBeVisible();
   });
 });
