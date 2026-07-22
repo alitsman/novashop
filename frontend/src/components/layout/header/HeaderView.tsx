@@ -94,7 +94,7 @@ export function HeaderView(props: HeaderViewProps) {
 
                 {props.isAuthenticated && (
                   <>
-                    <span className="app-header__user-name">
+                    <span className="app-header__user-name" data-testid="current-user-name">
                       {props.userName}
                     </span>
 
