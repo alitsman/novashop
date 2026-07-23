@@ -6,11 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 import type { RootState } from "../../app/store";
 import { productsService } from "../../services/productsService";
-import {
-  ProductSortOrder,
-  type Product,
-  type ProductInput,
-} from "../../types/product";
+import { ProductSortOrder, type Product, type ProductInput } from "../../types/product";
 
 export const ProductsRequestStatus = {
   Idle: "idle",
@@ -29,7 +25,8 @@ export type ProductsState = {
   detailStatus: ProductsRequestStatus;
   mutationStatus: ProductsRequestStatus;
   deleteStatus: ProductsRequestStatus;
-  error: string | null;
+  listError: string | null;
+  detailError: string | null;
   mutationError: string | null;
   deleteError: string | null;
   searchQuery: string;
@@ -42,6 +39,8 @@ export type UpdateProductPayload = {
   data: ProductInput;
 };
 
+const PRODUCT_DATA_LOAD_ERROR_MESSAGE = "Please check your connection and try again.";
+
 const initialState: ProductsState = {
   items: [],
   selectedProduct: null,
@@ -49,7 +48,8 @@ const initialState: ProductsState = {
   detailStatus: ProductsRequestStatus.Idle,
   mutationStatus: ProductsRequestStatus.Idle,
   deleteStatus: ProductsRequestStatus.Idle,
-  error: null,
+  listError: null,
+  detailError: null,
   mutationError: null,
   deleteError: null,
   searchQuery: "",
@@ -57,53 +57,50 @@ const initialState: ProductsState = {
   sortOrder: ProductSortOrder.Default,
 };
 
-export const fetchProducts = createAsyncThunk<
-  Product[],
-  void,
-  { rejectValue: string }
->("products/fetchProducts", async (_, { rejectWithValue }) => {
-  try {
-    return await productsService.getProducts();
-  } catch (error) {
-    if (error instanceof Error) {
-      return rejectWithValue(error.message);
+export const fetchProducts = createAsyncThunk<Product[], void, { rejectValue: string }>(
+  "products/fetchProducts",
+  async (_, { rejectWithValue }) => {
+    try {
+      return await productsService.getProducts();
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+
+      return rejectWithValue(PRODUCT_DATA_LOAD_ERROR_MESSAGE);
     }
+  },
+);
 
-    return rejectWithValue("Failed to load products");
-  }
-});
+export const fetchProductById = createAsyncThunk<Product | null, string, { rejectValue: string }>(
+  "products/fetchProductById",
+  async (productId, { rejectWithValue }) => {
+    try {
+      return await productsService.getProductById(productId);
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
 
-export const fetchProductById = createAsyncThunk<
-  Product | null,
-  string,
-  { rejectValue: string }
->("products/fetchProductById", async (productId, { rejectWithValue }) => {
-  try {
-    return await productsService.getProductById(productId);
-  } catch (error) {
-    if (error instanceof Error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(PRODUCT_DATA_LOAD_ERROR_MESSAGE);
     }
+  },
+);
 
-    return rejectWithValue("Failed to load product");
-  }
-});
+export const createProduct = createAsyncThunk<Product, ProductInput, { rejectValue: string }>(
+  "products/createProduct",
+  async (data, { rejectWithValue }) => {
+    try {
+      return await productsService.createProduct(data);
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
 
-export const createProduct = createAsyncThunk<
-  Product,
-  ProductInput,
-  { rejectValue: string }
->("products/createProduct", async (data, { rejectWithValue }) => {
-  try {
-    return await productsService.createProduct(data);
-  } catch (error) {
-    if (error instanceof Error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue("Failed to create product");
     }
-
-    return rejectWithValue("Failed to create product");
-  }
-});
+  },
+);
 
 export const updateProduct = createAsyncThunk<
   Product,
@@ -121,23 +118,22 @@ export const updateProduct = createAsyncThunk<
   }
 });
 
-export const deleteProduct = createAsyncThunk<
-  string,
-  string,
-  { rejectValue: string }
->("products/deleteProduct", async (productId, { rejectWithValue }) => {
-  try {
-    await productsService.deleteProduct(productId);
+export const deleteProduct = createAsyncThunk<string, string, { rejectValue: string }>(
+  "products/deleteProduct",
+  async (productId, { rejectWithValue }) => {
+    try {
+      await productsService.deleteProduct(productId);
 
-    return productId;
-  } catch (error) {
-    if (error instanceof Error) {
-      return rejectWithValue(error.message);
+      return productId;
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+
+      return rejectWithValue("Failed to delete product");
     }
-
-    return rejectWithValue("Failed to delete product");
-  }
-});
+  },
+);
 
 const productsSlice = createSlice({
   name: "products",
@@ -146,6 +142,7 @@ const productsSlice = createSlice({
     clearSelectedProduct: (productsState) => {
       productsState.selectedProduct = null;
       productsState.detailStatus = ProductsRequestStatus.Idle;
+      productsState.detailError = null;
     },
     clearProductsMutationError: (productsState) => {
       productsState.mutationError = null;
@@ -172,30 +169,30 @@ const productsSlice = createSlice({
     builder
       .addCase(fetchProducts.pending, (productsState) => {
         productsState.listStatus = ProductsRequestStatus.Loading;
-        productsState.error = null;
+        productsState.listError = null;
       })
       .addCase(fetchProducts.fulfilled, (productsState, action) => {
         productsState.items = action.payload;
         productsState.listStatus = ProductsRequestStatus.Succeeded;
-        productsState.error = null;
+        productsState.listError = null;
       })
       .addCase(fetchProducts.rejected, (productsState, action) => {
         productsState.listStatus = ProductsRequestStatus.Failed;
-        productsState.error = action.payload ?? "Failed to load products";
+        productsState.listError = action.payload ?? PRODUCT_DATA_LOAD_ERROR_MESSAGE;
       })
       .addCase(fetchProductById.pending, (productsState) => {
         productsState.detailStatus = ProductsRequestStatus.Loading;
-        productsState.error = null;
+        productsState.detailError = null;
         productsState.selectedProduct = null;
       })
       .addCase(fetchProductById.fulfilled, (productsState, action) => {
         productsState.selectedProduct = action.payload;
         productsState.detailStatus = ProductsRequestStatus.Succeeded;
-        productsState.error = null;
+        productsState.detailError = null;
       })
       .addCase(fetchProductById.rejected, (productsState, action) => {
         productsState.detailStatus = ProductsRequestStatus.Failed;
-        productsState.error = action.payload ?? "Failed to load product";
+        productsState.detailError = action.payload ?? PRODUCT_DATA_LOAD_ERROR_MESSAGE;
         productsState.selectedProduct = null;
       })
       .addCase(createProduct.pending, (productsState) => {
@@ -209,8 +206,7 @@ const productsSlice = createSlice({
       })
       .addCase(createProduct.rejected, (productsState, action) => {
         productsState.mutationStatus = ProductsRequestStatus.Failed;
-        productsState.mutationError =
-          action.payload ?? "Failed to create product";
+        productsState.mutationError = action.payload ?? "Failed to create product";
       })
       .addCase(updateProduct.pending, (productsState) => {
         productsState.mutationStatus = ProductsRequestStatus.Loading;
@@ -234,8 +230,7 @@ const productsSlice = createSlice({
       })
       .addCase(updateProduct.rejected, (productsState, action) => {
         productsState.mutationStatus = ProductsRequestStatus.Failed;
-        productsState.mutationError =
-          action.payload ?? "Failed to update product";
+        productsState.mutationError = action.payload ?? "Failed to update product";
       })
       .addCase(deleteProduct.pending, (productsState) => {
         productsState.deleteStatus = ProductsRequestStatus.Loading;
@@ -255,8 +250,7 @@ const productsSlice = createSlice({
       })
       .addCase(deleteProduct.rejected, (productsState, action) => {
         productsState.deleteStatus = ProductsRequestStatus.Failed;
-        productsState.deleteError =
-          action.payload ?? "Failed to delete product";
+        productsState.deleteError = action.payload ?? "Failed to delete product";
       });
   },
 });
@@ -273,41 +267,33 @@ export const {
 
 export const productsReducer = productsSlice.reducer;
 
-export const selectProducts = (rootState: RootState) =>
-  rootState.products.items;
+export const selectProducts = (rootState: RootState) => rootState.products.items;
 
-export const selectSelectedProduct = (rootState: RootState) =>
-  rootState.products.selectedProduct;
+export const selectSelectedProduct = (rootState: RootState) => rootState.products.selectedProduct;
 
-export const selectProductsListStatus = (rootState: RootState) =>
-  rootState.products.listStatus;
+export const selectProductsListStatus = (rootState: RootState) => rootState.products.listStatus;
 
-export const selectProductDetailsStatus = (rootState: RootState) =>
-  rootState.products.detailStatus;
+export const selectProductDetailsStatus = (rootState: RootState) => rootState.products.detailStatus;
 
 export const selectProductsMutationStatus = (rootState: RootState) =>
   rootState.products.mutationStatus;
 
-export const selectProductsDeleteStatus = (rootState: RootState) =>
-  rootState.products.deleteStatus;
+export const selectProductsDeleteStatus = (rootState: RootState) => rootState.products.deleteStatus;
 
-export const selectProductsError = (rootState: RootState) =>
-  rootState.products.error;
+export const selectProductsListError = (rootState: RootState) => rootState.products.listError;
+
+export const selectProductDetailError = (rootState: RootState) => rootState.products.detailError;
 
 export const selectProductsMutationError = (rootState: RootState) =>
   rootState.products.mutationError;
 
-export const selectProductsDeleteError = (rootState: RootState) =>
-  rootState.products.deleteError;
+export const selectProductsDeleteError = (rootState: RootState) => rootState.products.deleteError;
 
-export const selectSearchQuery = (rootState: RootState) =>
-  rootState.products.searchQuery;
+export const selectSearchQuery = (rootState: RootState) => rootState.products.searchQuery;
 
-export const selectSelectedCategory = (rootState: RootState) =>
-  rootState.products.selectedCategory;
+export const selectSelectedCategory = (rootState: RootState) => rootState.products.selectedCategory;
 
-export const selectSortOrder = (rootState: RootState) =>
-  rootState.products.sortOrder;
+export const selectSortOrder = (rootState: RootState) => rootState.products.sortOrder;
 
 export const selectCategories = createSelector([selectProducts], (products) => {
   const categories = products.map((product) => product.category);
@@ -315,17 +301,14 @@ export const selectCategories = createSelector([selectProducts], (products) => {
   return Array.from(new Set(categories));
 });
 
-export const selectAdminProducts = createSelector(
-  [selectProducts],
-  (products) => {
-    return [...products].sort((firstProduct, secondProduct) => {
-      const firstCreatedAt = firstProduct.createdAt ?? "";
-      const secondCreatedAt = secondProduct.createdAt ?? "";
+export const selectAdminProducts = createSelector([selectProducts], (products) => {
+  return [...products].sort((firstProduct, secondProduct) => {
+    const firstCreatedAt = firstProduct.createdAt ?? "";
+    const secondCreatedAt = secondProduct.createdAt ?? "";
 
-      return secondCreatedAt.localeCompare(firstCreatedAt);
-    });
-  },
-);
+    return secondCreatedAt.localeCompare(firstCreatedAt);
+  });
+});
 
 export const selectFilteredProducts = createSelector(
   [selectProducts, selectSearchQuery, selectSelectedCategory, selectSortOrder],
@@ -333,9 +316,7 @@ export const selectFilteredProducts = createSelector(
     const searchQuery = searchQueryValue.trim().toLowerCase();
 
     const filteredProducts = products.filter((product) => {
-      const matchesSearchQuery = product.title
-        .toLowerCase()
-        .includes(searchQuery);
+      const matchesSearchQuery = product.title.toLowerCase().includes(searchQuery);
 
       const matchesSelectedCategory =
         selectedCategory === "" || product.category === selectedCategory;

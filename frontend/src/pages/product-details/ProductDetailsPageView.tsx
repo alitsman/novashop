@@ -22,10 +22,7 @@ export function ProductDetailsPageView({
   notFoundMessage,
 }: ProductDetailsPageViewProps) {
   return (
-    <section
-      className="product-details-page"
-      aria-labelledby="product-details-title"
-    >
+    <section className="product-details-page" aria-labelledby="product-details-title">
       {!product && !notFoundMessage && (
         <h1 id="product-details-title" className="product-details-page__title">
           Product details
@@ -38,19 +35,11 @@ export function ProductDetailsPageView({
         </div>
       )}
 
-      {errorMessage && (
-        <ErrorState
-          title="Failed to load product."
-          description={errorMessage}
-        />
-      )}
+      {errorMessage && <ErrorState title="Failed to load product." description={errorMessage} />}
 
       {notFoundMessage && (
         <>
-          <h1
-            id="product-details-title"
-            className="product-details-page__title"
-          >
+          <h1 id="product-details-title" className="product-details-page__title">
             Product details
           </h1>
 
@@ -67,32 +56,25 @@ export function ProductDetailsPageView({
       {product && (
         <article className="product-details-page__content">
           <div className="product-details-page__image-wrapper">
-            <img
-              className="product-details-page__image"
-              src={product.imageUrl}
-              alt={product.title}
-            />
+            <img className="product-details-page__image" src={product.imageUrl} alt="" />
           </div>
 
           <div className="product-details-page__info">
             <p className="product-details-page__category">{product.category}</p>
 
-            <h1
-              id="product-details-title"
-              className="product-details-page__title"
-            >
+            <h1 id="product-details-title" className="product-details-page__title">
               {product.title}
             </h1>
 
-            <p className="product-details-page__description">
-              {product.description}
-            </p>
+            <p className="product-details-page__description">{product.description}</p>
 
-            <p className="product-details-page__price">
-              ${product.price.toFixed(2)}
-            </p>
+            <p className="product-details-page__price">${product.price.toFixed(2)}</p>
 
-            <AddToCartControl product={product} variant="full" />
+            <div className="product-details-page__purchase-options">
+              <h2 className="product-details-page__purchase-title">Purchase options</h2>
+
+              <AddToCartControl product={product} variant="full" />
+            </div>
 
             <Link className="product-details-page__back-link" to="/products">
               Back to products

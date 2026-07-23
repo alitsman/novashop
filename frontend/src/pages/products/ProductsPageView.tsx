@@ -73,37 +73,26 @@ export function ProductsPageView({
         </div>
       )}
 
-      {errorMessage && (
-        <ErrorState
-          title="Failed to load products."
-          description={errorMessage}
+      {errorMessage && <ErrorState title="Failed to load products." description={errorMessage} />}
+
+      <p className="products-page__status" data-testid="products-status" role="status">
+        {resultsMessage ?? ""}
+      </p>
+
+      {isCatalogEmpty && (
+        <EmptyState
+          imageSrc={noProductsFoundImage}
+          title="No products available."
+          description="The catalog is empty right now. Please check back later."
         />
       )}
 
-      {resultsMessage && (
-        <p className="products-page__status" aria-live="polite">
-          {resultsMessage}
-        </p>
-      )}
-
-      {isCatalogEmpty && (
-        <div aria-live="polite">
-          <EmptyState
-            imageSrc={noProductsFoundImage}
-            title="No products available."
-            description="The catalog is empty right now. Please check back later."
-          />
-        </div>
-      )}
-
       {isFilteredEmpty && (
-        <div aria-live="polite">
-          <EmptyState
-            imageSrc={noProductsFoundImage}
-            title="No products found."
-            description="Try changing your search term, category, or sorting option."
-          />
-        </div>
+        <EmptyState
+          imageSrc={noProductsFoundImage}
+          title="No products found."
+          description="Try changing your search term, category, or sorting option."
+        />
       )}
 
       {products.length > 0 && (

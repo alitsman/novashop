@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { AdminProductDeleteSection } from "../../components/admin/product-delete";
 import {
-  AdminProductFormView,
-  useAdminProductForm,
-} from "../../components/admin/product-form";
+  AdminProductDeleteSection,
+  useAdminProductDelete,
+} from "../../components/admin/product-delete";
+import { AdminProductFormView, useAdminProductForm } from "../../components/admin/product-form";
 import { AdminProductPreview } from "../../components/admin/product-preview";
 import { ActionLink } from "../../components/common/action-link";
 import { ErrorState } from "../../components/common/error-state";
@@ -16,16 +16,16 @@ import {
   clearSelectedProduct,
   fetchProductById,
   ProductsRequestStatus,
+  selectProductDetailError,
   selectProductDetailsStatus,
-  selectProductsError,
   selectProductsMutationError,
   selectProductsMutationStatus,
   selectSelectedProduct,
   updateProduct,
 } from "../../features/products/productsSlice";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import type { ProductInput } from "../../types/product";
 import "./admin-product-edit-page.css";
-import { useAdminProductDelete } from "../../components/admin/product-delete";
 
 export function AdminProductEditPage() {
   const { productId } = useParams();
@@ -35,13 +35,14 @@ export function AdminProductEditPage() {
 
   const product = useAppSelector(selectSelectedProduct);
   const detailStatus = useAppSelector(selectProductDetailsStatus);
-  const loadError = useAppSelector(selectProductsError);
+  const detailError = useAppSelector(selectProductDetailError);
   const mutationStatus = useAppSelector(selectProductsMutationStatus);
   const mutationError = useAppSelector(selectProductsMutationError);
 
+  useDocumentTitle(product ? `Edit ${product.title}` : "Edit product");
+
   const isLoadingProduct =
-    detailStatus === ProductsRequestStatus.Idle ||
-    detailStatus === ProductsRequestStatus.Loading;
+    detailStatus === ProductsRequestStatus.Idle || detailStatus === ProductsRequestStatus.Loading;
 
   const isSubmitting = mutationStatus === ProductsRequestStatus.Loading;
 
@@ -108,14 +109,8 @@ export function AdminProductEditPage() {
 
   if (!productId) {
     return (
-      <section
-        className="admin-product-edit-page"
-        aria-labelledby="admin-product-edit-title"
-      >
-        <h1
-          id="admin-product-edit-title"
-          className="admin-product-edit-page__title"
-        >
+      <section className="admin-product-edit-page" aria-labelledby="admin-product-edit-title">
+        <h1 id="admin-product-edit-title" className="admin-product-edit-page__title">
           Edit product
         </h1>
 
@@ -131,14 +126,8 @@ export function AdminProductEditPage() {
 
   if (isLoadingProduct) {
     return (
-      <section
-        className="admin-product-edit-page"
-        aria-labelledby="admin-product-edit-title"
-      >
-        <h1
-          id="admin-product-edit-title"
-          className="admin-product-edit-page__title"
-        >
+      <section className="admin-product-edit-page" aria-labelledby="admin-product-edit-title">
+        <h1 id="admin-product-edit-title" className="admin-product-edit-page__title">
           Edit product
         </h1>
 
@@ -151,20 +140,14 @@ export function AdminProductEditPage() {
 
   if (detailStatus === ProductsRequestStatus.Failed) {
     return (
-      <section
-        className="admin-product-edit-page"
-        aria-labelledby="admin-product-edit-title"
-      >
-        <h1
-          id="admin-product-edit-title"
-          className="admin-product-edit-page__title"
-        >
+      <section className="admin-product-edit-page" aria-labelledby="admin-product-edit-title">
+        <h1 id="admin-product-edit-title" className="admin-product-edit-page__title">
           Edit product
         </h1>
 
         <ErrorState
           title="Failed to load product"
-          description={loadError ?? "Please try again later."}
+          description={detailError ?? "Please try again later."}
         >
           <ActionLink to="/admin/products">Back to admin products</ActionLink>
         </ErrorState>
@@ -174,14 +157,8 @@ export function AdminProductEditPage() {
 
   if (!product) {
     return (
-      <section
-        className="admin-product-edit-page"
-        aria-labelledby="admin-product-edit-title"
-      >
-        <h1
-          id="admin-product-edit-title"
-          className="admin-product-edit-page__title"
-        >
+      <section className="admin-product-edit-page" aria-labelledby="admin-product-edit-title">
+        <h1 id="admin-product-edit-title" className="admin-product-edit-page__title">
           Edit product
         </h1>
 
@@ -196,21 +173,14 @@ export function AdminProductEditPage() {
   }
 
   return (
-    <section
-      className="admin-product-edit-page"
-      aria-labelledby="admin-product-edit-title"
-    >
+    <section className="admin-product-edit-page" aria-labelledby="admin-product-edit-title">
       <div className="admin-product-edit-page__header">
-        <h1
-          id="admin-product-edit-title"
-          className="admin-product-edit-page__title"
-        >
+        <h1 id="admin-product-edit-title" className="admin-product-edit-page__title">
           Edit product
         </h1>
 
         <p className="admin-product-edit-page__description">
-          Update product details. The preview reflects your changes before you
-          save them.
+          Update product details. The preview reflects your changes before you save them.
         </p>
       </div>
 

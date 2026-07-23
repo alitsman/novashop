@@ -9,15 +9,8 @@ type ProductCardProps = {
 
 export function ProductCard({ product }: ProductCardProps) {
   return (
-    <article
-      className="product-card"
-      aria-labelledby={`product-${product.id}-title`}
-    >
-      <img
-        className="product-card__image"
-        src={product.imageUrl}
-        alt={product.title}
-      />
+    <article className="product-card" aria-labelledby={`product-${product.id}-title`}>
+      <img className="product-card__image" src={product.imageUrl} alt="" />
 
       <div className="product-card__content">
         <p className="product-card__category">{product.category}</p>

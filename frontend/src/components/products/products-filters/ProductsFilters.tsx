@@ -1,7 +1,7 @@
+import { ProductSortOrder } from "../../../types/product";
 import { Button, ButtonVariant } from "../../common/button";
 import { SearchField } from "../../common/search-field";
 import { SelectField } from "../../common/select-field";
-import { ProductSortOrder } from "../../../types/product";
 import "./products-filters.css";
 
 type ProductsFiltersProps = {
@@ -33,7 +33,7 @@ export function ProductsFilters({
     <section className="products-filters" aria-label="Find products">
       <SearchField
         id="products-search"
-        ariaLabel="Search products by name"
+        label="Search products by name"
         value={searchValue}
         placeholder="Search products"
         onChange={onSearchChange}
@@ -44,14 +44,14 @@ export function ProductsFilters({
         <SelectField
           id="products-category"
           name="category"
-          ariaLabel="Filter by category"
+          label="Filter by category"
           value={selectedCategory}
           onChange={onCategoryChange}
         >
           <option value="">All categories</option>
 
           {categories.map((category) => (
-            <option value={category} key={category}>
+            <option key={category} value={category}>
               {category}
             </option>
           ))}
@@ -60,7 +60,7 @@ export function ProductsFilters({
         <SelectField
           id="products-sort-order"
           name="sortOrder"
-          ariaLabel="Sort products by price"
+          label="Sort products by price"
           value={sortOrder}
           onChange={(value) => {
             onSortOrderChange(value as ProductSortOrder);

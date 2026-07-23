@@ -17,19 +17,10 @@ import {
   selectOrdersCreateError,
   selectOrdersCreateStatus,
 } from "../../features/orders/ordersSlice";
-import {
-  DeliveryMethod,
-  PaymentMethod,
-  type CheckoutForm,
-} from "../../types/checkout";
-import {
-  CheckoutPageView,
-  type CheckoutOrderItemViewModel,
-} from "./CheckoutPageView";
-import {
-  validateCheckoutForm,
-  type CheckoutFormErrors,
-} from "./checkoutValidation";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import { DeliveryMethod, PaymentMethod, type CheckoutForm } from "../../types/checkout";
+import { CheckoutPageView, type CheckoutOrderItemViewModel } from "./CheckoutPageView";
+import { validateCheckoutForm, type CheckoutFormErrors } from "./checkoutValidation";
 
 const initialCheckoutForm: CheckoutForm = {
   fullName: "",
@@ -40,6 +31,8 @@ const initialCheckoutForm: CheckoutForm = {
 };
 
 export function CheckoutPage() {
+  useDocumentTitle("Checkout");
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const showToast = useToast();
@@ -56,8 +49,7 @@ export function CheckoutPage() {
   const phoneInputRef = useRef<HTMLInputElement | null>(null);
   const addressTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const [formValues, setFormValues] =
-    useState<CheckoutForm>(initialCheckoutForm);
+  const [formValues, setFormValues] = useState<CheckoutForm>(initialCheckoutForm);
   const [formErrors, setFormErrors] = useState<CheckoutFormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -133,9 +125,7 @@ export function CheckoutPage() {
     clearSubmitState();
   };
 
-  const handleDeliveryMethodChange = (
-    deliveryMethod: CheckoutForm["deliveryMethod"],
-  ) => {
+  const handleDeliveryMethodChange = (deliveryMethod: CheckoutForm["deliveryMethod"]) => {
     setFormValues((currentValues) => {
       return {
         ...currentValues,
@@ -146,9 +136,7 @@ export function CheckoutPage() {
     clearSubmitState();
   };
 
-  const handlePaymentMethodChange = (
-    paymentMethod: CheckoutForm["paymentMethod"],
-  ) => {
+  const handlePaymentMethodChange = (paymentMethod: CheckoutForm["paymentMethod"]) => {
     setFormValues((currentValues) => {
       return {
         ...currentValues,
@@ -184,9 +172,7 @@ export function CheckoutPage() {
 
     if (isCartEmpty) {
       setFormErrors({});
-      setSubmitError(
-        "Your cart is empty. Add products before placing an order.",
-      );
+      setSubmitError("Your cart is empty. Add products before placing an order.");
       return;
     }
 
@@ -237,8 +223,7 @@ export function CheckoutPage() {
     return {
       productId: cartItem.productId,
       title: cartItem.title,
-      quantityText:
-        cartItem.quantity === 1 ? "1 item" : `${cartItem.quantity} items`,
+      quantityText: cartItem.quantity === 1 ? "1 item" : `${cartItem.quantity} items`,
       priceText: `$${cartItem.price.toFixed(2)}`,
       itemTotalText: `$${itemTotalPrice.toFixed(2)}`,
     };

@@ -7,6 +7,7 @@ import {
   selectAuthError,
   selectAuthStatus,
 } from "../../features/auth/authSlice";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { AuthRequestStatus, type LoginCredentials } from "../../types/auth";
 import { LoginPageView } from "./LoginPageView";
 import { validateLoginForm, type LoginFormErrors } from "./loginValidation";
@@ -19,6 +20,8 @@ const initialLoginFormValues: LoginCredentials = {
 const loginFailedMessage = "Email address or password is incorrect.";
 
 export function LoginPage() {
+  useDocumentTitle("Sign in");
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -28,9 +31,7 @@ export function LoginPage() {
   const emailInputRef = useRef<HTMLInputElement | null>(null);
   const passwordInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [formValues, setFormValues] = useState<LoginCredentials>(
-    initialLoginFormValues,
-  );
+  const [formValues, setFormValues] = useState<LoginCredentials>(initialLoginFormValues);
   const [formErrors, setFormErrors] = useState<LoginFormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 

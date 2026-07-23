@@ -28,6 +28,7 @@ type AddToCartControlViewProps = {
   isIncreaseDisabled: boolean;
   isAddToCartDisabled: boolean;
   addToCartButtonLabel: string;
+  addToCartButtonAriaLabel: string;
 
   onQuantityChange: (value: string) => void;
   onQuantityFocus: () => void;
@@ -57,6 +58,7 @@ export function AddToCartControlView({
   isIncreaseDisabled,
   isAddToCartDisabled,
   addToCartButtonLabel,
+  addToCartButtonAriaLabel,
   onQuantityChange,
   onQuantityFocus,
   onQuantityKeyDown,
@@ -72,18 +74,12 @@ export function AddToCartControlView({
     <div
       className={`add-to-cart-control add-to-cart-control--${variant}`}
       role="group"
-      aria-label={`Add ${productTitle} to cart`}
+      aria-label={`Add to cart controls for ${productTitle}`}
     >
       <div className="add-to-cart-control__availability">
-        {inCartMessage && (
-          <p className="add-to-cart-control__availability-item">
-            {inCartMessage}
-          </p>
-        )}
+        {inCartMessage && <p className="add-to-cart-control__availability-item">{inCartMessage}</p>}
 
-        <p className="add-to-cart-control__availability-item">
-          {availableMessage}
-        </p>
+        <p className="add-to-cart-control__availability-item">{availableMessage}</p>
       </div>
 
       <div className="add-to-cart-control__field">
@@ -160,7 +156,7 @@ export function AddToCartControlView({
       <Button
         className="add-to-cart-control__submit"
         disabled={isAddToCartDisabled}
-        aria-label={`Add ${productTitle} to cart`}
+        aria-label={addToCartButtonAriaLabel}
         onClick={onAddToCart}
       >
         {addToCartButtonLabel}

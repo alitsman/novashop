@@ -19,13 +19,17 @@
 
 @media (min-width: 768px) {
   .products-filters__actions {
-    grid-template-columns: minmax(0, 14rem) minmax(0, 14rem) 1fr auto;
-    align-items: center;
+    grid-template-columns:
+      minmax(0, 14rem)
+      minmax(0, 14rem)
+      1fr
+      auto;
+    align-items: end;
   }
 
   .products-filters__clear-button {
-    width: auto;
     grid-column: 4;
+    width: auto;
     justify-self: end;
   }
 }

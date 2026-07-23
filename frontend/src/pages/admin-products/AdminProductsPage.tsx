@@ -14,27 +14,31 @@ import {
   ProductsRequestStatus,
   selectAdminProducts,
   selectProductsDeleteError,
-  selectProductsError,
+  selectProductsListError,
   selectProductsListStatus,
 } from "../../features/products/productsSlice";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import "./admin-products-page.css";
 
 export function AdminProductsPage() {
+  useDocumentTitle("Admin products");
+
   const dispatch = useAppDispatch();
   const showToast = useToast();
 
   const products = useAppSelector(selectAdminProducts);
   const listStatus = useAppSelector(selectProductsListStatus);
-  const loadError = useAppSelector(selectProductsError);
+  const listError = useAppSelector(selectProductsListError);
   const deleteError = useAppSelector(selectProductsDeleteError);
 
   const isLoadingProducts =
-    listStatus === ProductsRequestStatus.Idle ||
-    listStatus === ProductsRequestStatus.Loading;
+    listStatus === ProductsRequestStatus.Idle || listStatus === ProductsRequestStatus.Loading;
 
   const hasLoadError = listStatus === ProductsRequestStatus.Failed;
   const isLoaded = listStatus === ProductsRequestStatus.Succeeded;
   const isProductsEmpty = isLoaded && products.length === 0;
+
+  const errorMessage = hasLoadError ? listError : null;
 
   useEffect(() => {
     dispatch(clearProductsDeleteError());
@@ -57,10 +61,7 @@ export function AdminProductsPage() {
   };
 
   return (
-    <section
-      className="admin-products-page"
-      aria-labelledby="admin-products-title"
-    >
+    <section className="admin-products-page" aria-labelledby="admin-products-title">
       <div className="admin-products-page__header">
         <div className="admin-products-page__heading">
           <h1 id="admin-products-title" className="admin-products-page__title">
@@ -68,8 +69,8 @@ export function AdminProductsPage() {
           </h1>
 
           <p className="admin-products-page__description">
-            Manage catalog products. Create new products, edit existing product
-            details, or delete products that should no longer be available.
+            Manage catalog products. Create new products, edit existing product details, or delete
+            products that should no longer be available.
           </p>
         </div>
 
@@ -82,16 +83,9 @@ export function AdminProductsPage() {
         </div>
       )}
 
-      {hasLoadError && (
-        <ErrorState
-          title="Failed to load admin products."
-          description={loadError ?? "Please try again later."}
-        >
-          <Button
-            type="button"
-            variant={ButtonVariant.Secondary}
-            onClick={handleRetry}
-          >
+      {errorMessage && (
+        <ErrorState title="Failed to load admin products." description={errorMessage}>
+          <Button type="button" variant={ButtonVariant.Secondary} onClick={handleRetry}>
             Try again
           </Button>
         </ErrorState>
@@ -114,10 +108,7 @@ export function AdminProductsPage() {
       )}
 
       {isLoaded && products.length > 0 && (
-        <AdminProductsTable
-          products={products}
-          onProductDeleted={handleProductDeleted}
-        />
+        <AdminProductsTable products={products} onProductDeleted={handleProductDeleted} />
       )}
     </section>
   );

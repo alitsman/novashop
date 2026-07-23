@@ -18,12 +18,7 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="empty-state">
-      <img
-        className="empty-state__image"
-        src={imageSrc}
-        alt={imageAlt}
-        aria-hidden={imageAlt === "" ? true : undefined}
-      />
+      <img className="empty-state__image" src={imageSrc} alt={imageAlt} />
 
       <div className="empty-state__content">
         <h2 className="empty-state__title">{title}</h2>

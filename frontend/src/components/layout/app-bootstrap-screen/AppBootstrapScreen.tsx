@@ -1,8 +1,11 @@
+import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { Loader } from "../../common/loader";
 import { HeaderView } from "../header/HeaderView";
 import "./app-bootstrap-screen.css";
 
 export function AppBootstrapScreen() {
+  useDocumentTitle();
+
   return (
     <div className="app-bootstrap-screen">
       <HeaderView variant="bootstrap" />

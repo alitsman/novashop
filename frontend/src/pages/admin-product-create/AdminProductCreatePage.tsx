@@ -1,10 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import {
-  AdminProductFormView,
-  useAdminProductForm,
-} from "../../components/admin/product-form";
+import { AdminProductFormView, useAdminProductForm } from "../../components/admin/product-form";
 import { AdminProductPreview } from "../../components/admin/product-preview";
 import { useToast } from "../../components/common/toast";
 import {
@@ -14,10 +11,13 @@ import {
   selectProductsMutationError,
   selectProductsMutationStatus,
 } from "../../features/products/productsSlice";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import type { ProductInput } from "../../types/product";
 import "./admin-product-create-page.css";
 
 export function AdminProductCreatePage() {
+  useDocumentTitle("Create product");
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const showToast = useToast();
@@ -65,21 +65,14 @@ export function AdminProductCreatePage() {
   });
 
   return (
-    <section
-      className="admin-product-create-page"
-      aria-labelledby="admin-product-create-title"
-    >
+    <section className="admin-product-create-page" aria-labelledby="admin-product-create-title">
       <div className="admin-product-create-page__header">
-        <h1
-          id="admin-product-create-title"
-          className="admin-product-create-page__title"
-        >
+        <h1 id="admin-product-create-title" className="admin-product-create-page__title">
           Create product
         </h1>
 
         <p className="admin-product-create-page__description">
-          Add a new product to the catalog. The preview updates while you fill
-          in the form.
+          Add a new product to the catalog. The preview updates while you fill in the form.
         </p>
       </div>
 

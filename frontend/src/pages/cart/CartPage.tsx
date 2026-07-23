@@ -9,9 +9,12 @@ import {
   selectIsCartEmpty,
   setQuantity,
 } from "../../features/cart/cartSlice";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { CartPageView, type CartPageItemViewModel } from "./CartPageView";
 
 export function CartPage() {
+  useDocumentTitle("Cart");
+
   const dispatch = useAppDispatch();
 
   const cartItems = useAppSelector(selectCartItems);
@@ -19,9 +22,7 @@ export function CartPage() {
   const totalQuantity = useAppSelector(selectCartTotalQuantity);
   const isEmpty = useAppSelector(selectIsCartEmpty);
 
-  const [productIdPendingRemoval, setProductIdPendingRemoval] = useState<
-    string | null
-  >(null);
+  const [productIdPendingRemoval, setProductIdPendingRemoval] = useState<string | null>(null);
 
   const itemPendingRemoval = cartItems.find((cartItem) => {
     return cartItem.productId === productIdPendingRemoval;

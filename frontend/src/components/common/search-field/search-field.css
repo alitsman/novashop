@@ -1,9 +1,17 @@
 .search-field {
+  display: grid;
+  gap: var(--spacing-sm);
   min-width: 0;
+}
+
+.search-field__label {
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .search-field__control {
   position: relative;
+  min-width: 0;
 }
 
 .search-field__input {

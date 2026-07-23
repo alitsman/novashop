@@ -7,12 +7,10 @@ import {
   selectAuthError,
   selectAuthStatus,
 } from "../../features/auth/authSlice";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { AuthRequestStatus, type RegisterData } from "../../types/auth";
 import { RegisterPageView } from "./RegisterPageView";
-import {
-  validateRegisterForm,
-  type RegisterFormErrors,
-} from "./registerValidation";
+import { validateRegisterForm, type RegisterFormErrors } from "./registerValidation";
 
 const initialRegisterFormValues: RegisterData = {
   name: "",
@@ -21,10 +19,11 @@ const initialRegisterFormValues: RegisterData = {
   confirmPassword: "",
 };
 
-const registerFailedMessage =
-  "We could not create your account. Please try again.";
+const registerFailedMessage = "We could not create your account. Please try again.";
 
 export function RegisterPage() {
+  useDocumentTitle("Create account");
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -36,9 +35,7 @@ export function RegisterPage() {
   const passwordInputRef = useRef<HTMLInputElement | null>(null);
   const confirmPasswordInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [formValues, setFormValues] = useState<RegisterData>(
-    initialRegisterFormValues,
-  );
+  const [formValues, setFormValues] = useState<RegisterData>(initialRegisterFormValues);
   const [formErrors, setFormErrors] = useState<RegisterFormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 

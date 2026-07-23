@@ -3,17 +3,20 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
   fetchProducts,
   ProductsRequestStatus,
-  selectProductsError,
+  selectProductsListError,
   selectProductsListStatus,
 } from "../../features/products/productsSlice";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { ProductsPageView } from "./ProductsPageView";
 import { useProductsFilters } from "./useProductsFilters";
 
 export function ProductsPage() {
+  useDocumentTitle("Products");
+
   const dispatch = useAppDispatch();
 
   const listStatus = useAppSelector(selectProductsListStatus);
-  const error = useAppSelector(selectProductsError);
+  const listError = useAppSelector(selectProductsListError);
 
   const {
     products,
@@ -36,16 +39,14 @@ export function ProductsPage() {
 
   const shouldShowFilters = isLoaded && totalProductsCount > 0;
   const isCatalogEmpty = isLoaded && totalProductsCount === 0;
-  const isFilteredEmpty =
-    isLoaded && totalProductsCount > 0 && products.length === 0;
+  const isFilteredEmpty = isLoaded && totalProductsCount > 0 && products.length === 0;
 
   const loadingMessage = isLoading ? "Loading products..." : null;
-  const errorMessage = hasError ? (error ?? "Failed to load products") : null;
+  const errorMessage = hasError ? listError : null;
+
   const resultsMessage =
-    isLoaded && totalProductsCount > 0 && products.length > 0
-      ? `${products.length} ${
-          products.length === 1 ? "product" : "products"
-        } found.`
+    isLoaded && totalProductsCount > 0
+      ? `${products.length} ${products.length === 1 ? "product" : "products"} found.`
       : null;
 
   useEffect(() => {

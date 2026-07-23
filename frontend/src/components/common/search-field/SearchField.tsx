@@ -3,7 +3,7 @@ import "./search-field.css";
 
 type SearchFieldProps = {
   id: string;
-  ariaLabel: string;
+  label: string;
   value: string;
   placeholder?: string;
   onChange: (value: string) => void;
@@ -12,16 +12,18 @@ type SearchFieldProps = {
 
 export function SearchField({
   id,
-  ariaLabel,
+  label,
   value,
   placeholder,
   onChange,
   onClear,
 }: SearchFieldProps) {
-  const hasValue = value.length > 0;
-
   return (
     <div className="search-field">
+      <label className="search-field__label" htmlFor={id}>
+        {label}
+      </label>
+
       <div className="search-field__control">
         <input
           className="search-field__input"
@@ -29,7 +31,6 @@ export function SearchField({
           name="search"
           type="search"
           autoComplete="off"
-          aria-label={ariaLabel}
           value={value}
           placeholder={placeholder}
           onChange={(event) => {
@@ -37,7 +38,7 @@ export function SearchField({
           }}
         />
 
-        {hasValue && (
+        {value.length > 0 && (
           <button
             className="search-field__clear-button"
             type="button"

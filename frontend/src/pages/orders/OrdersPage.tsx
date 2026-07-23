@@ -8,12 +8,10 @@ import {
   selectOrdersFetchError,
   selectOrdersFetchStatus,
 } from "../../features/orders/ordersSlice";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { DeliveryMethod, PaymentMethod } from "../../types/checkout";
 import type { Order } from "../../types/order";
-import {
-  OrdersPageView,
-  type OrdersPageOrderViewModel,
-} from "./OrdersPageView";
+import { OrdersPageView, type OrdersPageOrderViewModel } from "./OrdersPageView";
 
 const orderDateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
@@ -81,6 +79,8 @@ const mapOrderToViewModel = (order: Order): OrdersPageOrderViewModel => {
 };
 
 export function OrdersPage() {
+  useDocumentTitle("My orders");
+
   const dispatch = useAppDispatch();
 
   const currentUser = useAppSelector(selectCurrentUser);
@@ -108,10 +108,6 @@ export function OrdersPage() {
       : null;
 
   return (
-    <OrdersPageView
-      orders={orderViewModels}
-      isLoading={isLoading}
-      errorMessage={errorMessage}
-    />
+    <OrdersPageView orders={orderViewModels} isLoading={isLoading} errorMessage={errorMessage} />
   );
 }

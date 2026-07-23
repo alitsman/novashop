@@ -14,10 +14,7 @@ type UseAddToCartControlParams = {
   variant: "compact" | "full";
 };
 
-export function useAddToCartControl({
-  product,
-  variant,
-}: UseAddToCartControlParams) {
+export function useAddToCartControl({ product, variant }: UseAddToCartControlParams) {
   const dispatch = useAppDispatch();
   const showToast = useToast();
 
@@ -27,9 +24,7 @@ export function useAddToCartControl({
   const quantityInputRef = useRef<HTMLInputElement | null>(null);
 
   const [quantityValue, setQuantityValue] = useState("1");
-  const [lastActionProductId, setLastActionProductId] = useState<string | null>(
-    null,
-  );
+  const [lastActionProductId, setLastActionProductId] = useState<string | null>(null);
 
   const cartItemForProduct = cartItems.find((cartItem) => {
     return cartItem.productId === product.id;
@@ -48,13 +43,10 @@ export function useAddToCartControl({
   const quantityHintId = `${quantityInputId}-hint`;
   const quantityErrorId = `${quantityInputId}-error`;
 
-  const inCartMessage =
-    quantityInCart > 0 ? `In cart: ${quantityInCart}` : null;
+  const inCartMessage = quantityInCart > 0 ? `In cart: ${quantityInCart}` : null;
 
   const availableMessage =
-    availableToAdd > 0
-      ? `Available: ${availableToAdd}`
-      : "No more items available";
+    availableToAdd > 0 ? `Available: ${availableToAdd}` : "No more items available";
 
   const quantityHint =
     availableToAdd > 1
@@ -78,11 +70,14 @@ export function useAddToCartControl({
 
   const isAddToCartDisabled = !isQuantityValid;
 
-  const addToCartButtonLabel =
-    availableToAdd > 0 ? "Add to cart" : "No more items available";
+  const addToCartButtonLabel = availableToAdd > 0 ? "Add to cart" : "No more items available";
 
-  const cartErrorMessage =
-    lastActionProductId === product.id ? cartError : null;
+  const addToCartButtonAriaLabel =
+    availableToAdd > 0
+      ? `Add to cart: ${product.title}`
+      : `No more items available for ${product.title}`;
+
+  const cartErrorMessage = lastActionProductId === product.id ? cartError : null;
 
   function handleQuantityChange(nextValue: string) {
     if (!/^\d+$/.test(nextValue)) {
@@ -187,6 +182,7 @@ export function useAddToCartControl({
     isIncreaseDisabled,
     isAddToCartDisabled,
     addToCartButtonLabel,
+    addToCartButtonAriaLabel,
 
     onQuantityChange: handleQuantityChange,
     onQuantityFocus: handleQuantityFocus,
@@ -202,10 +198,7 @@ type QuantityValidationParams = {
   availableToAdd: number;
 };
 
-function getQuantityErrorMessage({
-  quantity,
-  availableToAdd,
-}: QuantityValidationParams) {
+function getQuantityErrorMessage({ quantity, availableToAdd }: QuantityValidationParams) {
   if (availableToAdd <= 0) {
     return null;
   }
