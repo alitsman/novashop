@@ -12,18 +12,11 @@ type ToastViewportProps = {
 };
 
 export function ToastViewport({ toast, onClose }: ToastViewportProps) {
-  const className = toast
-    ? "toast-viewport toast-viewport--visible"
-    : "toast-viewport";
+  const className = toast ? "toast-viewport toast-viewport--visible" : "toast-viewport";
 
   return (
     <div className={className}>
-      <div
-        className="toast-viewport__message"
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-      >
+      <div className="toast-viewport__message" role="status" aria-atomic="true">
         {toast && <span key={toast.id}>{toast.message}</span>}
       </div>
 

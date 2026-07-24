@@ -71,11 +71,7 @@ export function CartPageView({
                   aria-labelledby={`cart-item-${item.productId}-title`}
                 >
                   <div className="cart-page__product">
-                    <img
-                      className="cart-page__image"
-                      src={item.imageUrl}
-                      alt={item.title}
-                    />
+                    <img className="cart-page__image" src={item.imageUrl} alt="" />
 
                     <div className="cart-page__item-info">
                       <h2
@@ -99,9 +95,7 @@ export function CartPageView({
                     />
 
                     <div className="cart-page__item-footer">
-                      <p className="cart-page__item-total">
-                        {item.itemTotalText}
-                      </p>
+                      <p className="cart-page__item-total">{item.itemTotalText}</p>
 
                       <Button
                         className="cart-page__remove-button"
@@ -118,10 +112,7 @@ export function CartPageView({
             ))}
           </ul>
 
-          <aside
-            className="cart-page__summary"
-            aria-labelledby="cart-summary-title"
-          >
+          <aside className="cart-page__summary" aria-labelledby="cart-summary-title">
             <h2 className="cart-page__summary-title" id="cart-summary-title">
               Order summary
             </h2>
@@ -129,7 +120,7 @@ export function CartPageView({
             <div className="cart-page__summary-details">
               <p className="cart-page__summary-text">{totalQuantityText}</p>
 
-              <p className="cart-page__summary-total" aria-live="polite">
+              <p className="cart-page__summary-total" role="status">
                 {totalPriceText}
               </p>
             </div>

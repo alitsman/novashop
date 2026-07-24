@@ -31,12 +31,8 @@ type CheckoutPageViewProps = {
   onFullNameChange: (fullName: string) => void;
   onPhoneChange: (phone: string) => void;
   onAddressChange: (address: string) => void;
-  onDeliveryMethodChange: (
-    deliveryMethod: CheckoutFormValues["deliveryMethod"],
-  ) => void;
-  onPaymentMethodChange: (
-    paymentMethod: CheckoutFormValues["paymentMethod"],
-  ) => void;
+  onDeliveryMethodChange: (deliveryMethod: CheckoutFormValues["deliveryMethod"]) => void;
+  onPaymentMethodChange: (paymentMethod: CheckoutFormValues["paymentMethod"]) => void;
   onSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
 };
 
@@ -89,62 +85,38 @@ export function CheckoutPageView({
         </EmptyState>
       ) : (
         <div className="checkout-page__content">
-          <aside
-            className="checkout-page__summary"
-            aria-labelledby="checkout-summary-title"
-          >
-            <h2
-              className="checkout-page__summary-title"
-              id="checkout-summary-title"
-            >
+          <aside className="checkout-page__summary" aria-labelledby="checkout-summary-title">
+            <h2 className="checkout-page__summary-title" id="checkout-summary-title">
               Order summary
             </h2>
 
-            <ul
-              className="checkout-page__summary-list"
-              aria-label="Order items"
-            >
+            <ul className="checkout-page__summary-list" aria-label="Order items">
               {orderItems.map((item) => (
-                <li
-                  className="checkout-page__summary-item"
-                  key={item.productId}
-                >
+                <li className="checkout-page__summary-item" key={item.productId}>
                   <div className="checkout-page__summary-item-main">
-                    <h3 className="checkout-page__summary-item-title">
-                      {item.title}
-                    </h3>
+                    <h3 className="checkout-page__summary-item-title">{item.title}</h3>
 
                     <p className="checkout-page__summary-item-meta">
                       {item.quantityText} × {item.priceText}
                     </p>
                   </div>
 
-                  <p className="checkout-page__summary-item-total">
-                    {item.itemTotalText}
-                  </p>
+                  <p className="checkout-page__summary-item-total">{item.itemTotalText}</p>
                 </li>
               ))}
             </ul>
 
             <div className="checkout-page__summary-footer">
-              <p className="checkout-page__summary-quantity">
-                {totalQuantityText}
-              </p>
+              <p className="checkout-page__summary-quantity">{totalQuantityText}</p>
 
-              <p className="checkout-page__summary-total" aria-live="polite">
+              <p className="checkout-page__summary-total" role="status">
                 {totalPriceText}
               </p>
             </div>
           </aside>
 
-          <section
-            className="checkout-page__form-section"
-            aria-labelledby="checkout-form-title"
-          >
-            <h2
-              className="checkout-page__section-title"
-              id="checkout-form-title"
-            >
+          <section className="checkout-page__form-section" aria-labelledby="checkout-form-title">
+            <h2 className="checkout-page__section-title" id="checkout-form-title">
               Delivery details
             </h2>
 

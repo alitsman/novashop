@@ -1,3 +1,19 @@
+.app-layout__skip-link {
+  position: fixed;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transform: translateY(calc(-100% - var(--spacing-md) - var(--spacing-sm)));
+}
+
+.app-layout__skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 .app-layout__main {
   width: min(100% - 32px, 1120px);
   margin: 0 auto;
