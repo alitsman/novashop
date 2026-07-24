@@ -24,9 +24,21 @@ test.describe("product catalog", () => {
     ).toHaveText("Regular User");
   });
 
-  // test.fixme("available products: displays the complete catalog", async () => {
-  //   // Verify that the catalog is loaded and all expected products are displayed.
-  // });
+  test("shows the complete catalog in default order", async () => {
+    const expectedProductTitles = CATALOG_PRODUCTS.map(
+      (product) => product.title,
+    );
+
+    await expect(catalogPage.productTitles).toHaveText(expectedProductTitles);
+    await expect(catalogPage.productsStatus).toHaveText(
+      `${expectedProductTitles.length} products found.`,
+    );
+    await expect(catalogPage.productsStatus).toHaveRole("status");
+    await expect(catalogPage.searchInput).toHaveValue("");
+    await expect(catalogPage.categorySelect).toHaveValue("");
+    await expect(catalogPage.sortSelect).toHaveValue("default");
+    await expect(catalogPage.clearFiltersButton).toBeDisabled();
+  });
 
   // test.fixme("search by name: shows only matching products", async () => {
   //   // Enter a query that matches multiple products.
