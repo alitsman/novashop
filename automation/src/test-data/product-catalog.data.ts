@@ -21,26 +21,17 @@ export const CATALOG_PRODUCTS: CatalogProductOverrides[] = [
   },
   {
     id: "catalog-product-3",
-    title: "Travel Mouse",
-    price: 19.99,
-    category: "Accessories",
+    title: "Mechanical Keyboard",
+    description: "A comfortable keyboard for everyday work.",
+    price: 69.99,
+    category: "Electronics",
   },
   {
     id: "catalog-product-4",
-    title: "Desk Lamp",
-    price: 39.99,
-    category: "Home",
-  },
-  {
-    id: "catalog-product-5",
-    title: "Floor Lamp",
-    price: 59.99,
-    category: "Home",
-  },
-  {
-    id: "catalog-product-6",
-    title: "TypeScript Guide",
+    title: "Computer Mouse Handbook",
     price: 29.99,
     category: "Books",
   },
 ];
+
+export const EMPTY_CATALOG_PRODUCTS: Product[] = [];

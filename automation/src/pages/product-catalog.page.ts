@@ -59,12 +59,19 @@ export class ProductCatalogPage {
     await this.searchInput.fill(query);
   }
 
+  async filterByCategory(option: string): Promise<void> {
+    await this.categorySelect.selectOption(option);
+  }
+
+  async sortByPrice(option: string): Promise<void> {
+    await this.sortSelect.selectOption(option);
+  }
+
   getProductCard(title: string): ProductCardComponent {
     const root = this.productList.getByRole("article", {
       name: title,
       exact: true,
     });
-
     return new ProductCardComponent(root);
   }
 }
