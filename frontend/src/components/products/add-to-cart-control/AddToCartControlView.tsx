@@ -76,7 +76,7 @@ export function AddToCartControlView({
       role="group"
       aria-label={`Add to cart controls for ${productTitle}`}
     >
-      <div className="add-to-cart-control__availability">
+      <div className="add-to-cart-control__availability" data-testid="product-availability">
         {inCartMessage && <p className="add-to-cart-control__availability-item">{inCartMessage}</p>}
 
         <p className="add-to-cart-control__availability-item">{availableMessage}</p>
@@ -127,7 +127,11 @@ export function AddToCartControlView({
           </button>
         </div>
 
-        <p className="add-to-cart-control__hint" id={quantityHintId}>
+        <p
+          className="add-to-cart-control__hint"
+          id={quantityHintId}
+          data-testid="product-quantity-hint"
+        >
           {quantityHint}
         </p>
 
@@ -136,6 +140,7 @@ export function AddToCartControlView({
             className="add-to-cart-control__message add-to-cart-control__message--error"
             id={quantityErrorId}
             role="alert"
+            data-testid="product-quantity-error"
           >
             {quantityErrorMessage}
           </p>
@@ -147,6 +152,7 @@ export function AddToCartControlView({
           <p
             className="add-to-cart-control__message add-to-cart-control__message--error"
             role="alert"
+            data-testid="add-to-cart-error"
           >
             {cartErrorMessage}
           </p>
@@ -155,6 +161,7 @@ export function AddToCartControlView({
 
       <Button
         className="add-to-cart-control__submit"
+        data-testid="add-to-cart-submit"
         disabled={isAddToCartDisabled}
         aria-label={addToCartButtonAriaLabel}
         onClick={onAddToCart}
