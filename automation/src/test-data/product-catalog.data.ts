@@ -6,6 +6,9 @@ type CatalogProductOverrides = Pick<
 > &
   Partial<Product>;
 
+type QuantityProductOverrides = CatalogProductOverrides &
+  Pick<Product, "stock">;
+
 export const CATALOG_PRODUCTS: CatalogProductOverrides[] = [
   {
     id: "catalog-product-1",
@@ -35,3 +38,24 @@ export const CATALOG_PRODUCTS: CatalogProductOverrides[] = [
 ];
 
 export const EMPTY_CATALOG_PRODUCTS: Product[] = [];
+
+export const QUANTITY_PRODUCT: QuantityProductOverrides = {
+  id: "quantity-product",
+  title: "Quantity Test Product",
+  price: 49.99,
+  category: "Electronics",
+  stock: 5,
+};
+
+export const OUT_OF_STOCK_PRODUCT: QuantityProductOverrides = {
+  id: "out-of-stock-product",
+  title: "Out of Stock Product",
+  price: 49.99,
+  category: "Electronics",
+  stock: 0,
+};
+
+export const QUANTITY_PRODUCTS: QuantityProductOverrides[] = [
+  QUANTITY_PRODUCT,
+  OUT_OF_STOCK_PRODUCT,
+];

@@ -39,6 +39,12 @@ export default defineConfig([
     extends: [playwright.configs["flat/recommended"]],
     rules: {
       "playwright/expect-expect": "error",
+      "playwright/no-skipped-test": [
+        "error",
+        {
+          allowConditional: true,
+        },
+      ],
     },
   },
 
