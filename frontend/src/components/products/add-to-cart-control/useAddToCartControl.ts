@@ -62,11 +62,9 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
 
   const isQuantityValid = !quantityErrorMessage && availableToAdd > 0;
 
-  const isDecreaseDisabled =
-    isQuantityDisabled || !isQuantityValid || parsedQuantity <= minQuantity;
+  const isDecreaseDisabled = isQuantityDisabled || parsedQuantity <= minQuantity;
 
-  const isIncreaseDisabled =
-    isQuantityDisabled || !isQuantityValid || parsedQuantity >= maxQuantity;
+  const isIncreaseDisabled = isQuantityDisabled || parsedQuantity >= maxQuantity;
 
   const isAddToCartDisabled = !isQuantityValid;
 
@@ -113,20 +111,24 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
   }
 
   function handleDecreaseQuantity() {
-    if (!isQuantityValid || parsedQuantity <= minQuantity) {
+    if (isDecreaseDisabled) {
       return;
     }
 
-    setQuantityValue(String(parsedQuantity - 1));
+    const nextQuantity = parsedQuantity > maxQuantity ? maxQuantity : parsedQuantity - 1;
+
+    setQuantityValue(String(nextQuantity));
     dispatch(clearCartError());
   }
 
   function handleIncreaseQuantity() {
-    if (!isQuantityValid || parsedQuantity >= maxQuantity) {
+    if (isIncreaseDisabled) {
       return;
     }
 
-    setQuantityValue(String(parsedQuantity + 1));
+    const nextQuantity = parsedQuantity < minQuantity ? minQuantity : parsedQuantity + 1;
+
+    setQuantityValue(String(nextQuantity));
     dispatch(clearCartError());
   }
 
