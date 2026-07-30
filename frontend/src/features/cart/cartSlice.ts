@@ -92,50 +92,6 @@ const cartSlice = createSlice({
       cartState.error = null;
     },
 
-    increaseQuantity: (cartState, action: PayloadAction<string>) => {
-      const productIdToIncrease = action.payload;
-
-      const existingCartItem = cartState.items.find((cartItem) => {
-        return cartItem.productId === productIdToIncrease;
-      });
-
-      if (!existingCartItem) {
-        cartState.error = "Product is not in cart.";
-        return;
-      }
-
-      const nextQuantity = existingCartItem.quantity + 1;
-
-      if (nextQuantity > existingCartItem.stock) {
-        cartState.error = "No more items available.";
-        return;
-      }
-
-      existingCartItem.quantity = nextQuantity;
-      cartState.error = null;
-    },
-
-    decreaseQuantity: (cartState, action: PayloadAction<string>) => {
-      const productIdToDecrease = action.payload;
-
-      const existingCartItem = cartState.items.find((cartItem) => {
-        return cartItem.productId === productIdToDecrease;
-      });
-
-      if (!existingCartItem) {
-        cartState.error = "Product is not in cart.";
-        return;
-      }
-
-      if (existingCartItem.quantity <= 1) {
-        cartState.error = "Quantity must be at least 1.";
-        return;
-      }
-
-      existingCartItem.quantity -= 1;
-      cartState.error = null;
-    },
-
     setQuantity: (cartState, action: PayloadAction<SetQuantityPayload>) => {
       const { productId, quantity } = action.payload;
 
@@ -180,8 +136,6 @@ export const {
   addToCart,
   clearCartError,
   removeFromCart,
-  increaseQuantity,
-  decreaseQuantity,
   setQuantity,
   clearCart,
 } = cartSlice.actions;
