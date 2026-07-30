@@ -16,7 +16,12 @@ export function ToastViewport({ toast, onClose }: ToastViewportProps) {
 
   return (
     <div className={className}>
-      <div className="toast-viewport__message" role="status" aria-atomic="true">
+      <div
+        className="toast-viewport__message"
+        role="status"
+        aria-atomic="true"
+        data-testid="toast-message"
+      >
         {toast && <span key={toast.id}>{toast.message}</span>}
       </div>
 

@@ -22,12 +22,8 @@ type CheckoutFormProps = {
   onFullNameChange: (fullName: string) => void;
   onPhoneChange: (phone: string) => void;
   onAddressChange: (address: string) => void;
-  onDeliveryMethodChange: (
-    deliveryMethod: CheckoutFormValues["deliveryMethod"],
-  ) => void;
-  onPaymentMethodChange: (
-    paymentMethod: CheckoutFormValues["paymentMethod"],
-  ) => void;
+  onDeliveryMethodChange: (deliveryMethod: CheckoutFormValues["deliveryMethod"]) => void;
+  onPaymentMethodChange: (paymentMethod: CheckoutFormValues["paymentMethod"]) => void;
   onSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
 };
 
@@ -49,7 +45,7 @@ export function CheckoutForm({
   const hasFormErrors = Object.keys(formErrors).length > 0;
 
   return (
-    <form className="checkout-form" noValidate onSubmit={onSubmit}>
+    <form className="checkout-form" aria-label="Checkout form" noValidate onSubmit={onSubmit}>
       <div className="checkout-form__grid">
         <div className="checkout-form__row checkout-form__row--two-columns">
           <TextField
@@ -99,12 +95,11 @@ export function CheckoutForm({
             label="Delivery method"
             value={formValues.deliveryMethod}
             onChange={(value) => {
-              onDeliveryMethodChange(
-                value as CheckoutFormValues["deliveryMethod"],
-              );
+              onDeliveryMethodChange(value as CheckoutFormValues["deliveryMethod"]);
             }}
           >
             <option value={DeliveryMethod.Standard}>Standard delivery</option>
+
             <option value={DeliveryMethod.Express}>Express delivery</option>
           </SelectField>
 
@@ -114,9 +109,7 @@ export function CheckoutForm({
             label="Payment method"
             value={formValues.paymentMethod}
             onChange={(value) => {
-              onPaymentMethodChange(
-                value as CheckoutFormValues["paymentMethod"],
-              );
+              onPaymentMethodChange(value as CheckoutFormValues["paymentMethod"]);
             }}
           >
             <option value={PaymentMethod.Cash}>Cash</option>
@@ -139,11 +132,7 @@ export function CheckoutForm({
         )}
 
         <div className="checkout-form__actions">
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            aria-busy={isSubmitting}
-          >
+          <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
             {isSubmitting ? "Placing order..." : "Place order"}
           </Button>
         </div>

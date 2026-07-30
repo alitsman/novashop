@@ -105,7 +105,9 @@ export function CartPageView({
                     />
 
                     <div className="cart-page__item-footer">
-                      <p className="cart-page__item-total">{item.itemTotalText}</p>
+                      <p className="cart-page__item-total" data-testid="item-total">
+                        {item.itemTotalText}
+                      </p>
 
                       <Button
                         className="cart-page__remove-button"

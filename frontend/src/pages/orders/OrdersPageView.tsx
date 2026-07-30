@@ -33,11 +33,7 @@ type OrdersPageViewProps = {
   errorMessage: string | null;
 };
 
-export function OrdersPageView({
-  orders,
-  isLoading,
-  errorMessage,
-}: OrdersPageViewProps) {
+export function OrdersPageView({ orders, isLoading, errorMessage }: OrdersPageViewProps) {
   const hasOrders = !isLoading && !errorMessage && orders.length > 0;
   const isEmpty = !isLoading && !errorMessage && orders.length === 0;
 
@@ -67,9 +63,7 @@ export function OrdersPageView({
         </div>
       )}
 
-      {errorMessage && (
-        <ErrorState title="Failed to load orders." description={errorMessage} />
-      )}
+      {errorMessage && <ErrorState title="Failed to load orders." description={errorMessage} />}
 
       {isEmpty && (
         <EmptyState
@@ -92,19 +86,14 @@ export function OrdersPageView({
               >
                 <header className="orders-page__card-header">
                   <div>
-                    <h2
-                      className="orders-page__card-title"
-                      id={`order-${order.id}-title`}
-                    >
+                    <h2 className="orders-page__card-title" id={`order-${order.id}-title`}>
                       {order.title}
                     </h2>
 
-                    <p className="orders-page__card-date">
-                      Placed on {order.createdAtText}
-                    </p>
+                    <p className="orders-page__card-date">Placed on {order.createdAtText}</p>
                   </div>
 
-                  <p className="orders-page__card-total">
+                  <p className="orders-page__card-total" data-testid="order-total">
                     {order.totalPriceText}
                   </p>
                 </header>
@@ -112,37 +101,32 @@ export function OrdersPageView({
                 <dl className="orders-page__details">
                   <div className="orders-page__detail">
                     <dt className="orders-page__detail-label">Items</dt>
-                    <dd className="orders-page__detail-value">
-                      {order.itemsCountText}
-                    </dd>
+
+                    <dd className="orders-page__detail-value">{order.itemsCountText}</dd>
                   </div>
 
                   <div className="orders-page__detail">
                     <dt className="orders-page__detail-label">Customer</dt>
-                    <dd className="orders-page__detail-value">
-                      {order.customerName}
-                    </dd>
+
+                    <dd className="orders-page__detail-value">{order.customerName}</dd>
                   </div>
 
                   <div className="orders-page__detail">
                     <dt className="orders-page__detail-label">Delivery</dt>
-                    <dd className="orders-page__detail-value">
-                      {order.deliveryMethodText}
-                    </dd>
+
+                    <dd className="orders-page__detail-value">{order.deliveryMethodText}</dd>
                   </div>
 
                   <div className="orders-page__detail">
                     <dt className="orders-page__detail-label">Payment</dt>
-                    <dd className="orders-page__detail-value">
-                      {order.paymentMethodText}
-                    </dd>
+
+                    <dd className="orders-page__detail-value">{order.paymentMethodText}</dd>
                   </div>
 
                   <div className="orders-page__detail orders-page__detail--wide">
                     <dt className="orders-page__detail-label">Address</dt>
-                    <dd className="orders-page__detail-value">
-                      {order.address}
-                    </dd>
+
+                    <dd className="orders-page__detail-value">{order.address}</dd>
                   </div>
                 </dl>
 
@@ -150,30 +134,22 @@ export function OrdersPageView({
                   className="orders-page__items-section"
                   aria-labelledby={`order-${order.id}-items-title`}
                 >
-                  <h3
-                    className="orders-page__items-title"
-                    id={`order-${order.id}-items-title`}
-                  >
+                  <h3 className="orders-page__items-title" id={`order-${order.id}-items-title`}>
                     Ordered products
                   </h3>
 
-                  <ul
-                    className="orders-page__products"
-                    aria-label={`Products in ${order.title}`}
-                  >
+                  <ul className="orders-page__products" aria-label={`Products in ${order.title}`}>
                     {order.items.map((item) => (
                       <li className="orders-page__product" key={item.productId}>
                         <div className="orders-page__product-main">
-                          <p className="orders-page__product-title">
-                            {item.title}
-                          </p>
+                          <p className="orders-page__product-title">{item.title}</p>
 
                           <p className="orders-page__product-meta">
                             {item.quantityText} × {item.priceText}
                           </p>
                         </div>
 
-                        <p className="orders-page__product-total">
+                        <p className="orders-page__product-total" data-testid="item-total">
                           {item.itemTotalText}
                         </p>
                       </li>

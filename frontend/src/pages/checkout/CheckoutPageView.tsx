@@ -101,7 +101,9 @@ export function CheckoutPageView({
                     </p>
                   </div>
 
-                  <p className="checkout-page__summary-item-total">{item.itemTotalText}</p>
+                  <p className="checkout-page__summary-item-total" data-testid="item-total">
+                    {item.itemTotalText}
+                  </p>
                 </li>
               ))}
             </ul>
