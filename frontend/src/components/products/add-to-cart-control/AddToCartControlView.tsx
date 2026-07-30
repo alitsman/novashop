@@ -140,7 +140,7 @@ export function AddToCartControlView({
 
         {quantityErrorMessage && (
           <p
-            className="add-to-cart-control__message add-to-cart-control__message--error"
+            className="add-to-cart-control__message add-to-cart-control__message--field-error"
             id={quantityErrorId}
             role="alert"
             data-testid="product-quantity-error"
@@ -153,7 +153,7 @@ export function AddToCartControlView({
       {cartErrorMessage && (
         <div className="add-to-cart-control__feedback">
           <p
-            className="add-to-cart-control__message add-to-cart-control__message--error"
+            className="add-to-cart-control__message add-to-cart-control__message--section-error"
             role="alert"
             data-testid="add-to-cart-error"
           >

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "../../components/common/confirm-dialog";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
@@ -13,11 +13,18 @@ import {
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { CartPageView, type CartPageItemViewModel } from "./CartPageView";
 
+type CartQuantityValidationState = {
+  invalidProductIds: Set<string>;
+  checkoutAttempted: boolean;
+};
+
 export function CartPage() {
   useDocumentTitle("Cart");
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  const quantityInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
 
   const cartItems = useAppSelector(selectCartItems);
   const totalPrice = useAppSelector(selectCartTotalPrice);
@@ -25,9 +32,11 @@ export function CartPage() {
   const isEmpty = useAppSelector(selectIsCartEmpty);
 
   const [productIdPendingRemoval, setProductIdPendingRemoval] = useState<string | null>(null);
-  const [invalidQuantityProductIds, setInvalidQuantityProductIds] = useState<Set<string>>(
-    () => new Set(),
-  );
+
+  const [quantityValidation, setQuantityValidation] = useState<CartQuantityValidationState>(() => ({
+    invalidProductIds: new Set(),
+    checkoutAttempted: false,
+  }));
 
   const itemPendingRemoval = cartItems.find((cartItem) => {
     return cartItem.productId === productIdPendingRemoval;
@@ -50,7 +59,10 @@ export function CartPage() {
   const totalPriceText = `Total: $${totalPrice.toFixed(2)}`;
   const totalQuantityText =
     totalQuantity === 1 ? "1 item in cart" : `${totalQuantity} items in cart`;
-  const hasInvalidQuantity = invalidQuantityProductIds.size > 0;
+
+  const hasInvalidQuantity = quantityValidation.invalidProductIds.size > 0;
+
+  const showCheckoutError = quantityValidation.checkoutAttempted && hasInvalidQuantity;
 
   const handleRequestRemoveItem = (productId: string) => {
     setProductIdPendingRemoval(productId);
@@ -73,28 +85,62 @@ export function CartPage() {
     dispatch(setQuantity({ productId, quantity }));
   };
 
+  const handleQuantityInputRef = useCallback(
+    (productId: string, input: HTMLInputElement | null) => {
+      if (input) {
+        quantityInputRefs.current.set(productId, input);
+        return;
+      }
+
+      quantityInputRefs.current.delete(productId);
+    },
+    [],
+  );
+
   const handleQuantityValidityChange = useCallback((productId: string, isValid: boolean) => {
-    setInvalidQuantityProductIds((currentProductIds) => {
+    setQuantityValidation((currentValidation) => {
       const shouldBeInvalid = !isValid;
 
-      if (currentProductIds.has(productId) === shouldBeInvalid) {
-        return currentProductIds;
+      if (currentValidation.invalidProductIds.has(productId) === shouldBeInvalid) {
+        return currentValidation;
       }
 
-      const nextProductIds = new Set(currentProductIds);
+      const nextInvalidProductIds = new Set(currentValidation.invalidProductIds);
 
       if (shouldBeInvalid) {
-        nextProductIds.add(productId);
+        nextInvalidProductIds.add(productId);
       } else {
-        nextProductIds.delete(productId);
+        nextInvalidProductIds.delete(productId);
       }
 
-      return nextProductIds;
+      return {
+        invalidProductIds: nextInvalidProductIds,
+        checkoutAttempted: nextInvalidProductIds.size > 0 && currentValidation.checkoutAttempted,
+      };
     });
   }, []);
 
   const handleCheckout = () => {
     if (hasInvalidQuantity) {
+      setQuantityValidation((currentValidation) => {
+        if (currentValidation.checkoutAttempted) {
+          return currentValidation;
+        }
+
+        return {
+          ...currentValidation,
+          checkoutAttempted: true,
+        };
+      });
+
+      const firstInvalidItem = cartItems.find((item) =>
+        quantityValidation.invalidProductIds.has(item.productId),
+      );
+
+      if (firstInvalidItem) {
+        quantityInputRefs.current.get(firstInvalidItem.productId)?.focus();
+      }
+
       return;
     }
 
@@ -108,10 +154,11 @@ export function CartPage() {
         items={items}
         totalPriceText={totalPriceText}
         totalQuantityText={totalQuantityText}
-        hasInvalidQuantity={hasInvalidQuantity}
+        showCheckoutError={showCheckoutError}
         onRequestRemoveItem={handleRequestRemoveItem}
         onQuantityChange={handleQuantityChange}
         onQuantityValidityChange={handleQuantityValidityChange}
+        onQuantityInputRef={handleQuantityInputRef}
         onCheckout={handleCheckout}
       />
 

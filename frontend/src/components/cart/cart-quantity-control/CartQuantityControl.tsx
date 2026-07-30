@@ -6,6 +6,7 @@ import {
   useEffect,
   useId,
   useState,
+  useCallback,
 } from "react";
 import {
   getDecreasedQuantity,
@@ -22,6 +23,7 @@ type CartQuantityControlProps = {
   stock: number;
   onQuantityChange: (productId: string, quantity: number) => void;
   onValidityChange: (productId: string, isValid: boolean) => void;
+  onInputRef: (productId: string, input: HTMLInputElement | null) => void;
 };
 
 // sourceQuantity is the external quantity this draft was created from.
@@ -62,6 +64,7 @@ export function CartQuantityControl({
   stock,
   onQuantityChange,
   onValidityChange,
+  onInputRef,
 }: CartQuantityControlProps) {
   const inputId = useId();
   const hintId = useId();
@@ -179,6 +182,13 @@ export function CartQuantityControl({
     }
   };
 
+  const handleInputRef = useCallback(
+    (input: HTMLInputElement | null) => {
+      onInputRef(productId, input);
+    },
+    [onInputRef, productId],
+  );
+
   return (
     <CartQuantityControlView
       inputId={inputId}
@@ -197,6 +207,7 @@ export function CartQuantityControl({
       onInputFocus={handleInputFocus}
       onInputKeyDown={handleInputKeyDown}
       onInputPaste={handleInputPaste}
+      inputRef={handleInputRef}
     />
   );
 }

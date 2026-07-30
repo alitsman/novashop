@@ -115,14 +115,19 @@
 
 .add-to-cart-control__message {
   margin: 0;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
   line-height: 1.5;
 }
 
-.add-to-cart-control__message--error {
+.add-to-cart-control__message--field-error {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+}
+
+.add-to-cart-control__message--section-error {
+  padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--color-danger);
-  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
   color: var(--color-danger);
 }
 

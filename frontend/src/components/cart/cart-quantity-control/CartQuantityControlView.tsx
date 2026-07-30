@@ -3,6 +3,7 @@ import {
   type ClipboardEventHandler,
   type FocusEventHandler,
   type KeyboardEventHandler,
+  type RefCallback,
 } from "react";
 import "./cart-quantity-control.css";
 
@@ -23,6 +24,7 @@ type CartQuantityControlViewProps = {
   onInputFocus: FocusEventHandler<HTMLInputElement>;
   onInputKeyDown: KeyboardEventHandler<HTMLInputElement>;
   onInputPaste: ClipboardEventHandler<HTMLInputElement>;
+  inputRef: RefCallback<HTMLInputElement>;
 };
 
 export function CartQuantityControlView({
@@ -42,6 +44,7 @@ export function CartQuantityControlView({
   onInputFocus,
   onInputKeyDown,
   onInputPaste,
+  inputRef,
 }: CartQuantityControlViewProps) {
   const describedBy = errorMessage ? `${hintId} ${errorId}` : hintId;
 
@@ -84,6 +87,7 @@ export function CartQuantityControlView({
           onPaste={onInputPaste}
           aria-invalid={Boolean(errorMessage)}
           aria-describedby={describedBy}
+          ref={inputRef}
         />
 
         <button
