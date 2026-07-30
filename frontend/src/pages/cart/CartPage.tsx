@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "../../components/common/confirm-dialog";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
@@ -16,6 +17,7 @@ export function CartPage() {
   useDocumentTitle("Cart");
 
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const cartItems = useAppSelector(selectCartItems);
   const totalPrice = useAppSelector(selectCartTotalPrice);
@@ -23,6 +25,9 @@ export function CartPage() {
   const isEmpty = useAppSelector(selectIsCartEmpty);
 
   const [productIdPendingRemoval, setProductIdPendingRemoval] = useState<string | null>(null);
+  const [invalidQuantityProductIds, setInvalidQuantityProductIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const itemPendingRemoval = cartItems.find((cartItem) => {
     return cartItem.productId === productIdPendingRemoval;
@@ -45,6 +50,7 @@ export function CartPage() {
   const totalPriceText = `Total: $${totalPrice.toFixed(2)}`;
   const totalQuantityText =
     totalQuantity === 1 ? "1 item in cart" : `${totalQuantity} items in cart`;
+  const hasInvalidQuantity = invalidQuantityProductIds.size > 0;
 
   const handleRequestRemoveItem = (productId: string) => {
     setProductIdPendingRemoval(productId);
@@ -67,6 +73,34 @@ export function CartPage() {
     dispatch(setQuantity({ productId, quantity }));
   };
 
+  const handleQuantityValidityChange = useCallback((productId: string, isValid: boolean) => {
+    setInvalidQuantityProductIds((currentProductIds) => {
+      const shouldBeInvalid = !isValid;
+
+      if (currentProductIds.has(productId) === shouldBeInvalid) {
+        return currentProductIds;
+      }
+
+      const nextProductIds = new Set(currentProductIds);
+
+      if (shouldBeInvalid) {
+        nextProductIds.add(productId);
+      } else {
+        nextProductIds.delete(productId);
+      }
+
+      return nextProductIds;
+    });
+  }, []);
+
+  const handleCheckout = () => {
+    if (hasInvalidQuantity) {
+      return;
+    }
+
+    void navigate("/checkout");
+  };
+
   return (
     <>
       <CartPageView
@@ -74,8 +108,11 @@ export function CartPage() {
         items={items}
         totalPriceText={totalPriceText}
         totalQuantityText={totalQuantityText}
+        hasInvalidQuantity={hasInvalidQuantity}
         onRequestRemoveItem={handleRequestRemoveItem}
         onQuantityChange={handleQuantityChange}
+        onQuantityValidityChange={handleQuantityValidityChange}
+        onCheckout={handleCheckout}
       />
 
       <ConfirmDialog

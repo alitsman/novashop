@@ -1,4 +1,9 @@
-import { type ChangeEventHandler, type FocusEventHandler } from "react";
+import {
+  type ChangeEventHandler,
+  type ClipboardEventHandler,
+  type FocusEventHandler,
+  type KeyboardEventHandler,
+} from "react";
 import "./cart-quantity-control.css";
 
 type CartQuantityControlViewProps = {
@@ -8,7 +13,7 @@ type CartQuantityControlViewProps = {
   title: string;
   inputValue: string;
   stock: number;
-  availableMessage: string;
+  quantityHint: string;
   errorMessage: string | null;
   canDecrease: boolean;
   canIncrease: boolean;
@@ -16,6 +21,8 @@ type CartQuantityControlViewProps = {
   onIncrease: () => void;
   onInputChange: ChangeEventHandler<HTMLInputElement>;
   onInputFocus: FocusEventHandler<HTMLInputElement>;
+  onInputKeyDown: KeyboardEventHandler<HTMLInputElement>;
+  onInputPaste: ClipboardEventHandler<HTMLInputElement>;
 };
 
 export function CartQuantityControlView({
@@ -25,7 +32,7 @@ export function CartQuantityControlView({
   title,
   inputValue,
   stock,
-  availableMessage,
+  quantityHint,
   errorMessage,
   canDecrease,
   canIncrease,
@@ -33,13 +40,19 @@ export function CartQuantityControlView({
   onIncrease,
   onInputChange,
   onInputFocus,
+  onInputKeyDown,
+  onInputPaste,
 }: CartQuantityControlViewProps) {
   const describedBy = errorMessage ? `${hintId} ${errorId}` : hintId;
 
   return (
-    <div className="cart-quantity-control">
-      <p className="cart-quantity-control__hint" id={hintId}>
-        {availableMessage}
+    <div
+      className="cart-quantity-control"
+      role="group"
+      aria-label={`Cart quantity controls for ${title}`}
+    >
+      <p className="cart-quantity-control__hint" id={hintId} data-testid="cart-quantity-hint">
+        {quantityHint}
       </p>
       <label className="cart-quantity-control__label" htmlFor={inputId}>
         Quantity for {title}
@@ -67,6 +80,8 @@ export function CartQuantityControlView({
           value={inputValue}
           onChange={onInputChange}
           onFocus={onInputFocus}
+          onKeyDown={onInputKeyDown}
+          onPaste={onInputPaste}
           aria-invalid={Boolean(errorMessage)}
           aria-describedby={describedBy}
         />

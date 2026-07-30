@@ -1,4 +1,18 @@
-import { type ChangeEvent, type FocusEvent, useId, useState } from "react";
+import {
+  type ChangeEvent,
+  type ClipboardEvent,
+  type FocusEvent,
+  type KeyboardEvent,
+  useEffect,
+  useId,
+  useState,
+} from "react";
+import {
+  getDecreasedQuantity,
+  getIncreasedQuantity,
+  isQuantityDraftAllowed,
+  isQuantityInputKeyBlocked,
+} from "../../../utils/quantityInput";
 import { CartQuantityControlView } from "./CartQuantityControlView";
 
 type CartQuantityControlProps = {
@@ -7,6 +21,7 @@ type CartQuantityControlProps = {
   quantity: number;
   stock: number;
   onQuantityChange: (productId: string, quantity: number) => void;
+  onValidityChange: (productId: string, isValid: boolean) => void;
 };
 
 // sourceQuantity is the external quantity this draft was created from.
@@ -34,7 +49,7 @@ function validateQuantityInput(value: string, stock: number): string | null {
   }
 
   if (parsedQuantity > stock) {
-    return `Only ${stock} items are available in stock.`;
+    return `Only ${stock} items are available in total.`;
   }
 
   return null;
@@ -46,6 +61,7 @@ export function CartQuantityControl({
   quantity,
   stock,
   onQuantityChange,
+  onValidityChange,
 }: CartQuantityControlProps) {
   const inputId = useId();
   const hintId = useId();
@@ -58,18 +74,26 @@ export function CartQuantityControl({
     };
   });
 
-  const inputValue =
-    inputDraft.sourceQuantity === quantity
-      ? inputDraft.value
-      : String(quantity);
+  const inputValue = inputDraft.sourceQuantity === quantity ? inputDraft.value : String(quantity);
 
   const errorMessage = validateQuantityInput(inputValue, stock);
-  const hasError = Boolean(errorMessage);
+  const parsedQuantity = Number(inputValue);
+  const isQuantityEmpty = inputValue === "";
 
-  const canDecrease = !hasError && quantity > 1;
-  const canIncrease = !hasError && quantity < stock;
+  const canDecrease = stock > 0 && !isQuantityEmpty && parsedQuantity > 1;
+  const canIncrease = stock > 0 && !isQuantityEmpty && parsedQuantity < stock;
 
-  const availableMessage = `Available: ${stock}`;
+  const quantityHint = `Choose a quantity from 1 to ${stock}.`;
+
+  useEffect(() => {
+    onValidityChange(productId, !errorMessage);
+  }, [errorMessage, onValidityChange, productId]);
+
+  useEffect(() => {
+    return () => {
+      onValidityChange(productId, true);
+    };
+  }, [onValidityChange, productId]);
 
   const updateQuantity = (nextQuantity: number) => {
     setInputDraft({
@@ -87,7 +111,7 @@ export function CartQuantityControl({
       return;
     }
 
-    updateQuantity(quantity - 1);
+    updateQuantity(getDecreasedQuantity(parsedQuantity, stock));
   };
 
   const handleIncrease = () => {
@@ -95,11 +119,15 @@ export function CartQuantityControl({
       return;
     }
 
-    updateQuantity(quantity + 1);
+    updateQuantity(getIncreasedQuantity(parsedQuantity, 1));
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = event.target.value;
+
+    if (!isQuantityDraftAllowed(nextValue)) {
+      return;
+    }
 
     setInputDraft({
       value: nextValue,
@@ -125,6 +153,32 @@ export function CartQuantityControl({
     event.target.select();
   };
 
+  const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (isQuantityInputKeyBlocked(event.key)) {
+      event.preventDefault();
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      handleDecrease();
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      handleIncrease();
+    }
+  };
+
+  const handleInputPaste = (event: ClipboardEvent<HTMLInputElement>) => {
+    const pastedText = event.clipboardData.getData("text");
+
+    if (!isQuantityDraftAllowed(pastedText)) {
+      event.preventDefault();
+    }
+  };
+
   return (
     <CartQuantityControlView
       inputId={inputId}
@@ -133,7 +187,7 @@ export function CartQuantityControl({
       title={title}
       inputValue={inputValue}
       stock={stock}
-      availableMessage={availableMessage}
+      quantityHint={quantityHint}
       errorMessage={errorMessage}
       canDecrease={canDecrease}
       canIncrease={canIncrease}
@@ -141,6 +195,8 @@ export function CartQuantityControl({
       onIncrease={handleIncrease}
       onInputChange={handleInputChange}
       onInputFocus={handleInputFocus}
+      onInputKeyDown={handleInputKeyDown}
+      onInputPaste={handleInputPaste}
     />
   );
 }

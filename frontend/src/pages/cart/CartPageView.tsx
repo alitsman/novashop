@@ -21,8 +21,11 @@ type CartPageViewProps = {
   items: CartPageItemViewModel[];
   totalPriceText: string;
   totalQuantityText: string;
+  hasInvalidQuantity: boolean;
   onRequestRemoveItem: (productId: string) => void;
   onQuantityChange: (productId: string, quantity: number) => void;
+  onQuantityValidityChange: (productId: string, isValid: boolean) => void;
+  onCheckout: () => void;
 };
 
 export function CartPageView({
@@ -30,8 +33,11 @@ export function CartPageView({
   items,
   totalPriceText,
   totalQuantityText,
+  hasInvalidQuantity,
   onRequestRemoveItem,
   onQuantityChange,
+  onQuantityValidityChange,
+  onCheckout,
 }: CartPageViewProps) {
   return (
     <section className="cart-page" aria-labelledby="cart-title">
@@ -92,6 +98,7 @@ export function CartPageView({
                       quantity={item.quantity}
                       stock={item.stock}
                       onQuantityChange={onQuantityChange}
+                      onValidityChange={onQuantityValidityChange}
                     />
 
                     <div className="cart-page__item-footer">
@@ -125,9 +132,20 @@ export function CartPageView({
               </p>
             </div>
 
-            <ActionLink className="cart-page__checkout-link" to="/checkout">
+            {hasInvalidQuantity && (
+              <p className="cart-page__checkout-hint" id="cart-checkout-hint">
+                Enter a valid quantity for each cart item before checkout.
+              </p>
+            )}
+
+            <Button
+              className="cart-page__checkout-link"
+              disabled={hasInvalidQuantity}
+              aria-describedby={hasInvalidQuantity ? "cart-checkout-hint" : undefined}
+              onClick={onCheckout}
+            >
               Go to checkout
-            </ActionLink>
+            </Button>
           </aside>
         </div>
       )}

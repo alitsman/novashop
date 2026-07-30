@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useRef, useState } from "react";
+import { type ClipboardEvent, type KeyboardEvent, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { useToast } from "../../common/toast";
 import {
@@ -8,6 +8,12 @@ import {
   selectCartItems,
 } from "../../../features/cart/cartSlice";
 import type { Product } from "../../../types/product";
+import {
+  getDecreasedQuantity,
+  getIncreasedQuantity,
+  isQuantityDraftAllowed,
+  isQuantityInputKeyBlocked,
+} from "../../../utils/quantityInput";
 
 type UseAddToCartControlParams = {
   product: Product;
@@ -34,6 +40,7 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
   const availableToAdd = Math.max(product.stock - quantityInCart, 0);
 
   const parsedQuantity = Number(quantityValue);
+  const isQuantityEmpty = quantityValue === "";
 
   const isQuantityDisabled = availableToAdd <= 0;
   const minQuantity = 1;
@@ -56,15 +63,16 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
         : "This product cannot be added right now.";
 
   const quantityErrorMessage = getQuantityErrorMessage({
+    quantityValue,
     quantity: parsedQuantity,
     availableToAdd,
   });
 
   const isQuantityValid = !quantityErrorMessage && availableToAdd > 0;
 
-  const isDecreaseDisabled = isQuantityDisabled || parsedQuantity <= minQuantity;
+  const isDecreaseDisabled = isQuantityDisabled || isQuantityEmpty || parsedQuantity <= minQuantity;
 
-  const isIncreaseDisabled = isQuantityDisabled || parsedQuantity >= maxQuantity;
+  const isIncreaseDisabled = isQuantityDisabled || isQuantityEmpty || parsedQuantity >= maxQuantity;
 
   const isAddToCartDisabled = !isQuantityValid;
 
@@ -78,7 +86,7 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
   const cartErrorMessage = lastActionProductId === product.id ? cartError : null;
 
   function handleQuantityChange(nextValue: string) {
-    if (!/^\d+$/.test(nextValue)) {
+    if (!isQuantityDraftAllowed(nextValue)) {
       return;
     }
 
@@ -91,9 +99,7 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
   }
 
   function handleQuantityKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    const blockedKeys = ["e", "E", "+", "-", ".", ","];
-
-    if (blockedKeys.includes(event.key)) {
+    if (isQuantityInputKeyBlocked(event.key)) {
       event.preventDefault();
       return;
     }
@@ -110,12 +116,20 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
     }
   }
 
+  function handleQuantityPaste(event: ClipboardEvent<HTMLInputElement>) {
+    const pastedText = event.clipboardData.getData("text");
+
+    if (!isQuantityDraftAllowed(pastedText)) {
+      event.preventDefault();
+    }
+  }
+
   function handleDecreaseQuantity() {
     if (isDecreaseDisabled) {
       return;
     }
 
-    const nextQuantity = parsedQuantity > maxQuantity ? maxQuantity : parsedQuantity - 1;
+    const nextQuantity = getDecreasedQuantity(parsedQuantity, maxQuantity);
 
     setQuantityValue(String(nextQuantity));
     dispatch(clearCartError());
@@ -126,7 +140,7 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
       return;
     }
 
-    const nextQuantity = parsedQuantity < minQuantity ? minQuantity : parsedQuantity + 1;
+    const nextQuantity = getIncreasedQuantity(parsedQuantity, minQuantity);
 
     setQuantityValue(String(nextQuantity));
     dispatch(clearCartError());
@@ -189,6 +203,7 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
     onQuantityChange: handleQuantityChange,
     onQuantityFocus: handleQuantityFocus,
     onQuantityKeyDown: handleQuantityKeyDown,
+    onQuantityPaste: handleQuantityPaste,
     onDecreaseQuantity: handleDecreaseQuantity,
     onIncreaseQuantity: handleIncreaseQuantity,
     onAddToCart: handleAddToCart,
@@ -196,13 +211,22 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
 }
 
 type QuantityValidationParams = {
+  quantityValue: string;
   quantity: number;
   availableToAdd: number;
 };
 
-function getQuantityErrorMessage({ quantity, availableToAdd }: QuantityValidationParams) {
+function getQuantityErrorMessage({
+  quantityValue,
+  quantity,
+  availableToAdd,
+}: QuantityValidationParams) {
   if (availableToAdd <= 0) {
     return null;
+  }
+
+  if (quantityValue === "") {
+    return "Enter a quantity.";
   }
 
   if (quantity < 1) {

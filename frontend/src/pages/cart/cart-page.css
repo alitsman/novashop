@@ -152,6 +152,12 @@
   font-weight: 700;
 }
 
+.cart-page__checkout-hint {
+  margin: 0;
+  color: var(--color-danger);
+  line-height: 1.5;
+}
+
 @media (min-width: 640px) {
   .cart-page__product {
     grid-template-columns: 10rem minmax(0, 1fr);

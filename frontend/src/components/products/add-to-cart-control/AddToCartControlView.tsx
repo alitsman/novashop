@@ -1,4 +1,4 @@
-import type { KeyboardEvent, RefObject } from "react";
+import type { ClipboardEvent, KeyboardEvent, RefObject } from "react";
 import { Button } from "../../common/button";
 import "./add-to-cart-control.css";
 
@@ -33,6 +33,7 @@ type AddToCartControlViewProps = {
   onQuantityChange: (value: string) => void;
   onQuantityFocus: () => void;
   onQuantityKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
+  onQuantityPaste: (event: ClipboardEvent<HTMLInputElement>) => void;
   onDecreaseQuantity: () => void;
   onIncreaseQuantity: () => void;
   onAddToCart: () => void;
@@ -62,6 +63,7 @@ export function AddToCartControlView({
   onQuantityChange,
   onQuantityFocus,
   onQuantityKeyDown,
+  onQuantityPaste,
   onDecreaseQuantity,
   onIncreaseQuantity,
   onAddToCart,
@@ -114,6 +116,7 @@ export function AddToCartControlView({
             onChange={(event) => onQuantityChange(event.target.value)}
             onFocus={onQuantityFocus}
             onKeyDown={onQuantityKeyDown}
+            onPaste={onQuantityPaste}
           />
 
           <button
