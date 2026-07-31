@@ -130,7 +130,9 @@ export function CartPageView({
             </h2>
 
             <div className="cart-page__summary-details">
-              <p className="cart-page__summary-text">{totalQuantityText}</p>
+              <p className="cart-page__summary-text" data-testid="cart-summary-quantity">
+                {totalQuantityText}
+              </p>
 
               <p className="cart-page__summary-total" role="status">
                 {totalPriceText}
