@@ -60,15 +60,21 @@ export function ProductDetailsPageView({
           </div>
 
           <div className="product-details-page__info">
-            <p className="product-details-page__category">{product.category}</p>
+            <p className="product-details-page__category" data-testid="product-category">
+              {product.category}
+            </p>
 
             <h1 id="product-details-title" className="product-details-page__title">
               {product.title}
             </h1>
 
-            <p className="product-details-page__description">{product.description}</p>
+            <p className="product-details-page__description" data-testid="product-description">
+              {product.description}
+            </p>
 
-            <p className="product-details-page__price">${product.price.toFixed(2)}</p>
+            <p className="product-details-page__price" data-testid="product-price">
+              ${product.price.toFixed(2)}
+            </p>
 
             <div className="product-details-page__purchase-options">
               <h2 className="product-details-page__purchase-title">Purchase options</h2>
