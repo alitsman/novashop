@@ -27,6 +27,7 @@ test.describe("login", () => {
 
     const catalogPage = new ProductCatalogPage(page);
 
+    await expect(catalogPage.heading).toBeVisible();
     await expect(catalogPage.header.currentUserName).toHaveText("Regular User");
     await expect(catalogPage.header.logoutButton).toBeVisible();
   });

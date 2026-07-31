@@ -5,6 +5,7 @@ import { HeaderComponent } from "../components/header.component";
 export class ProductCatalogPage {
   private readonly page: Page;
 
+  readonly heading: Locator;
   readonly searchInput: Locator;
   readonly clearSearchButton: Locator;
   readonly categorySelect: Locator;
@@ -21,30 +22,35 @@ export class ProductCatalogPage {
   constructor(page: Page) {
     this.page = page;
 
-    this.searchInput = page.getByRole("searchbox", {
+    this.heading = this.page.getByRole("heading", {
+      name: "Products",
+      level: 1,
+      exact: true,
+    });
+    this.searchInput = this.page.getByRole("searchbox", {
       name: "Search products by name",
     });
-    this.clearSearchButton = page.getByRole("button", {
+    this.clearSearchButton = this.page.getByRole("button", {
       name: "Clear search",
       exact: true,
     });
-    this.categorySelect = page.getByLabel("Filter by category");
-    this.sortSelect = page.getByLabel("Sort products by price");
-    this.clearFiltersButton = page.getByRole("button", {
+    this.categorySelect = this.page.getByLabel("Filter by category");
+    this.sortSelect = this.page.getByLabel("Sort products by price");
+    this.clearFiltersButton = this.page.getByRole("button", {
       name: "Clear filters",
       exact: true,
     });
-    this.productsStatus = page.getByTestId("products-status");
-    this.noResultsTitle = page.getByRole("heading", {
+    this.productsStatus = this.page.getByTestId("products-status");
+    this.noResultsTitle = this.page.getByRole("heading", {
       name: "No products found.",
       exact: true,
     });
-    this.emptyCatalogTitle = page.getByRole("heading", {
+    this.emptyCatalogTitle = this.page.getByRole("heading", {
       name: "No products available.",
       exact: true,
     });
     this.header = new HeaderComponent(page);
-    this.productList = page.getByRole("list", {
+    this.productList = this.page.getByRole("list", {
       name: "Products list",
     });
     this.productCards = this.productList.getByRole("article");
