@@ -167,12 +167,7 @@ export function useAddToCartControl({ product, variant }: UseAddToCartControlPar
 
     setLastActionProductId(product.id);
     showToast(`${product.title} added to cart.`);
-
-    const nextAvailableToAdd = availableToAdd - parsedQuantity;
-
-    if (nextAvailableToAdd > 0 && parsedQuantity > nextAvailableToAdd) {
-      setQuantityValue("1");
-    }
+    setQuantityValue("1");
   }
 
   return {
