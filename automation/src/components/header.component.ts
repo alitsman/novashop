@@ -14,6 +14,7 @@ export class HeaderComponent {
     const root = page.getByRole("banner");
 
     this.currentUserName = root.getByTestId("current-user-name");
+
     this.logoutButton = root.getByRole("button", {
       name: "Logout",
       exact: true,
@@ -24,7 +25,9 @@ export class HeaderComponent {
       exact: true,
     });
 
-    this.cartLink = root.getByRole("link", { name: /^Cart,/ });
+    this.cartLink = root.getByRole("link", {
+      name: /^Cart,/,
+    });
 
     this.myOrdersLink = root.getByRole("link", {
       name: "My orders",
@@ -35,6 +38,10 @@ export class HeaderComponent {
       name: "Manage products",
       exact: true,
     });
+  }
+
+  async openCart(): Promise<void> {
+    await this.cartLink.click();
   }
 
   async logout(): Promise<void> {

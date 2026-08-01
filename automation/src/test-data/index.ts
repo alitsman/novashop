@@ -1,0 +1,15 @@
+export {
+  ADD_TO_CART_PRODUCT_A,
+  ADD_TO_CART_PRODUCT_B,
+  ADD_TO_CART_PRODUCTS,
+} from "./add-to-cart.data";
+
+export {
+  CATALOG_PRODUCTS,
+  EMPTY_CATALOG_PRODUCTS,
+  OUT_OF_STOCK_PRODUCT,
+  QUANTITY_PRODUCT,
+  QUANTITY_PRODUCTS,
+} from "./product-catalog.data";
+
+export { createProduct } from "./product.factory";

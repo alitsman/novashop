@@ -1,15 +1,17 @@
 import { test, expect } from "@playwright/test";
-import { ProductCatalogPage } from "../../src/pages/product-catalog.page";
-import { authenticateAsRegularUser } from "../../src/helpers/auth.helper";
-import { prepareProductCatalog } from "../../src/helpers/product-catalog.helper";
+import { ProductCatalogPage } from "../../src/pages";
+import {
+  authenticateAsRegularUser,
+  prepareProductCatalog,
+} from "../../src/helpers";
 import {
   CATALOG_PRODUCTS,
   EMPTY_CATALOG_PRODUCTS,
   QUANTITY_PRODUCTS,
   QUANTITY_PRODUCT,
   OUT_OF_STOCK_PRODUCT,
-} from "../../src/test-data/product-catalog.data";
-import { createProduct } from "../../src/test-data/product.factory";
+  createProduct,
+} from "../../src/test-data";
 
 test.describe("product catalog", () => {
   let catalogPage: ProductCatalogPage;

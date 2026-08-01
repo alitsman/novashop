@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import type { Product } from "../types/product";
+import type { Product } from "../types";
 
 const PRODUCTS_STORAGE_KEY = "novashop-products";
 

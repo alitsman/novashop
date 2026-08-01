@@ -1,6 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
-import { ProductCardComponent } from "../components/product-card.component";
-import { HeaderComponent } from "../components/header.component";
+import { ProductCardComponent, HeaderComponent } from "../components";
 
 export class ProductCatalogPage {
   private readonly page: Page;

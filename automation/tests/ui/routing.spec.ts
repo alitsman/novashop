@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { LoginPage } from "../../src/pages/login.page";
+import { LoginPage } from "../../src/pages";
 
 const protectedRoutes = [
   "/products",

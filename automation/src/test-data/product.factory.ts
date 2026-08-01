@@ -1,4 +1,4 @@
-import type { Product } from "../types/product";
+import type { Product } from "../types";
 
 const DEFAULT_PRODUCT: Product = {
   id: "test-product",

@@ -1,5 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
-import { AddToCartControlComponent } from "../components/add-to-cart-control.component";
+import { AddToCartControlComponent } from "../components";
 
 export class ProductDetailsPage {
   private readonly page: Page;

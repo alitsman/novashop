@@ -1,5 +1,6 @@
 import type { Locator } from "@playwright/test";
-import { pasteText } from "../helpers/clipboard.helper";
+import { pasteText } from "../helpers";
+
 type QuantityArrowKey = "ArrowUp" | "ArrowDown";
 
 export class CartItemComponent {
