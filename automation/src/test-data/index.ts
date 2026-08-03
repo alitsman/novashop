@@ -12,4 +12,6 @@ export {
   QUANTITY_PRODUCTS,
 } from "./product-catalog.data";
 
+export { ADMIN_USER, REGULAR_USER } from "./account.data";
+
 export { createProduct } from "./product.factory";

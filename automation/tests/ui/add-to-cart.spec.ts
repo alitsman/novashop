@@ -5,11 +5,9 @@ import {
   ProductDetailsPage,
 } from "../../src/pages";
 import { HeaderComponent, ToastComponent } from "../../src/components";
+import { authenticateUser, prepareProductCatalog } from "../../src/helpers";
 import {
-  authenticateAsRegularUser,
-  prepareProductCatalog,
-} from "../../src/helpers";
-import {
+  REGULAR_USER,
   ADD_TO_CART_PRODUCT_A,
   ADD_TO_CART_PRODUCT_B,
   ADD_TO_CART_PRODUCTS,
@@ -29,7 +27,7 @@ test.describe("add to cart", () => {
   let header: HeaderComponent;
 
   test.beforeEach(async ({ page }) => {
-    await authenticateAsRegularUser(page);
+    await authenticateUser(page, REGULAR_USER);
 
     const catalogProducts = ADD_TO_CART_PRODUCTS.map((product) =>
       createProduct(product),

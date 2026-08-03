@@ -1,10 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { ProductCatalogPage } from "../../src/pages";
+import { authenticateUser, prepareProductCatalog } from "../../src/helpers";
 import {
-  authenticateAsRegularUser,
-  prepareProductCatalog,
-} from "../../src/helpers";
-import {
+  REGULAR_USER,
   CATALOG_PRODUCTS,
   EMPTY_CATALOG_PRODUCTS,
   QUANTITY_PRODUCTS,
@@ -17,7 +15,7 @@ test.describe("product catalog", () => {
   let catalogPage: ProductCatalogPage;
 
   test.beforeEach(async ({ page }) => {
-    await authenticateAsRegularUser(page);
+    await authenticateUser(page, REGULAR_USER);
 
     const products = CATALOG_PRODUCTS.map((product) => createProduct(product));
     await prepareProductCatalog(page, products);
@@ -175,7 +173,7 @@ test.describe("empty product catalog", () => {
   let catalogPage: ProductCatalogPage;
 
   test.beforeEach(async ({ page }) => {
-    await authenticateAsRegularUser(page);
+    await authenticateUser(page, REGULAR_USER);
 
     await prepareProductCatalog(page, EMPTY_CATALOG_PRODUCTS);
 
@@ -198,7 +196,7 @@ test.describe("product quantity", () => {
   let catalogPage: ProductCatalogPage;
 
   test.beforeEach(async ({ page }) => {
-    await authenticateAsRegularUser(page);
+    await authenticateUser(page, REGULAR_USER);
 
     const products = QUANTITY_PRODUCTS.map((product) => createProduct(product));
     await prepareProductCatalog(page, products);
