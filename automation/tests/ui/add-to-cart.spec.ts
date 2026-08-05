@@ -6,6 +6,7 @@ import {
 } from "../../src/pages";
 import { HeaderComponent, ToastComponent } from "../../src/components";
 import { authenticateUser, prepareProductCatalog } from "../../src/helpers";
+import { formatUsd } from "../../src/utils";
 import {
   REGULAR_USER,
   ADD_TO_CART_PRODUCT_A,
@@ -15,10 +16,6 @@ import {
 } from "../../src/test-data";
 
 const TOAST_AUTO_DISMISS_TIMEOUT_MS = 8_000;
-
-function formatUsd(amount: number): string {
-  return `$${amount.toFixed(2)}`;
-}
 
 test.describe("add to cart", () => {
   let catalogPage: ProductCatalogPage;

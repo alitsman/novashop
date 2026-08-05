@@ -1,5 +1,9 @@
 import type { Locator, Page } from "@playwright/test";
-import { CartItemComponent, HeaderComponent } from "../components";
+import {
+  CartItemComponent,
+  ConfirmDialogComponent,
+  HeaderComponent,
+} from "../components";
 
 export class CartPage {
   private readonly page: Page;
@@ -12,6 +16,7 @@ export class CartPage {
   readonly continueShoppingLink: Locator;
 
   readonly cartItemsList: Locator;
+  readonly cartItemTitles: Locator;
   readonly cartItems: Locator;
 
   readonly orderSummaryBlock: Locator;
@@ -19,6 +24,8 @@ export class CartPage {
   readonly summaryTotal: Locator;
   readonly goToCheckoutButton: Locator;
   readonly checkoutError: Locator;
+
+  readonly removeItemDialog: ConfirmDialogComponent;
 
   constructor(page: Page) {
     this.page = page;
@@ -51,6 +58,8 @@ export class CartPage {
       exact: true,
     });
 
+    this.cartItemTitles = this.cartItemsList.getByRole("heading", { level: 2 });
+
     this.cartItems = this.cartItemsList.getByRole("listitem");
 
     this.orderSummaryBlock = this.page.getByRole("complementary", {
@@ -70,6 +79,20 @@ export class CartPage {
     });
 
     this.checkoutError = this.orderSummaryBlock.getByRole("alert");
+
+    const removeItemDialogRoot = this.page.getByRole("dialog", {
+      name: "Remove item from cart?",
+      exact: true,
+    });
+
+    this.removeItemDialog = new ConfirmDialogComponent(removeItemDialogRoot, {
+      confirmLabel: "Remove item",
+      cancelLabel: "Cancel",
+    });
+  }
+
+  async open(): Promise<void> {
+    await this.page.goto("/cart");
   }
 
   getCartItem(title: string): CartItemComponent {

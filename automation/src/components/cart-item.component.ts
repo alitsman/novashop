@@ -1,7 +1,7 @@
 import type { Locator } from "@playwright/test";
 import { pasteText } from "../helpers";
 
-type QuantityArrowKey = "ArrowUp" | "ArrowDown";
+type QuantityKey = "ArrowUp" | "ArrowDown" | "Backspace";
 
 export class CartItemComponent {
   private readonly root: Locator;
@@ -58,7 +58,7 @@ export class CartItemComponent {
     await this.quantityInput.fill(amount);
   }
 
-  async pressQuantityKey(key: QuantityArrowKey, count = 1): Promise<void> {
+  async pressQuantityKey(key: QuantityKey, count = 1): Promise<void> {
     for (let i = 0; i < count; i++) {
       await this.quantityInput.press(key);
     }

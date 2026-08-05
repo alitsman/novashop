@@ -12,6 +12,9 @@ export {
   QUANTITY_PRODUCTS,
 } from "./product-catalog.data";
 
+export { CART_ITEM_A, CART_ITEM_B, CART_ITEMS } from "./cart.data";
+
 export { ADMIN_USER, REGULAR_USER } from "./account.data";
 
 export { createProduct } from "./product.factory";
+export { createCartItem } from "./cart-item.factory";
