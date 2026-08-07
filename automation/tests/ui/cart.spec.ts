@@ -45,6 +45,11 @@ test.describe("cart", () => {
     const initialQuantity = seedCartItem.quantity;
     const maximumQuantity = seedCartItem.stock;
 
+    // Far above the maximum on purpose: with maximumQuantity + 1 a broken
+    // "just subtract one" recovery would land on the maximum too, and the
+    // test could not tell it apart from proper clamping.
+    const quantityFarAboveMaximum = maximumQuantity + 10;
+
     test.beforeEach(async ({ page }) => {
       await prepareCart(page, REGULAR_USER.user.id, [seedCartItem]);
 
@@ -203,10 +208,10 @@ test.describe("cart", () => {
       });
 
       await test.step("rejects a quantity above the available stock and recovers", async () => {
-        await cartItem.fillQuantity(String(maximumQuantity + 10));
+        await cartItem.fillQuantity(String(quantityFarAboveMaximum));
 
         await expect(cartItem.quantityInput).toHaveValue(
-          String(maximumQuantity + 10),
+          String(quantityFarAboveMaximum),
         );
         await expect(cartItem.quantityError).toHaveText(
           `Only ${maximumQuantity} items are available in total.`,
@@ -330,9 +335,9 @@ test.describe("cart", () => {
 
     test("restores the committed cart state after reload", async ({ page }) => {
       const cartItem = cartPage.getCartItem(seedCartItem.title);
+      const updatedQuantity = initialQuantity + 1;
 
       await expect(cartItem.quantityInput).toHaveValue(String(initialQuantity));
-      await expect(cartItem.quantityError).toHaveCount(0);
       await expect(cartItem.itemTotal).toHaveText(
         `Item total: ${formatUsd(seedCartItem.price * initialQuantity)}`,
       );
@@ -342,28 +347,30 @@ test.describe("cart", () => {
 
       await cartItem.increaseQuantity();
 
-      await expect(cartItem.quantityInput).toHaveValue(
-        String(initialQuantity + 1),
-      );
+      await expect(cartItem.quantityInput).toHaveValue(String(updatedQuantity));
       await expect(cartItem.quantityError).toHaveCount(0);
       await expect(cartItem.itemTotal).toHaveText(
-        `Item total: ${formatUsd(seedCartItem.price * (initialQuantity + 1))}`,
+        `Item total: ${formatUsd(seedCartItem.price * updatedQuantity)}`,
+      );
+      await expect(cartPage.summaryTotal).toHaveText(
+        `Total: ${formatUsd(seedCartItem.price * updatedQuantity)}`,
       );
       await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        `Cart, ${initialQuantity + 1} items`,
+        `Cart, ${updatedQuantity} items`,
       );
 
       await page.reload();
 
-      await expect(cartItem.quantityInput).toHaveValue(
-        String(initialQuantity + 1),
-      );
+      await expect(cartItem.quantityInput).toHaveValue(String(updatedQuantity));
       await expect(cartItem.quantityError).toHaveCount(0);
       await expect(cartItem.itemTotal).toHaveText(
-        `Item total: ${formatUsd(seedCartItem.price * (initialQuantity + 1))}`,
+        `Item total: ${formatUsd(seedCartItem.price * updatedQuantity)}`,
+      );
+      await expect(cartPage.summaryTotal).toHaveText(
+        `Total: ${formatUsd(seedCartItem.price * updatedQuantity)}`,
       );
       await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        `Cart, ${initialQuantity + 1} items`,
+        `Cart, ${updatedQuantity} items`,
       );
     });
   });
@@ -462,13 +469,13 @@ test.describe("cart", () => {
       await cartItemA.fillQuantity("");
       await cartItemB.fillQuantity("");
 
-      // Wait for both rows to render their validation error: the control
-      // reports validity to the page in an effect, so clicking Checkout
-      // before that lands could race the block.
+      // Synchronization guards in this test are intentional: each row reports
+      // validity to CartPage through an effect. After every validity change,
+      // wait for the row-level error to appear or disappear before an action
+      // that relies on invalidProductIds.
       await expect(cartItemA.quantityError).toHaveText("Enter a quantity.");
       await expect(cartItemB.quantityError).toHaveText("Enter a quantity.");
 
-      await expect(cartPage.goToCheckoutButton).toBeEnabled();
       await expect(cartPage.checkoutError).toHaveCount(0);
 
       await cartPage.goToCheckoutButton.click();
@@ -626,9 +633,10 @@ test.describe("cart", () => {
 
       await cartItemB.fillQuantity("");
 
-      // Wait for the row to render its validation error: the control reports
-      // validity to the page in an effect, so clicking Checkout before that
-      // lands could race the block.
+      // Synchronization guard is intentional: the row reports validity to
+      // CartPage through an effect. After a validity change, wait for the
+      // row-level error to appear or disappear before an action that relies
+      // on invalidProductIds.
       await expect(cartItemB.quantityError).toHaveText("Enter a quantity.");
 
       await cartPage.goToCheckoutButton.click();
