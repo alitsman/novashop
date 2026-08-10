@@ -25,4 +25,5 @@ const requireEnv = (name: string, value: string | undefined): string => {
 export const env = {
   port: parsePort(process.env.PORT),
   databaseUrl: requireEnv("DATABASE_URL", process.env.DATABASE_URL),
+  jwtSecret: requireEnv("JWT_SECRET", process.env.JWT_SECRET),
 };

@@ -1,5 +1,5 @@
 import { pool } from "./pool.js";
 
-export const checkDbConnection = async (): Promise<void> => {
+export async function checkDbConnection(): Promise<void> {
   await pool.query("SELECT 1;");
-};
+}

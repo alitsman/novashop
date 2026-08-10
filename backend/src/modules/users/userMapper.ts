@@ -1,4 +1,4 @@
-import type { SeedUserData, User, UserDbRow, UserInsertData } from "./user.types.js";
+import type { SeedUserData, User, UserDbRow, UserInsertData } from "./userTypes.js";
 
 export const mapSeedUserToUserInsertData = (
   user: SeedUserData,

@@ -1,4 +1,4 @@
-import type { Product, ProductDbRow, ProductInsertData, SeedProductData } from "./product.types.js";
+import type { Product, ProductDbRow, ProductInsertData, SeedProductData } from "./productTypes.js";
 
 export const mapSeedProductToProductInsertData = (product: SeedProductData): ProductInsertData => {
   return {

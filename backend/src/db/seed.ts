@@ -5,10 +5,11 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { PoolClient } from "pg";
 
-import { mapSeedProductToProductInsertData } from "../modules/products/product.mapper.js";
-import type { ProductInsertData, SeedProductData } from "../modules/products/product.types.js";
-import { mapSeedUserToUserInsertData } from "../modules/users/user.mapper.js";
-import type { SeedUserData, UserInsertData } from "../modules/users/user.types.js";
+import { mapSeedProductToProductInsertData } from "../modules/products/index.js";
+import type { ProductInsertData, SeedProductData } from "../modules/products/index.js";
+import { mapSeedUserToUserInsertData } from "../modules/users/index.js";
+import type { SeedUserData, UserInsertData } from "../modules/users/index.js";
+
 import { pool } from "./pool.js";
 
 const BCRYPT_SALT_ROUNDS = 10;

@@ -1,9 +1,8 @@
 import cors from "cors";
 import express from "express";
 
-import { checkDbConnection } from "./db/check-db-connection.js";
-import { errorHandler } from "./middleware/error-handler.js";
-import { notFoundHandler } from "./middleware/not-found-handler.js";
+import { checkDbConnection } from "./db/index.js";
+import { errorHandler, notFoundHandler } from "./middleware/index.js";
 
 export const app = express();
 
