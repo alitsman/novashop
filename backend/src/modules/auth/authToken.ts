@@ -1,5 +1,7 @@
-import { TokenExpiredError, sign, verify } from "jsonwebtoken";
+import jsonwebtoken from "jsonwebtoken";
 import type { JwtPayload } from "jsonwebtoken";
+
+const { TokenExpiredError, sign, verify } = jsonwebtoken;
 
 import { env } from "../../config/env.js";
 import { AppError } from "../../errors/index.js";
@@ -22,6 +24,7 @@ export function createAuthToken(user: AuthTokenUser): string {
     },
     env.jwtSecret,
     {
+      algorithm: "HS256",
       subject: user.id,
       expiresIn: "7d",
     },
@@ -32,7 +35,9 @@ export function verifyAuthToken(token: string): AuthTokenPayload {
   let payload: string | JwtPayload;
 
   try {
-    payload = verify(token, env.jwtSecret);
+    payload = verify(token, env.jwtSecret, {
+      algorithms: ["HS256"],
+    });
   } catch (error) {
     if (error instanceof TokenExpiredError) {
       throw new AppError("Your session has expired", 401, "TOKEN_EXPIRED");

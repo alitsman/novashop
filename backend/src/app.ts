@@ -4,6 +4,8 @@ import express from "express";
 import { checkDbConnection } from "./db/index.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
 
+import { authRouter } from "./modules/auth/index.js";
+
 export const app = express();
 
 app.use(cors());
@@ -29,6 +31,8 @@ app.get("/health/db", async (_request, response, next) => {
     next(error);
   }
 });
+
+app.use("/auth", authRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
