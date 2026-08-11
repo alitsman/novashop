@@ -21,16 +21,31 @@ export default defineConfig({
 
   projects: [
     {
+      name: "api",
+      testMatch: "api/**/*.spec.ts",
+      use: {
+        baseURL: "http://localhost:4000",
+      },
+    },
+    {
       name: "chromium",
+      testMatch: "ui/**/*.spec.ts",
       use: {
         browserName: "chromium",
       },
     },
   ],
 
-  webServer: {
-    command: "npm --prefix ../frontend run dev",
-    url: "http://localhost:5173",
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: "npm --prefix ../frontend run dev",
+      url: "http://localhost:5173",
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: "npm --prefix ../backend run dev",
+      url: "http://localhost:4000/health",
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 });

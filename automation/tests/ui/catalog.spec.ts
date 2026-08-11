@@ -26,7 +26,7 @@ test.describe("product catalog", () => {
     await expect(
       catalogPage.header.currentUserName,
       "Regular user session should be restored",
-    ).toHaveText("Regular User");
+    ).toHaveText(REGULAR_USER.user.name);
   });
 
   test("shows the complete catalog in default order", async () => {
@@ -183,7 +183,7 @@ test.describe("empty product catalog", () => {
     await expect(
       catalogPage.header.currentUserName,
       "Regular user session should be restored",
-    ).toHaveText("Regular User");
+    ).toHaveText(REGULAR_USER.user.name);
   });
 
   test("shows the empty-catalog state when no products are available", async () => {
@@ -207,7 +207,7 @@ test.describe("product quantity", () => {
     await expect(
       catalogPage.header.currentUserName,
       "Regular user session should be restored",
-    ).toHaveText("Regular User");
+    ).toHaveText(REGULAR_USER.user.name);
   });
 
   test("changes quantity with increment and decrement buttons", async () => {

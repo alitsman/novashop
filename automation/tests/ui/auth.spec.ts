@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage, ProductCatalogPage } from "../../src/pages";
+import { ADMIN_USER, REGULAR_USER } from "../../src/test-data";
+
+const INVALID_PASSWORD = "wrongPassword";
 
 test.describe("login", () => {
   let loginPage: LoginPage;
@@ -10,7 +13,7 @@ test.describe("login", () => {
   });
 
   test("invalid credentials: shows an error", async () => {
-    await loginPage.signIn("admin@test.com", "wrongPassword");
+    await loginPage.signIn(ADMIN_USER.user.email, INVALID_PASSWORD);
 
     await expect(loginPage.errorMessage).toHaveText(
       "Email address or password is incorrect.",
@@ -20,14 +23,16 @@ test.describe("login", () => {
   });
 
   test("regular user: signs in successfully", async ({ page }) => {
-    await loginPage.signIn("user@test.com", "user123");
+    await loginPage.signIn(REGULAR_USER.user.email, REGULAR_USER.password);
 
     await expect(page).toHaveURL("/products");
 
     const catalogPage = new ProductCatalogPage(page);
 
     await expect(catalogPage.heading).toBeVisible();
-    await expect(catalogPage.header.currentUserName).toHaveText("Regular User");
+    await expect(catalogPage.header.currentUserName).toHaveText(
+      REGULAR_USER.user.name,
+    );
     await expect(catalogPage.header.logoutButton).toBeVisible();
   });
 });
