@@ -2,7 +2,8 @@ import * as bcrypt from "bcrypt";
 
 import { pool } from "../../db/index.js";
 import { AppError } from "../../errors/index.js";
-import { mapUserRowToUser, type User, type UserDbRow } from "../users/index.js";
+import { mapUserRowToUser } from "../users/userMapper.js";
+import type { User, UserDbRow } from "../users/userTypes.js";
 
 import type { LoginInput } from "./authSchema.js";
 import { createAuthToken } from "./authToken.js";

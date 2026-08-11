@@ -5,7 +5,7 @@ const { TokenExpiredError, sign, verify } = jsonwebtoken;
 
 import { env } from "../../config/env.js";
 import { AppError } from "../../errors/index.js";
-import { UserRole } from "../users/index.js";
+import { UserRole } from "../users/userTypes.js";
 
 type AuthTokenUser = {
   id: string;

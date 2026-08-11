@@ -5,6 +5,7 @@ import { checkDbConnection } from "./db/index.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
 
 import { authRouter } from "./modules/auth/index.js";
+import { userRouter } from "./modules/users/index.js";
 
 export const app = express();
 
@@ -33,6 +34,7 @@ app.get("/health/db", async (_request, response, next) => {
 });
 
 app.use("/auth", authRouter);
+app.use(userRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
