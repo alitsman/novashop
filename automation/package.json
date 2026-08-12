@@ -2,6 +2,7 @@
   "name": "novashop-automation",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Playwright test automation for NovaShop.",
   "scripts": {
     "test": "playwright test",
@@ -17,10 +18,12 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.1.1",
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-playwright": "^2.10.5",
+    "jsonwebtoken": "^9.0.3",
     "prettier": "^3.9.6",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.65.0"

@@ -1,4 +1,13 @@
+import { existsSync } from "node:fs";
+import { loadEnvFile } from "node:process";
+
 import { defineConfig } from "@playwright/test";
+
+const backendEnvPath = new URL("../backend/.env", import.meta.url);
+
+if (!process.env.JWT_SECRET && existsSync(backendEnvPath)) {
+  loadEnvFile(backendEnvPath);
+}
 
 export default defineConfig({
   testDir: "./tests",
