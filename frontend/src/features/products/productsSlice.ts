@@ -1,12 +1,7 @@
-import {
-  createAsyncThunk,
-  createSelector,
-  createSlice,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
+import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "../../app/store";
 import { productsService } from "../../services/productsService";
-import { ProductSortOrder, type Product, type ProductInput } from "../../types/product";
+import type { Product, ProductInput } from "../../types/product";
 
 export const ProductsRequestStatus = {
   Idle: "idle",
@@ -29,9 +24,6 @@ export type ProductsState = {
   detailError: string | null;
   mutationError: string | null;
   deleteError: string | null;
-  searchQuery: string;
-  selectedCategory: string;
-  sortOrder: ProductSortOrder;
 };
 
 export type UpdateProductPayload = {
@@ -52,9 +44,6 @@ const initialState: ProductsState = {
   detailError: null,
   mutationError: null,
   deleteError: null,
-  searchQuery: "",
-  selectedCategory: "",
-  sortOrder: ProductSortOrder.Default,
 };
 
 export const fetchProducts = createAsyncThunk<Product[], void, { rejectValue: string }>(
@@ -150,20 +139,6 @@ const productsSlice = createSlice({
     clearProductsDeleteError: (productsState) => {
       productsState.deleteError = null;
     },
-    setSearchQuery: (productsState, action: PayloadAction<string>) => {
-      productsState.searchQuery = action.payload;
-    },
-    setSelectedCategory: (productsState, action: PayloadAction<string>) => {
-      productsState.selectedCategory = action.payload;
-    },
-    setSortOrder: (productsState, action: PayloadAction<ProductSortOrder>) => {
-      productsState.sortOrder = action.payload;
-    },
-    clearProductFilters: (productsState) => {
-      productsState.searchQuery = "";
-      productsState.selectedCategory = "";
-      productsState.sortOrder = ProductSortOrder.Default;
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -255,15 +230,8 @@ const productsSlice = createSlice({
   },
 });
 
-export const {
-  clearSelectedProduct,
-  clearProductsMutationError,
-  clearProductsDeleteError,
-  setSearchQuery,
-  setSelectedCategory,
-  setSortOrder,
-  clearProductFilters,
-} = productsSlice.actions;
+export const { clearSelectedProduct, clearProductsMutationError, clearProductsDeleteError } =
+  productsSlice.actions;
 
 export const productsReducer = productsSlice.reducer;
 
@@ -289,12 +257,6 @@ export const selectProductsMutationError = (rootState: RootState) =>
 
 export const selectProductsDeleteError = (rootState: RootState) => rootState.products.deleteError;
 
-export const selectSearchQuery = (rootState: RootState) => rootState.products.searchQuery;
-
-export const selectSelectedCategory = (rootState: RootState) => rootState.products.selectedCategory;
-
-export const selectSortOrder = (rootState: RootState) => rootState.products.sortOrder;
-
 export const selectCategories = createSelector([selectProducts], (products) => {
   const categories = products.map((product) => product.category);
 
@@ -309,33 +271,3 @@ export const selectAdminProducts = createSelector([selectProducts], (products) =
     return secondCreatedAt.localeCompare(firstCreatedAt);
   });
 });
-
-export const selectFilteredProducts = createSelector(
-  [selectProducts, selectSearchQuery, selectSelectedCategory, selectSortOrder],
-  (products, searchQueryValue, selectedCategory, sortOrder) => {
-    const searchQuery = searchQueryValue.trim().toLowerCase();
-
-    const filteredProducts = products.filter((product) => {
-      const matchesSearchQuery = product.title.toLowerCase().includes(searchQuery);
-
-      const matchesSelectedCategory =
-        selectedCategory === "" || product.category === selectedCategory;
-
-      return matchesSearchQuery && matchesSelectedCategory;
-    });
-
-    if (sortOrder === ProductSortOrder.PriceAsc) {
-      return [...filteredProducts].sort((firstProduct, secondProduct) => {
-        return firstProduct.price - secondProduct.price;
-      });
-    }
-
-    if (sortOrder === ProductSortOrder.PriceDesc) {
-      return [...filteredProducts].sort((firstProduct, secondProduct) => {
-        return secondProduct.price - firstProduct.price;
-      });
-    }
-
-    return filteredProducts;
-  },
-);
