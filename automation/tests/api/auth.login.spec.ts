@@ -4,12 +4,7 @@ import { expect, test } from "@playwright/test";
 import jsonwebtoken from "jsonwebtoken";
 
 import { REGULAR_USER } from "../../src/test-data";
-import type { ApiErrorResponse, AuthUser } from "../../src/types";
-
-type LoginResponse = {
-  token: string;
-  user: AuthUser;
-};
+import type { ApiErrorResponse, LoginResponse } from "../../src/types";
 
 const JWT_WITH_THREE_NON_EMPTY_BASE64URL_PARTS_SEPARATED_BY_DOTS =
   /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
