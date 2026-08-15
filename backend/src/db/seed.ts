@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 import * as bcrypt from "bcrypt";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";

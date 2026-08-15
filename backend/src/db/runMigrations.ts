@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { PoolClient } from "pg";

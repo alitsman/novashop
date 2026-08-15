@@ -5,19 +5,21 @@
   "type": "module",
   "description": "Backend API for the NovaShop full-stack diploma project.",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "migrate": "tsx src/db/runMigrations.ts",
+    "dev": "tsx watch --env-file=.env src/server.ts",
+    "dev:test": "tsx watch --env-file=.env.test src/server.ts",
+    "migrate": "tsx --env-file=.env src/db/runMigrations.ts",
+    "migrate:test": "tsx --env-file=.env.test src/db/runMigrations.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint .",
     "format": "prettier --write . --config ../.prettierrc.json --ignore-path ../.prettierignore",
     "format:check": "prettier --check . --config ../.prettierrc.json --ignore-path ../.prettierignore",
-    "seed": "tsx src/db/seed.ts"
+    "seed": "tsx --env-file=.env src/db/seed.ts",
+    "seed:test": "tsx --env-file=.env.test src/db/seed.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.22.0",
