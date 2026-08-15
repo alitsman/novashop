@@ -3,10 +3,10 @@ import { loadEnvFile } from "node:process";
 
 import { defineConfig } from "@playwright/test";
 
-const backendEnvPath = new URL("../backend/.env", import.meta.url);
+const backendTestEnvPath = new URL("../backend/.env.test", import.meta.url);
 
-if (!process.env.JWT_SECRET && existsSync(backendEnvPath)) {
-  loadEnvFile(backendEnvPath);
+if (!process.env.JWT_SECRET && existsSync(backendTestEnvPath)) {
+  loadEnvFile(backendTestEnvPath);
 }
 
 export default defineConfig({
@@ -33,7 +33,7 @@ export default defineConfig({
       name: "api",
       testMatch: "api/**/*.spec.ts",
       use: {
-        baseURL: "http://localhost:4000",
+        baseURL: "http://localhost:4001",
       },
     },
     {
@@ -52,9 +52,9 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: "npm --prefix ../backend run dev",
-      url: "http://localhost:4000/health",
-      reuseExistingServer: !process.env.CI,
+      command: "npm --prefix ../backend run dev:test",
+      url: "http://localhost:4001/health",
+      reuseExistingServer: false,
     },
   ],
 });
