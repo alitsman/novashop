@@ -30,8 +30,13 @@ export default defineConfig({
 
   projects: [
     {
+      name: "database-setup",
+      testMatch: "setup/**/*.setup.ts",
+    },
+    {
       name: "api",
       testMatch: "api/**/*.spec.ts",
+      dependencies: ["database-setup"],
       use: {
         baseURL: "http://localhost:4001",
       },
