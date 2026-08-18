@@ -16,7 +16,7 @@
     "format:check": "prettier --check . --config ../.prettierrc.json --ignore-path ../.prettierignore",
     "seed": "tsx --env-file=.env src/db/seed.ts",
     "seed:test": "tsx --env-file=.env.test src/db/assertTestDatabase.ts && tsx --env-file=.env.test src/db/seed.ts",
-    "db:reset:test": "npm run migrate:test && tsx --env-file=.env.test src/db/truncateTestDatabase.ts && npm run seed:test"
+    "db:reset:test": "tsx --env-file=.env.test src/db/recreateTestSchema.ts && npm run migrate:test && npm run seed:test"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
