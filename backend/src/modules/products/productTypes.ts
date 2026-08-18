@@ -21,6 +21,7 @@ export type ProductInput = {
 
 export type SeedProductData = ProductInput & {
   id: string;
+  deletedAt?: string;
 };
 
 export type ProductDbRow = {
@@ -43,4 +44,5 @@ export type ProductInsertData = {
   image_url: string;
   description: string;
   stock: number;
+  deleted_at: string | null;
 };

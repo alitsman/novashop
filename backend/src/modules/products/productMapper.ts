@@ -9,6 +9,7 @@ export const mapSeedProductToProductInsertData = (product: SeedProductData): Pro
     image_url: product.imageUrl,
     description: product.description,
     stock: product.stock,
+    deleted_at: product.deletedAt ?? null,
   };
 };
 

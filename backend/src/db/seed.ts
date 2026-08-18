@@ -54,9 +54,10 @@ const insertProduct = async (client: PoolClient, product: ProductInsertData): Pr
         category,
         image_url,
         description,
-        stock
+        stock,
+        deleted_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       ON CONFLICT (id)
       DO UPDATE SET
         title = EXCLUDED.title,
@@ -65,6 +66,7 @@ const insertProduct = async (client: PoolClient, product: ProductInsertData): Pr
         image_url = EXCLUDED.image_url,
         description = EXCLUDED.description,
         stock = EXCLUDED.stock,
+        deleted_at = EXCLUDED.deleted_at,
         updated_at = NOW();
     `,
     [
@@ -75,6 +77,7 @@ const insertProduct = async (client: PoolClient, product: ProductInsertData): Pr
       product.image_url,
       product.description,
       product.stock,
+      product.deleted_at,
     ],
   );
 };
