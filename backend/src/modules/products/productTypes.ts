@@ -6,8 +6,8 @@ export type Product = {
   imageUrl: string;
   description: string;
   stock: number;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ProductInput = {

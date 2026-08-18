@@ -7,3 +7,5 @@ export type {
   ProductInsertData,
   SeedProductData,
 } from "./productTypes.js";
+
+export { productRouter } from "./productRouter.js";
