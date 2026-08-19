@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { expect, test } from "@playwright/test";
 
 import { loginViaApi } from "../../src/helpers";
+import { productListSchema } from "../../src/schemas";
 import {
   ADMIN_USER,
   REGULAR_USER,
@@ -15,9 +16,6 @@ import type { ApiErrorResponse, Product } from "../../src/types";
 const SEEDED_ACTIVE_PRODUCT_IDS = SEEDED_ACTIVE_PRODUCTS.map(
   (product) => product.id,
 );
-
-const ISO_UTC_TIMESTAMP_PATTERN =
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 const unavailableProductCases = [
   {
@@ -110,7 +108,7 @@ test.describe("Products read API", () => {
         });
       });
 
-      test("returns a numeric price and ISO-formatted dates", async ({
+      test("response matches the public product schema", async ({
         request,
       }) => {
         const response = await request.get("/products", {
@@ -121,16 +119,8 @@ test.describe("Products read API", () => {
 
         expect(response.status()).toBe(200);
 
-        const responseBody = (await response.json()) as Product[];
-
-        const actualProduct = getProductById(
-          responseBody,
-          SEEDED_REFERENCE_PRODUCT.id,
-        );
-
-        expect(typeof actualProduct.price).toBe("number");
-        expect(actualProduct.createdAt).toMatch(ISO_UTC_TIMESTAMP_PATTERN);
-        expect(actualProduct.updatedAt).toMatch(ISO_UTC_TIMESTAMP_PATTERN);
+        // Zod throws and fails the test if the response does not match the public schema.
+        productListSchema.parse(await response.json());
       });
     });
 
