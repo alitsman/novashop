@@ -423,13 +423,13 @@ test.describe("POST /auth/register", () => {
 
         const validationIssues: unknown[] = details;
 
-        // A weak password may produce several Zod issues. The test only requires
-        // evidence that the password field was rejected.
-        expect(validationIssues).toContainEqual(
-          expect.objectContaining({
-            path: ["password"],
-          }),
-        );
+        expect(validationIssues).toHaveLength(1);
+
+        const [validationIssue] = validationIssues;
+
+        expect(validationIssue).toMatchObject({
+          path: ["password"],
+        });
       });
     }
   });
