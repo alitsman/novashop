@@ -2,7 +2,42 @@ import { pool } from "../../db/index.js";
 import { AppError } from "../../errors/index.js";
 
 import { mapProductRowToProduct } from "./productMapper.js";
-import type { Product, ProductDbRow } from "./productTypes.js";
+import type { Product, ProductDbRow, ProductInput } from "./productTypes.js";
+
+export const createNewProduct = async (input: ProductInput): Promise<Product> => {
+  const result = await pool.query<ProductDbRow>(
+    `
+      INSERT INTO products (
+        title,
+        price,
+        category,
+        image_url,
+        description,
+        stock
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING
+        id,
+        title,
+        price,
+        category,
+        image_url,
+        description,
+        stock,
+        created_at,
+        updated_at;
+    `,
+    [input.title, input.price, input.category, input.imageUrl, input.description, input.stock],
+  );
+
+  const productRow = result.rows[0];
+
+  if (productRow === undefined) {
+    throw new Error("The database did not return the created product.");
+  }
+
+  return mapProductRowToProduct(productRow);
+};
 
 export const getActiveProducts = async (): Promise<Product[]> => {
   const result = await pool.query<ProductDbRow>(`
