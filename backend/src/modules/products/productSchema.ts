@@ -38,9 +38,14 @@ const imageUrlSchema = z
   .trim()
   .pipe(z.url())
   .refine((value) => {
-    const protocol = new URL(value).protocol;
+    try {
+      const protocol = new URL(value).protocol;
 
-    return protocol === "http:" || protocol === "https:";
+      return protocol === "http:" || protocol === "https:";
+    } catch {
+      // Invalid URL formats are reported by z.url().
+      return true;
+    }
   });
 
 // Do not add .strict() here.
