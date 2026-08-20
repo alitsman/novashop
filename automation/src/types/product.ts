@@ -9,3 +9,5 @@ export type Product = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type ProductInput = Omit<Product, "id" | "createdAt" | "updatedAt">;

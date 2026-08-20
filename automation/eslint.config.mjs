@@ -38,7 +38,13 @@ export default defineConfig([
     files: ["tests/**/*.ts"],
     extends: [playwright.configs["flat/recommended"]],
     rules: {
-      "playwright/expect-expect": "error",
+      "playwright/expect-expect": [
+        "error",
+        {
+          // Assertions moved into local helpers are still assertions.
+          assertFunctionNames: ["expectSingleValidationErrorForField"],
+        },
+      ],
       "playwright/no-skipped-test": [
         "error",
         {
