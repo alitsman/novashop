@@ -89,6 +89,25 @@ export const updateActiveProduct = async (
   return mapProductRowToProduct(productRow);
 };
 
+export const deleteActiveProduct = async (productId: string): Promise<void> => {
+  const result = await pool.query<{ id: string }>(
+    `
+      UPDATE products
+      SET deleted_at = NOW()
+      WHERE id = $1
+        AND deleted_at IS NULL
+      RETURNING id;
+    `,
+    [productId],
+  );
+
+  const deletedProductRow = result.rows[0];
+
+  if (deletedProductRow === undefined) {
+    throw new AppError("Product not found", 404, "PRODUCT_NOT_FOUND");
+  }
+};
+
 export const getActiveProducts = async (): Promise<Product[]> => {
   const result = await pool.query<ProductDbRow>(`
     SELECT

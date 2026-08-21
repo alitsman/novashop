@@ -3,6 +3,7 @@ import type { RequestHandler } from "express";
 import type { ProductIdParams } from "./productSchema.js";
 import {
   createNewProduct,
+  deleteActiveProduct,
   getActiveProductById,
   getActiveProducts,
   updateActiveProduct,
@@ -25,6 +26,12 @@ export const updateProduct: RequestHandler<ProductIdParams, Product, ProductUpda
   const product = await updateActiveProduct(request.params.id, request.body);
 
   response.status(200).json(product);
+};
+
+export const deleteProduct: RequestHandler<ProductIdParams, void> = async (request, response) => {
+  await deleteActiveProduct(request.params.id);
+
+  response.status(204).send();
 };
 
 export const getProducts: RequestHandler<Record<string, never>, Product[]> = async (

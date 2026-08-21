@@ -8,7 +8,13 @@ import {
 } from "../../middleware/index.js";
 import { UserRole } from "../users/index.js";
 
-import { createProduct, getProductById, getProducts, updateProduct } from "./productController.js";
+import {
+  createProduct,
+  deleteProduct,
+  getProductById,
+  getProducts,
+  updateProduct,
+} from "./productController.js";
 import {
   createProductSchema,
   productIdParamsSchema,
@@ -32,6 +38,13 @@ productRouter.patch(
   validateParams(productIdParamsSchema),
   validateRequest(updateProductSchema),
   updateProduct,
+);
+
+productRouter.delete(
+  "/:id",
+  requireRole(UserRole.Admin),
+  validateParams(productIdParamsSchema),
+  deleteProduct,
 );
 
 productRouter.get("/", getProducts);
