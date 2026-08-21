@@ -89,6 +89,7 @@ export const updateActiveProduct = async (
   return mapProductRowToProduct(productRow);
 };
 
+// deleted_at records deletion time; updated_at tracks editable product fields.
 export const deleteActiveProduct = async (productId: string): Promise<void> => {
   const result = await pool.query<{ id: string }>(
     `
