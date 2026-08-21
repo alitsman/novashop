@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { ProductInput } from "./productTypes.js";
+import type { ProductInput, ProductUpdateInput } from "./productTypes.js";
 
 const MAX_PRODUCT_TITLE_LENGTH = 80;
 const MAX_CATEGORY_LENGTH = 40;
@@ -50,7 +50,7 @@ const imageUrlSchema = z
 
 // Do not add .strict() here.
 // Unknown fields are removed so clients cannot set id, deletedAt, or timestamps.
-export const createProductSchema: z.ZodType<ProductInput> = z.object({
+const productFieldsSchema = z.object({
   title: createProductTextSchema(2, MAX_PRODUCT_TITLE_LENGTH),
   price: z.number().positive().max(MAX_PRICE).multipleOf(0.01),
   category: createProductTextSchema(2, MAX_CATEGORY_LENGTH),
@@ -58,6 +58,15 @@ export const createProductSchema: z.ZodType<ProductInput> = z.object({
   description: createProductTextSchema(10, MAX_DESCRIPTION_LENGTH),
   stock: z.number().int().min(0).max(MAX_STOCK),
 });
+
+export const createProductSchema: z.ZodType<ProductInput> = productFieldsSchema;
+
+export const updateProductSchema: z.ZodType<ProductUpdateInput> = productFieldsSchema
+  .partial()
+  .refine((input) => Object.keys(input).length > 0, {
+    // Unknown fields are removed before this object-level check.
+    path: [],
+  });
 
 export const productIdParamsSchema = z.object({
   id: z.uuid(),

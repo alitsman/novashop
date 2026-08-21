@@ -2,7 +2,7 @@ import { pool } from "../../db/index.js";
 import { AppError } from "../../errors/index.js";
 
 import { mapProductRowToProduct } from "./productMapper.js";
-import type { Product, ProductDbRow, ProductInput } from "./productTypes.js";
+import type { Product, ProductDbRow, ProductInput, ProductUpdateInput } from "./productTypes.js";
 
 export const createNewProduct = async (input: ProductInput): Promise<Product> => {
   const result = await pool.query<ProductDbRow>(
@@ -33,7 +33,57 @@ export const createNewProduct = async (input: ProductInput): Promise<Product> =>
   const productRow = result.rows[0];
 
   if (productRow === undefined) {
+    // INSERT ... RETURNING without a row is an unexpected server failure.
     throw new Error("The database did not return the created product.");
+  }
+
+  return mapProductRowToProduct(productRow);
+};
+
+export const updateActiveProduct = async (
+  productId: string,
+  input: ProductUpdateInput,
+): Promise<Product> => {
+  // Editable columns are NOT NULL, so null safely means "keep the current value".
+  const result = await pool.query<ProductDbRow>(
+    `
+      UPDATE products
+      SET
+        title = COALESCE($2, title),
+        price = COALESCE($3, price),
+        category = COALESCE($4, category),
+        image_url = COALESCE($5, image_url),
+        description = COALESCE($6, description),
+        stock = COALESCE($7, stock),
+        updated_at = NOW()
+      WHERE id = $1
+        AND deleted_at IS NULL
+      RETURNING
+        id,
+        title,
+        price,
+        category,
+        image_url,
+        description,
+        stock,
+        created_at,
+        updated_at;
+    `,
+    [
+      productId,
+      input.title ?? null,
+      input.price ?? null,
+      input.category ?? null,
+      input.imageUrl ?? null,
+      input.description ?? null,
+      input.stock ?? null,
+    ],
+  );
+
+  const productRow = result.rows[0];
+
+  if (productRow === undefined) {
+    throw new AppError("Product not found", 404, "PRODUCT_NOT_FOUND");
   }
 
   return mapProductRowToProduct(productRow);

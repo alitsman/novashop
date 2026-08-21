@@ -8,8 +8,12 @@ import {
 } from "../../middleware/index.js";
 import { UserRole } from "../users/index.js";
 
-import { createProduct, getProductById, getProducts } from "./productController.js";
-import { createProductSchema, productIdParamsSchema } from "./productSchema.js";
+import { createProduct, getProductById, getProducts, updateProduct } from "./productController.js";
+import {
+  createProductSchema,
+  productIdParamsSchema,
+  updateProductSchema,
+} from "./productSchema.js";
 
 export const productRouter = Router();
 
@@ -20,6 +24,14 @@ productRouter.post(
   requireRole(UserRole.Admin),
   validateRequest(createProductSchema),
   createProduct,
+);
+
+productRouter.patch(
+  "/:id",
+  requireRole(UserRole.Admin),
+  validateParams(productIdParamsSchema),
+  validateRequest(updateProductSchema),
+  updateProduct,
 );
 
 productRouter.get("/", getProducts);

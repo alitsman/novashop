@@ -19,6 +19,8 @@ export type ProductInput = {
   stock: number;
 };
 
+export type ProductUpdateInput = Partial<ProductInput>;
+
 export type SeedProductData = ProductInput & {
   id: string;
   deletedAt?: string;

@@ -1,8 +1,13 @@
 import type { RequestHandler } from "express";
 
 import type { ProductIdParams } from "./productSchema.js";
-import { createNewProduct, getActiveProductById, getActiveProducts } from "./productService.js";
-import type { Product, ProductInput } from "./productTypes.js";
+import {
+  createNewProduct,
+  getActiveProductById,
+  getActiveProducts,
+  updateActiveProduct,
+} from "./productService.js";
+import type { Product, ProductInput, ProductUpdateInput } from "./productTypes.js";
 
 export const createProduct: RequestHandler<Record<string, never>, Product, ProductInput> = async (
   request,
@@ -11,6 +16,15 @@ export const createProduct: RequestHandler<Record<string, never>, Product, Produ
   const product = await createNewProduct(request.body);
 
   response.status(201).json(product);
+};
+
+export const updateProduct: RequestHandler<ProductIdParams, Product, ProductUpdateInput> = async (
+  request,
+  response,
+) => {
+  const product = await updateActiveProduct(request.params.id, request.body);
+
+  response.status(200).json(product);
 };
 
 export const getProducts: RequestHandler<Record<string, never>, Product[]> = async (
