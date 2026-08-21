@@ -222,7 +222,8 @@ const emptyStringProductFields = [
 ];
 
 // Keep this helper local because only this spec uses it.
-// Each caller violates one rule, so exactly one issue is expected.
+// These cases are designed to produce exactly one validation issue.
+// A single issue is part of the expected API response, not a helper option.
 // Empty-string cases can violate several rules and keep separate assertions.
 async function expectSingleValidationErrorForField(
   response: APIResponse,
