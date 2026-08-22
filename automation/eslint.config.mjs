@@ -41,8 +41,8 @@ export default defineConfig([
       "playwright/expect-expect": [
         "error",
         {
-          // Assertions moved into local helpers are still assertions.
-          assertFunctionNames: ["expectSingleValidationErrorForField"],
+          // Assertions inside the shared Product API helper still count for expect-expect.
+          assertFunctionNames: ["expectSingleProductValidationError"],
         },
       ],
       "playwright/no-skipped-test": [

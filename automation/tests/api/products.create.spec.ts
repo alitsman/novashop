@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 
 import { expect, test } from "@playwright/test";
-import type { APIResponse } from "@playwright/test";
 
-import { loginViaApi } from "../../src/helpers";
+import {
+  expectSingleProductValidationError,
+  loginViaApi,
+} from "../../src/helpers";
 import { productSchema } from "../../src/schemas";
 import {
   ADMIN_USER,
@@ -221,39 +223,6 @@ const emptyStringProductFields = [
   "description",
 ];
 
-// Keep this helper local because only this spec uses it.
-// These cases are designed to produce exactly one validation issue.
-// A single issue is part of the expected API response, not a helper option.
-// Empty-string cases can violate several rules and keep separate assertions.
-async function expectSingleValidationErrorForField(
-  response: APIResponse,
-  field: string,
-): Promise<void> {
-  expect(response.status()).toBe(400);
-
-  const responseBody = (await response.json()) as ApiErrorResponse;
-
-  expect(responseBody.error.code).toBe("VALIDATION_ERROR");
-  expect(responseBody.error.message).toBe("Request validation failed");
-
-  const { details } = responseBody.error;
-
-  assert(
-    Array.isArray(details),
-    "Expected validation error details to be an array",
-  );
-
-  const validationIssues: unknown[] = details;
-
-  expect(validationIssues).toHaveLength(1);
-
-  const [validationIssue] = validationIssues;
-
-  expect(validationIssue).toMatchObject({
-    path: [field],
-  });
-}
-
 test.describe("POST /products", () => {
   test.describe("admin", () => {
     let token: string;
@@ -463,7 +432,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleValidationErrorForField(response, "price");
+        await expectSingleProductValidationError(response, ["price"]);
       });
     }
 
@@ -482,7 +451,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleValidationErrorForField(response, "stock");
+        await expectSingleProductValidationError(response, ["stock"]);
       });
     }
 
@@ -501,7 +470,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleValidationErrorForField(response, "title");
+        await expectSingleProductValidationError(response, ["title"]);
       });
     }
 
@@ -520,7 +489,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleValidationErrorForField(response, "category");
+        await expectSingleProductValidationError(response, ["category"]);
       });
     }
 
@@ -539,7 +508,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleValidationErrorForField(response, "description");
+        await expectSingleProductValidationError(response, ["description"]);
       });
     }
 
@@ -558,7 +527,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleValidationErrorForField(response, "imageUrl");
+        await expectSingleProductValidationError(response, ["imageUrl"]);
       });
     }
 
@@ -578,10 +547,9 @@ test.describe("POST /products", () => {
           data: requestBody,
         });
 
-        await expectSingleValidationErrorForField(
-          response,
+        await expectSingleProductValidationError(response, [
           invalidTypeCase.field,
-        );
+        ]);
       });
     }
 
@@ -602,10 +570,9 @@ test.describe("POST /products", () => {
           data: requestBody,
         });
 
-        await expectSingleValidationErrorForField(
-          response,
+        await expectSingleProductValidationError(response, [
           requiredProductField,
-        );
+        ]);
       });
     }
 
