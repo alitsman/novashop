@@ -5,6 +5,7 @@ import { checkDbConnection } from "./db/index.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
 
 import { authRouter } from "./modules/auth/index.js";
+import { orderRouter } from "./modules/orders/index.js";
 import { productRouter } from "./modules/products/index.js";
 import { userRouter } from "./modules/users/index.js";
 
@@ -36,6 +37,7 @@ app.get("/health/db", async (_request, response, next) => {
 
 app.use("/auth", authRouter);
 app.use("/products", productRouter);
+app.use("/orders", orderRouter);
 app.use(userRouter);
 
 app.use(notFoundHandler);
