@@ -167,17 +167,17 @@ export const createNewOrder = async (userId: string, input: CreateOrderInput): P
     // concurrent multi-product orders.
     const productsResult = await client.query<ProductForOrderDbRow>(
       `
-          SELECT
-            id,
-            title,
-            price,
-            stock
-          FROM products
-          WHERE id = ANY($1::uuid[])
-            AND deleted_at IS NULL
-          ORDER BY id
-          FOR UPDATE;
-        `,
+        SELECT
+          id,
+          title,
+          price,
+          stock
+        FROM products
+        WHERE id = ANY($1::uuid[])
+          AND deleted_at IS NULL
+        ORDER BY id
+        FOR UPDATE;
+      `,
       [productIds],
     );
 
@@ -284,16 +284,16 @@ export const getOrdersForUser = async (userId: string): Promise<Order[]> => {
 
   const orderItemsResult = await pool.query<OrderItemDbRow>(
     `
-        SELECT
-          order_id,
-          product_id,
-          title,
-          price,
-          quantity
-        FROM order_items
-        WHERE order_id = ANY($1::uuid[])
-        ORDER BY order_id, product_id;
-      `,
+      SELECT
+        order_id,
+        product_id,
+        title,
+        price,
+        quantity
+      FROM order_items
+      WHERE order_id = ANY($1::uuid[])
+      ORDER BY order_id, product_id;
+    `,
     [orderIds],
   );
 
@@ -329,16 +329,16 @@ export const getOrderByIdForUser = async (orderId: string, userId: string): Prom
 
   const orderItemsResult = await pool.query<OrderItemDbRow>(
     `
-        SELECT
-          order_id,
-          product_id,
-          title,
-          price,
-          quantity
-        FROM order_items
-        WHERE order_id = $1
-        ORDER BY product_id;
-      `,
+      SELECT
+        order_id,
+        product_id,
+        title,
+        price,
+        quantity
+      FROM order_items
+      WHERE order_id = $1
+      ORDER BY product_id;
+    `,
     [orderId],
   );
 
