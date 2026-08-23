@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 import jsonwebtoken from "jsonwebtoken";
 
 import { REGULAR_USER } from "../../src/test-data";
-import type { ApiErrorResponse, LoginResponse } from "../../src/types";
+import type { ApiErrorResponse, AuthResponse } from "../../src/types";
 
 const JWT_WITH_THREE_NON_EMPTY_BASE64URL_PARTS_SEPARATED_BY_DOTS =
   /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
@@ -27,7 +27,7 @@ test.describe("POST /auth/login", () => {
 
     expect(response.status()).toBe(200);
 
-    const responseBody = (await response.json()) as LoginResponse;
+    const responseBody = (await response.json()) as AuthResponse;
     const { token, ...responseWithoutToken } = responseBody;
 
     expect(responseWithoutToken).toEqual({
@@ -51,7 +51,7 @@ test.describe("POST /auth/login", () => {
 
     expect(response.status()).toBe(200);
 
-    const responseBody = (await response.json()) as LoginResponse;
+    const responseBody = (await response.json()) as AuthResponse;
     const decodedToken = jsonwebtoken.decode(responseBody.token, {
       complete: true,
     });
@@ -94,7 +94,7 @@ test.describe("POST /auth/login", () => {
 
     expect(response.status()).toBe(200);
 
-    const responseBody = (await response.json()) as LoginResponse;
+    const responseBody = (await response.json()) as AuthResponse;
     const { token, ...responseWithoutToken } = responseBody;
 
     expect(responseWithoutToken).toEqual({

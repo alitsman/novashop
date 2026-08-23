@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
 import type {
   ApiErrorResponse,
   AuthUser,
-  LoginResponse,
+  AuthResponse,
   NewAccount,
 } from "../../src/types";
 
@@ -64,7 +64,7 @@ test.describe("POST /auth/register", () => {
 
       expect(response.status()).toBe(201);
 
-      const responseBody = (await response.json()) as LoginResponse;
+      const responseBody = (await response.json()) as AuthResponse;
       const { id, ...userWithoutId } = responseBody.user;
 
       // The database generates the id, so we check its format.
@@ -99,7 +99,7 @@ test.describe("POST /auth/register", () => {
 
       expect(response.status()).toBe(201);
 
-      const responseBody = (await response.json()) as LoginResponse;
+      const responseBody = (await response.json()) as AuthResponse;
 
       expect(responseBody.user.name).toBe(newAccount.user.name);
       expect(responseBody.user.email).toBe(newAccount.user.email);
@@ -123,7 +123,7 @@ test.describe("POST /auth/register", () => {
 
       expect(response.status()).toBe(201);
 
-      const responseBody = (await response.json()) as LoginResponse;
+      const responseBody = (await response.json()) as AuthResponse;
 
       expect(responseBody.user).toEqual({
         id: expect.stringMatching(UUID_PATTERN),
@@ -132,8 +132,24 @@ test.describe("POST /auth/register", () => {
         role: "user",
       });
 
-      // TODO(authorization): When an admin-only API route exists, call it with this
-      // token and expect 403 to prove that role injection cannot grant admin access.
+      const adminRouteResponse = await request.post("/products", {
+        headers: {
+          Authorization: `Bearer ${responseBody.token}`,
+        },
+        data: {},
+      });
+
+      expect(adminRouteResponse.status()).toBe(403);
+
+      const adminRouteResponseBody =
+        (await adminRouteResponse.json()) as ApiErrorResponse;
+
+      expect(adminRouteResponseBody).toEqual({
+        error: {
+          code: "FORBIDDEN",
+          message: "You do not have permission to perform this action",
+        },
+      });
     });
   });
 
@@ -154,7 +170,7 @@ test.describe("POST /auth/register", () => {
       expect(registerResponse.status()).toBe(201);
 
       const registerResponseBody =
-        (await registerResponse.json()) as LoginResponse;
+        (await registerResponse.json()) as AuthResponse;
 
       // Registration can return 201 even if the password was saved incorrectly.
       // A successful login proves that the saved password can be verified.
@@ -167,7 +183,7 @@ test.describe("POST /auth/register", () => {
 
       expect(loginResponse.status()).toBe(200);
 
-      const loginResponseBody = (await loginResponse.json()) as LoginResponse;
+      const loginResponseBody = (await loginResponse.json()) as AuthResponse;
 
       expect(loginResponseBody.user).toEqual(registerResponseBody.user);
     });
@@ -188,7 +204,7 @@ test.describe("POST /auth/register", () => {
       expect(registerResponse.status()).toBe(201);
 
       const registerResponseBody =
-        (await registerResponse.json()) as LoginResponse;
+        (await registerResponse.json()) as AuthResponse;
 
       // JWT format alone does not prove that the backend accepts the token.
       const meResponse = await request.get("/me", {

@@ -7,4 +7,13 @@ export type {
   UserRole,
 } from "./test-account";
 export type { ApiErrorResponse } from "./api-error-response";
-export type { LoginResponse } from "./login-response";
+export type { AuthResponse } from "./auth-response";
+
+export { DeliveryMethod, PaymentMethod } from "./order";
+
+export type {
+  CreateOrderInput,
+  CreateOrderItemInput,
+  Order,
+  OrderItem,
+} from "./order";

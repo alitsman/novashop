@@ -24,3 +24,4 @@ export { ADMIN_USER, REGULAR_USER } from "./account.data";
 
 export { createProduct, createProductInput } from "./product.factory";
 export { createCartItem } from "./cart-item.factory";
+export { createOrderInput, createOrderItemInput } from "./order.factory";
