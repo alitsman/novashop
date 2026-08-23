@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+
 import type { CartItem } from "../types";
 
 const CART_ITEMS_STORAGE_KEY_PREFIX = "novashop-cart-items";
