@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import {
   createProductViaApi,
-  expectSingleProductValidationError,
+  expectSingleValidationError,
   loginViaApi,
 } from "../../src/helpers";
 import { productSchema } from "../../src/schemas";
@@ -191,7 +191,7 @@ test.describe("PATCH /products/:id", () => {
         },
       );
 
-      await expectSingleProductValidationError(updateResponse, []);
+      await expectSingleValidationError(updateResponse, []);
     });
 
     test("price with three decimal places: returns VALIDATION_ERROR for price", async ({
@@ -209,7 +209,7 @@ test.describe("PATCH /products/:id", () => {
         },
       );
 
-      await expectSingleProductValidationError(updateResponse, ["price"]);
+      await expectSingleValidationError(updateResponse, ["price"]);
     });
 
     test("invalid id: returns VALIDATION_ERROR for id", async ({ request }) => {
@@ -225,7 +225,7 @@ test.describe("PATCH /products/:id", () => {
         },
       );
 
-      await expectSingleProductValidationError(updateResponse, ["id"]);
+      await expectSingleValidationError(updateResponse, ["id"]);
     });
 
     test("nonexistent product: returns PRODUCT_NOT_FOUND", async ({

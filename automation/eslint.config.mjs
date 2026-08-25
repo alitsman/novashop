@@ -41,8 +41,8 @@ export default defineConfig([
       "playwright/expect-expect": [
         "error",
         {
-          // Assertions inside the shared Product API helper still count for expect-expect.
-          assertFunctionNames: ["expectSingleProductValidationError"],
+          // Assertions inside the shared API validation helper still count for expect-expect.
+          assertFunctionNames: ["expectSingleValidationError"],
         },
       ],
       "playwright/no-skipped-test": [

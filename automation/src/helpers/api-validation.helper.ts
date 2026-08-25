@@ -5,10 +5,10 @@ import type { APIResponse } from "@playwright/test";
 
 import type { ApiErrorResponse } from "../types";
 
-// Use this shared helper only for Product API cases intentionally designed to
-// return exactly one validation issue. The expected path can identify either a
-// field such as ["price"] or the request object itself with an empty path.
-export async function expectSingleProductValidationError(
+// Use this helper only when a test expects exactly one validation issue.
+// The path can point to a field such as ["price"] or to the whole request
+// object with an empty array.
+export async function expectSingleValidationError(
   response: APIResponse,
   expectedPath: (string | number)[],
 ): Promise<void> {

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import {
   createProductViaApi,
-  expectSingleProductValidationError,
+  expectSingleValidationError,
   loginViaApi,
 } from "../../src/helpers";
 import { productListSchema, productSchema } from "../../src/schemas";
@@ -172,7 +172,7 @@ test.describe("DELETE /products/:id", () => {
         },
       );
 
-      await expectSingleProductValidationError(deleteResponse, ["id"]);
+      await expectSingleValidationError(deleteResponse, ["id"]);
     });
   });
 

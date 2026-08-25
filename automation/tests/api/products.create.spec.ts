@@ -2,10 +2,7 @@ import assert from "node:assert/strict";
 
 import { expect, test } from "@playwright/test";
 
-import {
-  expectSingleProductValidationError,
-  loginViaApi,
-} from "../../src/helpers";
+import { expectSingleValidationError, loginViaApi } from "../../src/helpers";
 import { productSchema } from "../../src/schemas";
 import {
   ADMIN_USER,
@@ -432,7 +429,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleProductValidationError(response, ["price"]);
+        await expectSingleValidationError(response, ["price"]);
       });
     }
 
@@ -451,7 +448,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleProductValidationError(response, ["stock"]);
+        await expectSingleValidationError(response, ["stock"]);
       });
     }
 
@@ -470,7 +467,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleProductValidationError(response, ["title"]);
+        await expectSingleValidationError(response, ["title"]);
       });
     }
 
@@ -489,7 +486,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleProductValidationError(response, ["category"]);
+        await expectSingleValidationError(response, ["category"]);
       });
     }
 
@@ -508,7 +505,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleProductValidationError(response, ["description"]);
+        await expectSingleValidationError(response, ["description"]);
       });
     }
 
@@ -527,7 +524,7 @@ test.describe("POST /products", () => {
           data: newProductInput,
         });
 
-        await expectSingleProductValidationError(response, ["imageUrl"]);
+        await expectSingleValidationError(response, ["imageUrl"]);
       });
     }
 
@@ -547,9 +544,7 @@ test.describe("POST /products", () => {
           data: requestBody,
         });
 
-        await expectSingleProductValidationError(response, [
-          invalidTypeCase.field,
-        ]);
+        await expectSingleValidationError(response, [invalidTypeCase.field]);
       });
     }
 
@@ -570,9 +565,7 @@ test.describe("POST /products", () => {
           data: requestBody,
         });
 
-        await expectSingleProductValidationError(response, [
-          requiredProductField,
-        ]);
+        await expectSingleValidationError(response, [requiredProductField]);
       });
     }
 
