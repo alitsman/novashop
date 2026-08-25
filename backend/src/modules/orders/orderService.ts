@@ -25,17 +25,18 @@ type PreparedOrderItem = {
   price: string;
   priceInCents: number;
   quantity: number;
+  lineNumber: number;
 };
 
 const prepareOrderItems = (
   productRows: ProductForOrderDbRow[],
   inputItems: CreateOrderItemInput[],
 ): PreparedOrderItem[] => {
-  const foundProductIds = new Set(productRows.map((productRow) => productRow.id));
+  const productRowsById = new Map(productRows.map((productRow) => [productRow.id, productRow]));
 
   const missingProductIds = inputItems
     .map((inputItem) => inputItem.productId)
-    .filter((productId) => !foundProductIds.has(productId));
+    .filter((productId) => !productRowsById.has(productId));
 
   if (missingProductIds.length > 0) {
     throw new AppError("Product not found", 404, "PRODUCT_NOT_FOUND", {
@@ -43,13 +44,14 @@ const prepareOrderItems = (
     });
   }
 
-  const inputItemsByProductId = new Map(inputItems.map((item) => [item.productId, item]));
+  // Persisted items keep the order of the checkout request — do not iterate
+  // productRows here, they are sorted by id for locking. Line numbers start at 1
+  // to match the ROW_NUMBER backfill in migration 004.
+  return inputItems.map((inputItem, index) => {
+    const productRow = productRowsById.get(inputItem.productId);
 
-  return productRows.map((productRow) => {
-    const inputItem = inputItemsByProductId.get(productRow.id);
-
-    if (inputItem === undefined) {
-      throw new Error("A locked product does not have a matching order item.");
+    if (productRow === undefined) {
+      throw new Error("An order item does not have a matching locked product.");
     }
 
     if (inputItem.quantity > productRow.stock) {
@@ -66,6 +68,7 @@ const prepareOrderItems = (
       price: productRow.price,
       priceInCents: Math.round(Number(productRow.price) * 100),
       quantity: inputItem.quantity,
+      lineNumber: index + 1,
     };
   });
 };
@@ -78,16 +81,17 @@ const insertOrderItems = async (
   const values: Array<string | number> = [];
 
   const valuePlaceholders = items.map((item, index) => {
-    const parameterOffset = index * 5;
+    const parameterOffset = index * 6;
 
-    values.push(orderId, item.productId, item.title, item.price, item.quantity);
+    values.push(orderId, item.productId, item.title, item.price, item.quantity, item.lineNumber);
 
     return `(
       $${parameterOffset + 1},
       $${parameterOffset + 2},
       $${parameterOffset + 3},
       $${parameterOffset + 4},
-      $${parameterOffset + 5}
+      $${parameterOffset + 5},
+      $${parameterOffset + 6}
     )`;
   });
 
@@ -98,7 +102,8 @@ const insertOrderItems = async (
         product_id,
         title,
         price,
-        quantity
+        quantity,
+        line_number
       )
       VALUES ${valuePlaceholders.join(", ")}
       RETURNING
@@ -106,7 +111,8 @@ const insertOrderItems = async (
         product_id,
         title,
         price,
-        quantity;
+        quantity,
+        line_number;
     `,
     values,
   );
@@ -289,10 +295,11 @@ export const getOrdersForUser = async (userId: string): Promise<Order[]> => {
         product_id,
         title,
         price,
-        quantity
+        quantity,
+        line_number
       FROM order_items
       WHERE order_id = ANY($1::uuid[])
-      ORDER BY order_id, product_id;
+      ORDER BY order_id, line_number;
     `,
     [orderIds],
   );
@@ -334,10 +341,11 @@ export const getOrderByIdForUser = async (orderId: string, userId: string): Prom
         product_id,
         title,
         price,
-        quantity
+        quantity,
+        line_number
       FROM order_items
       WHERE order_id = $1
-      ORDER BY product_id;
+      ORDER BY line_number;
     `,
     [orderId],
   );

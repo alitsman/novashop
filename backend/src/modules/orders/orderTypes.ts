@@ -66,4 +66,5 @@ export type OrderItemDbRow = {
   title: string;
   price: string;
   quantity: number;
+  line_number: number;
 };

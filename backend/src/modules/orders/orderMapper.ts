@@ -11,7 +11,7 @@ export const mapOrderItemRowToOrderItem = (row: OrderItemDbRow): OrderItem => {
 
 export const mapOrderRowToOrder = (row: OrderDbRow, itemRows: OrderItemDbRow[]): Order => {
   const sortedItemRows = [...itemRows].sort((firstItem, secondItem) => {
-    return firstItem.product_id.localeCompare(secondItem.product_id);
+    return firstItem.line_number - secondItem.line_number;
   });
 
   return {
