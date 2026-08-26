@@ -6,17 +6,17 @@
   "description": "Backend API for the NovaShop full-stack diploma project.",
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
-    "dev:test": "tsx --env-file=.env.test src/db/assertTestDatabase.ts && tsx watch --env-file=.env.test src/server.ts",
+    "dev:test": "tsx --env-file-if-exists=../.env.test src/db/assertTestDatabase.ts && tsx watch --env-file-if-exists=../.env.test src/server.ts",
     "migrate": "tsx --env-file=.env src/db/runMigrations.ts",
-    "migrate:test": "tsx --env-file=.env.test src/db/assertTestDatabase.ts && tsx --env-file=.env.test src/db/runMigrations.ts",
+    "migrate:test": "tsx --env-file-if-exists=../.env.test src/db/assertTestDatabase.ts && tsx --env-file-if-exists=../.env.test src/db/runMigrations.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint .",
     "format": "prettier --write . --config ../.prettierrc.json --ignore-path ../.prettierignore",
     "format:check": "prettier --check . --config ../.prettierrc.json --ignore-path ../.prettierignore",
     "seed": "tsx --env-file=.env src/db/seed.ts",
-    "seed:test": "tsx --env-file=.env.test src/db/assertTestDatabase.ts && tsx --env-file=.env.test src/db/seed.ts",
-    "db:reset:test": "tsx --env-file=.env.test src/db/recreateTestSchema.ts && npm run migrate:test && npm run seed:test"
+    "seed:test": "tsx --env-file-if-exists=../.env.test src/db/assertTestDatabase.ts && tsx --env-file-if-exists=../.env.test src/db/seed.ts",
+    "db:reset:test": "tsx --env-file-if-exists=../.env.test src/db/recreateTestSchema.ts && npm run migrate:test && npm run seed:test"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

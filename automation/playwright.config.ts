@@ -3,11 +3,58 @@ import { loadEnvFile } from "node:process";
 
 import { defineConfig } from "@playwright/test";
 
-const backendTestEnvPath = new URL("../backend/.env.test", import.meta.url);
+const testEnvPath = new URL("../.env.test", import.meta.url);
 
-if (!process.env.JWT_SECRET && existsSync(backendTestEnvPath)) {
-  loadEnvFile(backendTestEnvPath);
+// Local runs use the file; CI supplies the same variables through process.env.
+if (existsSync(testEnvPath)) {
+  loadEnvFile(testEnvPath);
 }
+
+const getRequiredEnv = (name: string): string => {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
+};
+
+const getExplicitUrlPort = (name: string, value: string): string => {
+  let url: URL;
+
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`${name} must be a valid absolute URL`);
+  }
+
+  if (!url.port) {
+    throw new Error(
+      `${name} must include an explicit port while Playwright starts local servers`,
+    );
+  }
+
+  return url.port;
+};
+
+const frontendUrl = getRequiredEnv("FRONTEND_URL");
+const apiUrl = getRequiredEnv("API_URL");
+const backendPort = getRequiredEnv("PORT");
+
+getRequiredEnv("DATABASE_URL");
+getRequiredEnv("JWT_SECRET");
+
+const frontendPort = getExplicitUrlPort("FRONTEND_URL", frontendUrl);
+const apiPort = getExplicitUrlPort("API_URL", apiUrl);
+
+if (apiPort !== backendPort) {
+  throw new Error(
+    `PORT (${backendPort}) must match the port in API_URL (${apiPort})`,
+  );
+}
+
+const backendHealthUrl = new URL("/health", apiUrl).toString();
 
 export default defineConfig({
   testDir: "./tests",
@@ -19,7 +66,7 @@ export default defineConfig({
   reporter: [["list"], ["html", { open: "never" }]],
 
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: frontendUrl,
     screenshot: "only-on-failure",
     viewport: {
       width: 1280,
@@ -38,7 +85,15 @@ export default defineConfig({
       testMatch: "api/**/*.spec.ts",
       dependencies: ["database-setup"],
       use: {
-        baseURL: "http://localhost:4001",
+        baseURL: apiUrl,
+      },
+    },
+    {
+      name: "db",
+      testMatch: "db/**/*.spec.ts",
+      dependencies: ["database-setup"],
+      use: {
+        baseURL: apiUrl,
       },
     },
     {
@@ -52,13 +107,13 @@ export default defineConfig({
 
   webServer: [
     {
-      command: "npm --prefix ../frontend run dev",
-      url: "http://localhost:5173",
+      command: `npm --prefix ../frontend run dev -- --port ${frontendPort}`,
+      url: frontendUrl,
       reuseExistingServer: !process.env.CI,
     },
     {
       command: "npm --prefix ../backend run dev:test",
-      url: "http://localhost:4001/health",
+      url: backendHealthUrl,
       reuseExistingServer: false,
     },
   ],
