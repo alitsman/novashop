@@ -13,7 +13,8 @@ type DatabaseWorkerFixtures = {
 
 export const test = base.extend<Record<never, never>, DatabaseWorkerFixtures>({
   dbPool: [
-    async (_fixtures, use) => {
+    // eslint-disable-next-line no-empty-pattern -- Playwright requires an object destructuring pattern.
+    async ({}, use) => {
       const databaseUrl = process.env.DATABASE_URL;
 
       if (!databaseUrl) {
