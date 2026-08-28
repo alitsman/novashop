@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "../../src/fixtures";
 import {
   CartPage,
   ProductCatalogPage,

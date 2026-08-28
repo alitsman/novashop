@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "../../src/fixtures";
 import { LoginPage } from "../../src/pages";
 
 const protectedRoutes = [

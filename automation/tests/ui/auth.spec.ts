@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "../../src/fixtures";
 import { LoginPage, ProductCatalogPage } from "../../src/pages";
 import { ADMIN_USER, REGULAR_USER } from "../../src/test-data";
 

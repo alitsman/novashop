@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "../../src/fixtures";
 import { CartPage } from "../../src/pages";
 import { authenticateUser, prepareCart } from "../../src/helpers";
 import { formatUsd } from "../../src/utils";
