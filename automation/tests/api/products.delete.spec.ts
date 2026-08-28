@@ -1,10 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import {
-  createProductViaApi,
-  expectSingleValidationError,
-  loginViaApi,
-} from "../../src/helpers";
+import { createProductViaApi, expectSingleValidationError, loginViaApi } from "../../src/helpers";
 import { productListSchema, productSchema } from "../../src/schemas";
 import { ADMIN_USER, REGULAR_USER } from "../../src/test-data";
 import type { ApiErrorResponse } from "../../src/types";
@@ -24,14 +20,11 @@ test.describe("DELETE /products/:id", () => {
     test("existing product: returns 204 without body", async ({ request }) => {
       const createdProduct = await createProductViaApi(request, token);
 
-      const deleteResponse = await request.delete(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const deleteResponse = await request.delete(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       expect(deleteResponse.status()).toBe(204);
       expect(await deleteResponse.text()).toBe("");
@@ -40,14 +33,11 @@ test.describe("DELETE /products/:id", () => {
     test("deleted product: cannot be retrieved by id", async ({ request }) => {
       const createdProduct = await createProductViaApi(request, token);
 
-      const deleteResponse = await request.delete(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const deleteResponse = await request.delete(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       expect(deleteResponse.status()).toBe(204);
 
@@ -69,19 +59,14 @@ test.describe("DELETE /products/:id", () => {
       });
     });
 
-    test("deleted product: does not appear in product list", async ({
-      request,
-    }) => {
+    test("deleted product: does not appear in product list", async ({ request }) => {
       const createdProduct = await createProductViaApi(request, token);
 
-      const deleteResponse = await request.delete(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const deleteResponse = await request.delete(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       expect(deleteResponse.status()).toBe(204);
 
@@ -95,40 +80,29 @@ test.describe("DELETE /products/:id", () => {
 
       const products = productListSchema.parse(await listResponse.json());
 
-      expect(products.map((product) => product.id)).not.toContain(
-        createdProduct.id,
-      );
+      expect(products.map((product) => product.id)).not.toContain(createdProduct.id);
     });
 
-    test("deleted product: repeated delete returns PRODUCT_NOT_FOUND", async ({
-      request,
-    }) => {
+    test("deleted product: repeated delete returns PRODUCT_NOT_FOUND", async ({ request }) => {
       const createdProduct = await createProductViaApi(request, token);
 
-      const firstDeleteResponse = await request.delete(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const firstDeleteResponse = await request.delete(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       expect(firstDeleteResponse.status()).toBe(204);
 
-      const secondDeleteResponse = await request.delete(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const secondDeleteResponse = await request.delete(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       expect(secondDeleteResponse.status()).toBe(404);
 
-      const responseBody =
-        (await secondDeleteResponse.json()) as ApiErrorResponse;
+      const responseBody = (await secondDeleteResponse.json()) as ApiErrorResponse;
 
       expect(responseBody).toEqual({
         error: {
@@ -138,17 +112,12 @@ test.describe("DELETE /products/:id", () => {
       });
     });
 
-    test("nonexistent product: returns PRODUCT_NOT_FOUND", async ({
-      request,
-    }) => {
-      const deleteResponse = await request.delete(
-        `/products/${NONEXISTENT_PRODUCT_ID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    test("nonexistent product: returns PRODUCT_NOT_FOUND", async ({ request }) => {
+      const deleteResponse = await request.delete(`/products/${NONEXISTENT_PRODUCT_ID}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       expect(deleteResponse.status()).toBe(404);
 
@@ -163,14 +132,11 @@ test.describe("DELETE /products/:id", () => {
     });
 
     test("invalid id: returns VALIDATION_ERROR for id", async ({ request }) => {
-      const deleteResponse = await request.delete(
-        `/products/${INVALID_PRODUCT_ID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const deleteResponse = await request.delete(`/products/${INVALID_PRODUCT_ID}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       await expectSingleValidationError(deleteResponse, ["id"]);
     });
@@ -190,14 +156,11 @@ test.describe("DELETE /products/:id", () => {
 
       const createdProduct = await createProductViaApi(request, adminToken);
 
-      const deleteResponse = await request.delete(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${regularUserToken}`,
-          },
+      const deleteResponse = await request.delete(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${regularUserToken}`,
         },
-      );
+      });
 
       expect(deleteResponse.status()).toBe(403);
 
@@ -223,17 +186,12 @@ test.describe("DELETE /products/:id", () => {
       expect(retrievedProduct).toEqual(createdProduct);
     });
 
-    test("invalid id: returns FORBIDDEN before validation", async ({
-      request,
-    }) => {
-      const deleteResponse = await request.delete(
-        `/products/${INVALID_PRODUCT_ID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${regularUserToken}`,
-          },
+    test("invalid id: returns FORBIDDEN before validation", async ({ request }) => {
+      const deleteResponse = await request.delete(`/products/${INVALID_PRODUCT_ID}`, {
+        headers: {
+          Authorization: `Bearer ${regularUserToken}`,
         },
-      );
+      });
 
       expect(deleteResponse.status()).toBe(403);
 
@@ -256,9 +214,7 @@ test.describe("DELETE /products/:id", () => {
 
       const createdProduct = await createProductViaApi(request, adminToken);
 
-      const deleteResponse = await request.delete(
-        `/products/${createdProduct.id}`,
-      );
+      const deleteResponse = await request.delete(`/products/${createdProduct.id}`);
 
       expect(deleteResponse.status()).toBe(401);
 
@@ -284,12 +240,8 @@ test.describe("DELETE /products/:id", () => {
       expect(retrievedProduct).toEqual(createdProduct);
     });
 
-    test("invalid id: returns AUTHENTICATION_REQUIRED before validation", async ({
-      request,
-    }) => {
-      const deleteResponse = await request.delete(
-        `/products/${INVALID_PRODUCT_ID}`,
-      );
+    test("invalid id: returns AUTHENTICATION_REQUIRED before validation", async ({ request }) => {
+      const deleteResponse = await request.delete(`/products/${INVALID_PRODUCT_ID}`);
 
       expect(deleteResponse.status()).toBe(401);
 

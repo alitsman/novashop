@@ -21,10 +21,7 @@ export async function expectSingleValidationError(
 
   const { details } = responseBody.error;
 
-  assert(
-    Array.isArray(details),
-    "Expected validation error details to be an array",
-  );
+  assert(Array.isArray(details), "Expected validation error details to be an array");
 
   const validationIssues: unknown[] = details;
 

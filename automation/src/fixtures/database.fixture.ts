@@ -18,9 +18,7 @@ export const test = base.extend<Record<never, never>, DatabaseWorkerFixtures>({
       const databaseUrl = process.env.DATABASE_URL;
 
       if (!databaseUrl) {
-        throw new Error(
-          "DATABASE_URL is required to create the database fixture",
-        );
+        throw new Error("DATABASE_URL is required to create the database fixture");
       }
 
       const dbPool = new Pool({

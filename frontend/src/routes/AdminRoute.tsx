@@ -1,9 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAppSelector } from "../app/hooks";
-import {
-  selectCurrentUser,
-  selectIsAuthenticated,
-} from "../features/auth/authSlice";
+import { selectCurrentUser, selectIsAuthenticated } from "../features/auth/authSlice";
 import { UserRole } from "../types/user";
 
 export function AdminRoute() {

@@ -4,8 +4,7 @@ export const ProductSortOrder = {
   PriceDesc: "price-desc",
 } as const;
 
-export type ProductSortOrder =
-  (typeof ProductSortOrder)[keyof typeof ProductSortOrder];
+export type ProductSortOrder = (typeof ProductSortOrder)[keyof typeof ProductSortOrder];
 
 export type Product = {
   id: string;

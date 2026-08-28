@@ -10,16 +10,8 @@ import {
   registerUserViaApi,
 } from "../../src/helpers";
 import { orderListSchema, orderSchema, productSchema } from "../../src/schemas";
-import {
-  ADMIN_USER,
-  createOrderInput,
-  createOrderItemInput,
-} from "../../src/test-data";
-import type {
-  ApiErrorResponse,
-  AuthResponse,
-  CreateOrderInput,
-} from "../../src/types";
+import { ADMIN_USER, createOrderInput, createOrderItemInput } from "../../src/test-data";
+import type { ApiErrorResponse, AuthResponse, CreateOrderInput } from "../../src/types";
 
 const invalidFullNameCases = [
   {
@@ -196,10 +188,7 @@ test.describe("POST /orders", () => {
       });
 
       const orderedQuantity = 2;
-      const orderItemInput = createOrderItemInput(
-        testProduct.id,
-        orderedQuantity,
-      );
+      const orderItemInput = createOrderItemInput(testProduct.id, orderedQuantity);
       const orderInput = createOrderInput([orderItemInput]);
 
       const response = await request.post("/orders", {
@@ -235,9 +224,7 @@ test.describe("POST /orders", () => {
       ]);
     });
 
-    test("ordered quantity: decreases product stock by the exact amount", async ({
-      request,
-    }) => {
+    test("ordered quantity: decreases product stock by the exact amount", async ({ request }) => {
       const initialStock = 10;
       const orderedQuantity = 3;
 
@@ -248,9 +235,7 @@ test.describe("POST /orders", () => {
         stock: initialStock,
       });
 
-      const orderInput = createOrderInput([
-        createOrderItemInput(testProduct.id, orderedQuantity),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, orderedQuantity)]);
 
       const orderResponse = await request.post("/orders", {
         headers: {
@@ -299,11 +284,9 @@ test.describe("POST /orders", () => {
       });
 
       // Sort the products by id so their id order is known.
-      const productsByIdAscending = [
-        firstProduct,
-        secondProduct,
-        thirdProduct,
-      ].sort((first, second) => first.id.localeCompare(second.id));
+      const productsByIdAscending = [firstProduct, secondProduct, thirdProduct].sort(
+        (first, second) => first.id.localeCompare(second.id),
+      );
 
       // Send [middle, lowest, highest] so id sorting cannot match the request.
       const requestedProducts = [
@@ -351,50 +334,34 @@ test.describe("POST /orders", () => {
       );
 
       // Different quantities check that each product gets the correct stock update.
-      const [
-        firstProductResponse,
-        secondProductResponse,
-        thirdProductResponse,
-      ] = await Promise.all([
-        request.get(`/products/${firstProduct.id}`, {
-          headers: userHeaders,
-        }),
-        request.get(`/products/${secondProduct.id}`, {
-          headers: userHeaders,
-        }),
-        request.get(`/products/${thirdProduct.id}`, {
-          headers: userHeaders,
-        }),
-      ]);
+      const [firstProductResponse, secondProductResponse, thirdProductResponse] = await Promise.all(
+        [
+          request.get(`/products/${firstProduct.id}`, {
+            headers: userHeaders,
+          }),
+          request.get(`/products/${secondProduct.id}`, {
+            headers: userHeaders,
+          }),
+          request.get(`/products/${thirdProduct.id}`, {
+            headers: userHeaders,
+          }),
+        ],
+      );
 
       expect(firstProductResponse.status()).toBe(200);
       expect(secondProductResponse.status()).toBe(200);
       expect(thirdProductResponse.status()).toBe(200);
 
-      const updatedFirstProduct = productSchema.parse(
-        await firstProductResponse.json(),
-      );
-      const updatedSecondProduct = productSchema.parse(
-        await secondProductResponse.json(),
-      );
-      const updatedThirdProduct = productSchema.parse(
-        await thirdProductResponse.json(),
-      );
+      const updatedFirstProduct = productSchema.parse(await firstProductResponse.json());
+      const updatedSecondProduct = productSchema.parse(await secondProductResponse.json());
+      const updatedThirdProduct = productSchema.parse(await thirdProductResponse.json());
 
-      expect(updatedFirstProduct.stock).toBe(
-        initialStock - quantityByProductId[firstProduct.id],
-      );
-      expect(updatedSecondProduct.stock).toBe(
-        initialStock - quantityByProductId[secondProduct.id],
-      );
-      expect(updatedThirdProduct.stock).toBe(
-        initialStock - quantityByProductId[thirdProduct.id],
-      );
+      expect(updatedFirstProduct.stock).toBe(initialStock - quantityByProductId[firstProduct.id]);
+      expect(updatedSecondProduct.stock).toBe(initialStock - quantityByProductId[secondProduct.id]);
+      expect(updatedThirdProduct.stock).toBe(initialStock - quantityByProductId[thirdProduct.id]);
     });
 
-    test("multiple items: preserves non-alphabetical request order", async ({
-      request,
-    }) => {
+    test("multiple items: preserves non-alphabetical request order", async ({ request }) => {
       const adminToken = await loginViaApi(request, ADMIN_USER);
 
       const alphaProduct = await createProductViaApi(request, adminToken, {
@@ -550,15 +517,11 @@ test.describe("POST /orders", () => {
       expect(firstOrder.orderNumber).not.toBe(secondOrder.orderNumber);
     });
 
-    test("missing product: returns PRODUCT_NOT_FOUND with the missing id", async ({
-      request,
-    }) => {
+    test("missing product: returns PRODUCT_NOT_FOUND with the missing id", async ({ request }) => {
       // A random valid UUID passes request validation but does not match a product.
       const missingProductId = randomUUID();
 
-      const orderInput = createOrderInput([
-        createOrderItemInput(missingProductId, 1),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput(missingProductId, 1)]);
 
       const orderResponse = await request.post("/orders", {
         headers: {
@@ -582,9 +545,7 @@ test.describe("POST /orders", () => {
       });
     });
 
-    test("multiple missing products: returns every missing id", async ({
-      request,
-    }) => {
+    test("multiple missing products: returns every missing id", async ({ request }) => {
       const firstMissingProductId = randomUUID();
       const secondMissingProductId = randomUUID();
 
@@ -625,29 +586,22 @@ test.describe("POST /orders", () => {
       );
     });
 
-    test("deleted product: returns PRODUCT_NOT_FOUND with the deleted id", async ({
-      request,
-    }) => {
+    test("deleted product: returns PRODUCT_NOT_FOUND with the deleted id", async ({ request }) => {
       const adminToken = await loginViaApi(request, ADMIN_USER);
 
       const testProduct = await createProductViaApi(request, adminToken, {
         title: "Deleted Order Product",
       });
 
-      const deleteResponse = await request.delete(
-        `/products/${testProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${adminToken}`,
-          },
+      const deleteResponse = await request.delete(`/products/${testProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
         },
-      );
+      });
 
       expect(deleteResponse.status()).toBe(204);
 
-      const orderInput = createOrderInput([
-        createOrderItemInput(testProduct.id, 1),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, 1)]);
 
       const orderResponse = await request.post("/orders", {
         headers: {
@@ -719,9 +673,7 @@ test.describe("POST /orders", () => {
 
       expect(productResponse.status()).toBe(200);
 
-      const unchangedProduct = productSchema.parse(
-        await productResponse.json(),
-      );
+      const unchangedProduct = productSchema.parse(await productResponse.json());
 
       expect(unchangedProduct.stock).toBe(availableStock);
     });
@@ -740,9 +692,7 @@ test.describe("POST /orders", () => {
         stock: maximumQuantity,
       });
 
-      const orderInput = createOrderInput([
-        createOrderItemInput(testProduct.id, maximumQuantity),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, maximumQuantity)]);
 
       const orderResponse = await request.post("/orders", {
         headers: {
@@ -789,12 +739,9 @@ test.describe("POST /orders", () => {
         // A random valid UUID is enough because body validation runs before product lookup.
         const productId = randomUUID();
 
-        const orderInput = createOrderInput(
-          [createOrderItemInput(productId, 1)],
-          {
-            fullName: invalidFullNameCase.value,
-          },
-        );
+        const orderInput = createOrderInput([createOrderItemInput(productId, 1)], {
+          fullName: invalidFullNameCase.value,
+        });
 
         const response = await request.post("/orders", {
           headers: {
@@ -814,12 +761,9 @@ test.describe("POST /orders", () => {
         // A random valid UUID is enough because body validation runs before product lookup.
         const productId = randomUUID();
 
-        const orderInput = createOrderInput(
-          [createOrderItemInput(productId, 1)],
-          {
-            phone: invalidPhoneCase.value,
-          },
-        );
+        const orderInput = createOrderInput([createOrderItemInput(productId, 1)], {
+          phone: invalidPhoneCase.value,
+        });
 
         const response = await request.post("/orders", {
           headers: {
@@ -839,12 +783,9 @@ test.describe("POST /orders", () => {
         // A random valid UUID is enough because body validation runs before product lookup.
         const productId = randomUUID();
 
-        const orderInput = createOrderInput(
-          [createOrderItemInput(productId, 1)],
-          {
-            address: invalidAddressCase.value,
-          },
-        );
+        const orderInput = createOrderInput([createOrderItemInput(productId, 1)], {
+          address: invalidAddressCase.value,
+        });
 
         const response = await request.post("/orders", {
           headers: {
@@ -876,9 +817,7 @@ test.describe("POST /orders", () => {
           data: orderInput,
         });
 
-        await expectSingleValidationError(response, [
-          invalidOrderEnumCase.field,
-        ]);
+        await expectSingleValidationError(response, [invalidOrderEnumCase.field]);
       });
     }
 
@@ -907,9 +846,7 @@ test.describe("POST /orders", () => {
     test("item productId with invalid UUID: returns VALIDATION_ERROR for productId", async ({
       request,
     }) => {
-      const orderInput = createOrderInput([
-        createOrderItemInput("not-a-uuid", 1),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput("not-a-uuid", 1)]);
 
       const response = await request.post("/orders", {
         headers: {
@@ -921,9 +858,7 @@ test.describe("POST /orders", () => {
       await expectSingleValidationError(response, ["items", 0, "productId"]);
     });
 
-    test("empty items: returns VALIDATION_ERROR for items", async ({
-      request,
-    }) => {
+    test("empty items: returns VALIDATION_ERROR for items", async ({ request }) => {
       const orderInput = createOrderInput([]);
 
       const response = await request.post("/orders", {
@@ -936,13 +871,9 @@ test.describe("POST /orders", () => {
       await expectSingleValidationError(response, ["items"]);
     });
 
-    test("more than 100 items: returns VALIDATION_ERROR for items", async ({
-      request,
-    }) => {
+    test("more than 100 items: returns VALIDATION_ERROR for items", async ({ request }) => {
       // Real products are not needed because array length validation runs before product lookup.
-      const orderItems = Array.from({ length: 101 }, () =>
-        createOrderItemInput(randomUUID(), 1),
-      );
+      const orderItems = Array.from({ length: 101 }, () => createOrderItemInput(randomUUID(), 1));
 
       const orderInput = createOrderInput(orderItems);
 
@@ -1004,9 +935,7 @@ test.describe("POST /orders", () => {
       });
     }
 
-    test("100 items: creates order at maximum item count", async ({
-      request,
-    }) => {
+    test("100 items: creates order at maximum item count", async ({ request }) => {
       const maximumItemCount = 100;
 
       const adminToken = await loginViaApi(request, ADMIN_USER);
@@ -1046,9 +975,7 @@ test.describe("POST /orders", () => {
       expect(createdOrder.totalPrice).toBe(100);
     });
 
-    test("missing fullName: returns VALIDATION_ERROR for fullName", async ({
-      request,
-    }) => {
+    test("missing fullName: returns VALIDATION_ERROR for fullName", async ({ request }) => {
       // A random valid UUID is enough because body validation runs before product lookup.
       const productId = randomUUID();
 
@@ -1068,9 +995,7 @@ test.describe("POST /orders", () => {
       await expectSingleValidationError(response, ["fullName"]);
     });
 
-    test("items with wrong type: returns VALIDATION_ERROR for items", async ({
-      request,
-    }) => {
+    test("items with wrong type: returns VALIDATION_ERROR for items", async ({ request }) => {
       const orderInput = {
         ...createOrderInput([createOrderItemInput(randomUUID(), 1)]),
         items: "not-an-array",
@@ -1138,33 +1063,23 @@ test.describe("POST /orders", () => {
         },
       });
 
-      const firstProductResponse = await request.get(
-        `/products/${firstProduct.id}`,
-        {
-          headers: regularUserHeaders,
-        },
-      );
+      const firstProductResponse = await request.get(`/products/${firstProduct.id}`, {
+        headers: regularUserHeaders,
+      });
 
       expect(firstProductResponse.status()).toBe(200);
 
-      const unchangedFirstProduct = productSchema.parse(
-        await firstProductResponse.json(),
-      );
+      const unchangedFirstProduct = productSchema.parse(await firstProductResponse.json());
 
       expect(unchangedFirstProduct.stock).toBe(firstProductInitialStock);
 
-      const secondProductResponse = await request.get(
-        `/products/${secondProduct.id}`,
-        {
-          headers: regularUserHeaders,
-        },
-      );
+      const secondProductResponse = await request.get(`/products/${secondProduct.id}`, {
+        headers: regularUserHeaders,
+      });
 
       expect(secondProductResponse.status()).toBe(200);
 
-      const unchangedSecondProduct = productSchema.parse(
-        await secondProductResponse.json(),
-      );
+      const unchangedSecondProduct = productSchema.parse(await secondProductResponse.json());
 
       expect(unchangedSecondProduct.stock).toBe(secondProductInitialStock);
 
@@ -1193,9 +1108,7 @@ test.describe("POST /orders", () => {
         stock: initialStock,
       });
 
-      const orderInput = createOrderInput([
-        createOrderItemInput(testProduct.id, orderedQuantity),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, orderedQuantity)]);
 
       const regularUserHeaders = {
         Authorization: `Bearer ${regularUserAuth.token}`,
@@ -1214,10 +1127,9 @@ test.describe("POST /orders", () => {
       ]);
 
       // Either request may finish first, so compare the sorted statuses.
-      const responseStatuses = [
-        firstOrderResponse.status(),
-        secondOrderResponse.status(),
-      ].sort((first, second) => first - second);
+      const responseStatuses = [firstOrderResponse.status(), secondOrderResponse.status()].sort(
+        (first, second) => first - second,
+      );
 
       expect(responseStatuses).toEqual([201, 409]);
 
@@ -1246,9 +1158,7 @@ test.describe("POST /orders", () => {
   });
 
   test.describe("without authentication", () => {
-    test("invalid body: returns AUTHENTICATION_REQUIRED before validation", async ({
-      request,
-    }) => {
+    test("invalid body: returns AUTHENTICATION_REQUIRED before validation", async ({ request }) => {
       const response = await request.post("/orders", {
         data: {},
       });

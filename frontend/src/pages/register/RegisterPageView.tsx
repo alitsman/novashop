@@ -117,11 +117,7 @@ export function RegisterPageView({
             </p>
           )}
 
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            aria-busy={isSubmitting}
-          >
+          <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
             {isSubmitting ? "Creating account..." : "Create account"}
           </Button>
 
@@ -133,10 +129,7 @@ export function RegisterPageView({
 
           <p className="auth-page-layout__required-note">
             Required fields are marked with{" "}
-            <span
-              className="auth-page-layout__required-mark"
-              aria-hidden="true"
-            >
+            <span className="auth-page-layout__required-mark" aria-hidden="true">
               *
             </span>
             .

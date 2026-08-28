@@ -42,8 +42,7 @@ export function useCartBootstrap({ isAuthRestored }: UseCartBootstrapParams) {
     );
   }, [currentUserId, dispatch, isAuthRestored]);
 
-  const isCartRestored =
-    isAuthRestored && (!currentUserId || cartOwnerUserId === currentUserId);
+  const isCartRestored = isAuthRestored && (!currentUserId || cartOwnerUserId === currentUserId);
 
   useEffect(() => {
     if (!isCartRestored || !currentUserId) {

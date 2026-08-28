@@ -6,9 +6,7 @@ import type { AuthResponse, TestAccount } from "../types";
 
 // Registers an isolated regular user through the public API for tests that need
 // user-owned setup data but do not test POST /auth/register itself.
-export async function registerUserViaApi(
-  request: APIRequestContext,
-): Promise<AuthResponse> {
+export async function registerUserViaApi(request: APIRequestContext): Promise<AuthResponse> {
   const userEmail = `user-${randomUUID()}@test.com`;
 
   const response = await request.post("/auth/register", {
@@ -20,9 +18,7 @@ export async function registerUserViaApi(
   });
 
   if (response.status() !== 201) {
-    throw new Error(
-      `User registration failed: expected status 201, received ${response.status()}`,
-    );
+    throw new Error(`User registration failed: expected status 201, received ${response.status()}`);
   }
 
   return (await response.json()) as AuthResponse;

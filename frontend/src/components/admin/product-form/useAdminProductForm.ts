@@ -12,9 +12,9 @@ import type {
 import { validateAdminProductForm } from "./adminProductFormValidation";
 import type { AdminProductFormViewProps } from "./AdminProductFormView";
 
-const adminProductFormValueFieldNames = Object.keys(
-  emptyAdminProductFormValues,
-) as Array<keyof AdminProductFormValues>;
+const adminProductFormValueFieldNames = Object.keys(emptyAdminProductFormValues) as Array<
+  keyof AdminProductFormValues
+>;
 
 const areAdminProductFormValuesEqual = (
   previousValues: AdminProductFormValues,
@@ -61,12 +61,7 @@ export function useAdminProductForm({
   const [formErrors, setFormErrors] = useState<AdminProductFormErrors>({});
 
   useEffect(() => {
-    if (
-      areAdminProductFormValuesEqual(
-        previousSourceFormValuesRef.current,
-        sourceFormValues,
-      )
-    ) {
+    if (areAdminProductFormValuesEqual(previousSourceFormValuesRef.current, sourceFormValues)) {
       return;
     }
 
@@ -119,10 +114,7 @@ export function useAdminProductForm({
     });
   };
 
-  const updateField = (
-    fieldName: keyof AdminProductFormValues,
-    value: string,
-  ) => {
+  const updateField = (fieldName: keyof AdminProductFormValues, value: string) => {
     setCurrentFormValues((currentValues) => {
       return {
         ...currentValues,

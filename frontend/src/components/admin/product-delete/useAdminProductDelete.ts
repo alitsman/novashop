@@ -11,10 +11,7 @@ type UseAdminProductDeleteParams = {
   onDeleted: () => void;
 };
 
-export function useAdminProductDelete({
-  productId,
-  onDeleted,
-}: UseAdminProductDeleteParams) {
+export function useAdminProductDelete({ productId, onDeleted }: UseAdminProductDeleteParams) {
   const dispatch = useAppDispatch();
 
   const deleteError = useAppSelector(selectProductsDeleteError);

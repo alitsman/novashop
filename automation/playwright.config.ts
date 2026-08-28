@@ -30,9 +30,7 @@ const getExplicitUrlPort = (name: string, value: string): string => {
   }
 
   if (!url.port) {
-    throw new Error(
-      `${name} must include an explicit port while Playwright starts local servers`,
-    );
+    throw new Error(`${name} must include an explicit port while Playwright starts local servers`);
   }
 
   return url.port;
@@ -49,9 +47,7 @@ const frontendPort = getExplicitUrlPort("FRONTEND_URL", frontendUrl);
 const apiPort = getExplicitUrlPort("API_URL", apiUrl);
 
 if (apiPort !== backendPort) {
-  throw new Error(
-    `PORT (${backendPort}) must match the port in API_URL (${apiPort})`,
-  );
+  throw new Error(`PORT (${backendPort}) must match the port in API_URL (${apiPort})`);
 }
 
 const backendHealthUrl = new URL("/health", apiUrl).toString();

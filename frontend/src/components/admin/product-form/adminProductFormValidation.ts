@@ -1,7 +1,4 @@
-import type {
-  AdminProductFormErrors,
-  AdminProductFormValues,
-} from "./adminProductFormTypes";
+import type { AdminProductFormErrors, AdminProductFormValues } from "./adminProductFormTypes";
 
 const maxProductTitleLength = 80;
 const maxCategoryLength = 40;
@@ -16,12 +13,10 @@ const hasDisallowedControlCharacters = (value: string) => {
   return Array.from(value).some((character) => {
     const characterCode = character.charCodeAt(0);
 
-    const isAllowedWhitespace =
-      characterCode === 9 || characterCode === 10 || characterCode === 13;
+    const isAllowedWhitespace = characterCode === 9 || characterCode === 10 || characterCode === 13;
 
     return (
-      !isAllowedWhitespace &&
-      ((characterCode >= 0 && characterCode <= 31) || characterCode === 127)
+      !isAllowedWhitespace && ((characterCode >= 0 && characterCode <= 31) || characterCode === 127)
     );
   });
 };
@@ -60,8 +55,7 @@ export const validateAdminProductForm = (
   } else if (title.length > maxProductTitleLength) {
     formErrors.title = `Product title must be ${maxProductTitleLength} characters or less.`;
   } else if (!unicodeLetterOrDigitPattern.test(title)) {
-    formErrors.title =
-      "Product title must contain at least one letter or digit.";
+    formErrors.title = "Product title must contain at least one letter or digit.";
   }
 
   if (!formValues.price.trim()) {
@@ -109,8 +103,7 @@ export const validateAdminProductForm = (
   if (!description) {
     formErrors.description = "Description is required.";
   } else if (hasDisallowedControlCharacters(description)) {
-    formErrors.description =
-      "Remove hidden control characters from description.";
+    formErrors.description = "Remove hidden control characters from description.";
   } else if (angleBracketsPattern.test(description)) {
     formErrors.description = "Remove angle brackets (< >) from description.";
   } else if (description.length < 10) {
@@ -118,8 +111,7 @@ export const validateAdminProductForm = (
   } else if (description.length > maxDescriptionLength) {
     formErrors.description = `Description must be ${maxDescriptionLength} characters or less.`;
   } else if (!unicodeLetterOrDigitPattern.test(description)) {
-    formErrors.description =
-      "Description must contain at least one letter or digit.";
+    formErrors.description = "Description must contain at least one letter or digit.";
   }
 
   return formErrors;

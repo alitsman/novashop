@@ -26,15 +26,9 @@ export function AdminProductPreviewView({
   onImageError,
 }: AdminProductPreviewViewProps) {
   return (
-    <section
-      className="admin-product-preview"
-      aria-labelledby="admin-product-preview-title"
-    >
+    <section className="admin-product-preview" aria-labelledby="admin-product-preview-title">
       <div className="admin-product-preview__header">
-        <h2
-          className="admin-product-preview__title"
-          id="admin-product-preview-title"
-        >
+        <h2 className="admin-product-preview__title" id="admin-product-preview-title">
           Product card preview
         </h2>
 
@@ -43,10 +37,7 @@ export function AdminProductPreviewView({
         </p>
       </div>
 
-      <article
-        className="admin-product-preview__card"
-        aria-label="Product card preview"
-      >
+      <article className="admin-product-preview__card" aria-label="Product card preview">
         <div className="admin-product-preview__image-frame">
           {shouldShowImage ? (
             <img
@@ -69,9 +60,7 @@ export function AdminProductPreviewView({
 
           <h3 className="admin-product-preview__product-title">{titleText}</h3>
 
-          <p className="admin-product-preview__description">
-            {descriptionText}
-          </p>
+          <p className="admin-product-preview__description">{descriptionText}</p>
 
           <div className="admin-product-preview__meta">
             <p className="admin-product-preview__price">{priceText}</p>
@@ -80,13 +69,9 @@ export function AdminProductPreviewView({
           </div>
 
           <div className="admin-product-preview__actions" aria-hidden="true">
-            <span className="admin-product-preview__fake-button">
-              Add to cart
-            </span>
+            <span className="admin-product-preview__fake-button">Add to cart</span>
 
-            <span className="admin-product-preview__fake-link">
-              View details
-            </span>
+            <span className="admin-product-preview__fake-link">View details</span>
           </div>
         </div>
       </article>

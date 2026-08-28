@@ -37,9 +37,7 @@ async function registerUserWithPasswordViaApi(
   });
 
   if (response.status() !== 201) {
-    throw new Error(
-      `User setup failed: expected status 201, received ${response.status()}`,
-    );
+    throw new Error(`User setup failed: expected status 201, received ${response.status()}`);
   }
 
   return (await response.json()) as AuthResponse;
@@ -101,10 +99,7 @@ test.describe("User persistence", () => {
       PLAINTEXT_PASSWORD,
     );
 
-    const registeredUserIds = [
-      firstRegisteredUser.user.id,
-      secondRegisteredUser.user.id,
-    ];
+    const registeredUserIds = [firstRegisteredUser.user.id, secondRegisteredUser.user.id];
 
     const passwordHashResult = await dbPool.query<UserPasswordHashRow>(
       `
@@ -118,9 +113,7 @@ test.describe("User persistence", () => {
 
     expect(passwordHashResult.rows).toHaveLength(2);
 
-    const storedPasswordHashes = passwordHashResult.rows.map(
-      ({ passwordHash }) => passwordHash,
-    );
+    const storedPasswordHashes = passwordHashResult.rows.map(({ passwordHash }) => passwordHash);
 
     // Set size 2 means the same password produced two different bcrypt hashes.
     expect(new Set(storedPasswordHashes).size).toBe(2);

@@ -13,9 +13,7 @@ import {
 } from "../../src/test-data";
 import type { ApiErrorResponse, Product } from "../../src/types";
 
-const SEEDED_ACTIVE_PRODUCT_IDS = SEEDED_ACTIVE_PRODUCTS.map(
-  (product) => product.id,
-);
+const SEEDED_ACTIVE_PRODUCT_IDS = SEEDED_ACTIVE_PRODUCTS.map((product) => product.id);
 
 const unavailableProductCases = [
   {
@@ -49,9 +47,7 @@ test.describe("Products read API", () => {
     });
 
     test.describe("GET /products", () => {
-      test("returns all active seeded products in deterministic order", async ({
-        request,
-      }) => {
+      test("returns all active seeded products in deterministic order", async ({ request }) => {
         const response = await request.get("/products", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -73,14 +69,10 @@ test.describe("Products read API", () => {
         // Check that all seeded products are present and in the correct order.
         // Exact response shape and generated dates are checked separately.
         expect(seededProducts).toEqual(
-          SEEDED_ACTIVE_PRODUCTS.map((product) =>
-            expect.objectContaining(product),
-          ),
+          SEEDED_ACTIVE_PRODUCTS.map((product) => expect.objectContaining(product)),
         );
 
-        expect(responseProductIds).not.toContain(
-          SOFT_DELETED_SEEDED_PRODUCT_ID,
-        );
+        expect(responseProductIds).not.toContain(SOFT_DELETED_SEEDED_PRODUCT_ID);
       });
 
       test("returns the exact public product shape", async ({ request }) => {
@@ -94,10 +86,7 @@ test.describe("Products read API", () => {
 
         const responseBody = (await response.json()) as Product[];
 
-        const actualProduct = getProductById(
-          responseBody,
-          SEEDED_REFERENCE_PRODUCT.id,
-        );
+        const actualProduct = getProductById(responseBody, SEEDED_REFERENCE_PRODUCT.id);
 
         expect(actualProduct).toEqual({
           ...SEEDED_REFERENCE_PRODUCT,
@@ -108,9 +97,7 @@ test.describe("Products read API", () => {
         });
       });
 
-      test("response matches the public product schema", async ({
-        request,
-      }) => {
+      test("response matches the public product schema", async ({ request }) => {
         const response = await request.get("/products", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -125,17 +112,12 @@ test.describe("Products read API", () => {
     });
 
     test.describe("GET /products/:id", () => {
-      test("active product id: returns the requested product", async ({
-        request,
-      }) => {
-        const response = await request.get(
-          `/products/${SEEDED_REFERENCE_PRODUCT.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+      test("active product id: returns the requested product", async ({ request }) => {
+        const response = await request.get(`/products/${SEEDED_REFERENCE_PRODUCT.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         expect(response.status()).toBe(200);
 
@@ -150,17 +132,12 @@ test.describe("Products read API", () => {
 
       // The loop creates a separate test for each unavailable product.
       for (const unavailableProductCase of unavailableProductCases) {
-        test(`${unavailableProductCase.name}: returns PRODUCT_NOT_FOUND`, async ({
-          request,
-        }) => {
-          const response = await request.get(
-            `/products/${unavailableProductCase.id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+        test(`${unavailableProductCase.name}: returns PRODUCT_NOT_FOUND`, async ({ request }) => {
+          const response = await request.get(`/products/${unavailableProductCase.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
             },
-          );
+          });
 
           expect(response.status()).toBe(404);
 
@@ -175,9 +152,7 @@ test.describe("Products read API", () => {
         });
       }
 
-      test("invalid product id: returns VALIDATION_ERROR for id", async ({
-        request,
-      }) => {
+      test("invalid product id: returns VALIDATION_ERROR for id", async ({ request }) => {
         const response = await request.get(`/products/${INVALID_PRODUCT_ID}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -193,10 +168,7 @@ test.describe("Products read API", () => {
 
         const { details } = responseBody.error;
 
-        assert(
-          Array.isArray(details),
-          "Expected validation error details to be an array",
-        );
+        assert(Array.isArray(details), "Expected validation error details to be an array");
 
         const validationIssues: unknown[] = details;
 
@@ -227,9 +199,7 @@ test.describe("Products read API", () => {
   });
 
   test.describe("without authentication", () => {
-    test("GET /products: returns AUTHENTICATION_REQUIRED", async ({
-      request,
-    }) => {
+    test("GET /products: returns AUTHENTICATION_REQUIRED", async ({ request }) => {
       const response = await request.get("/products");
 
       expect(response.status()).toBe(401);

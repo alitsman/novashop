@@ -12,12 +12,10 @@ const hasDisallowedControlCharacters = (value: string) => {
   return Array.from(value).some((character) => {
     const characterCode = character.charCodeAt(0);
 
-    const isAllowedWhitespace =
-      characterCode === 9 || characterCode === 10 || characterCode === 13;
+    const isAllowedWhitespace = characterCode === 9 || characterCode === 10 || characterCode === 13;
 
     return (
-      !isAllowedWhitespace &&
-      ((characterCode >= 0 && characterCode <= 31) || characterCode === 127)
+      !isAllowedWhitespace && ((characterCode >= 0 && characterCode <= 31) || characterCode === 127)
     );
   });
 };
@@ -30,9 +28,7 @@ const getPlusSignCount = (value: string) => {
   return value.match(/\+/g)?.length ?? 0;
 };
 
-export const validateCheckoutForm = (
-  formValues: CheckoutForm,
-): CheckoutFormErrors => {
+export const validateCheckoutForm = (formValues: CheckoutForm): CheckoutFormErrors => {
   const formErrors: CheckoutFormErrors = {};
 
   const fullName = formValues.fullName.trim();
@@ -61,8 +57,7 @@ export const validateCheckoutForm = (
   } else if (hasDisallowedControlCharacters(phone)) {
     formErrors.phone = "Remove hidden control characters from phone number.";
   } else if (!phoneAllowedCharactersPattern.test(phone)) {
-    formErrors.phone =
-      "Use only digits, spaces, +, hyphens, or parentheses in phone number.";
+    formErrors.phone = "Use only digits, spaces, +, hyphens, or parentheses in phone number.";
   } else if (getPlusSignCount(phone) > 1) {
     formErrors.phone = "Use only one plus sign in phone number.";
   } else if (phone.includes("+") && !phone.startsWith("+")) {
@@ -80,8 +75,7 @@ export const validateCheckoutForm = (
   if (!address) {
     formErrors.address = "Delivery address is required.";
   } else if (hasDisallowedControlCharacters(address)) {
-    formErrors.address =
-      "Remove hidden control characters from delivery address.";
+    formErrors.address = "Remove hidden control characters from delivery address.";
   } else if (angleBracketsPattern.test(address)) {
     formErrors.address = "Remove angle brackets (< >) from delivery address.";
   } else if (address.length < 5) {
@@ -89,8 +83,7 @@ export const validateCheckoutForm = (
   } else if (address.length > 200) {
     formErrors.address = "Delivery address must be 200 characters or less.";
   } else if (!unicodeLetterOrDigitPattern.test(address)) {
-    formErrors.address =
-      "Delivery address must contain at least one letter or digit.";
+    formErrors.address = "Delivery address must contain at least one letter or digit.";
   }
 
   return formErrors;

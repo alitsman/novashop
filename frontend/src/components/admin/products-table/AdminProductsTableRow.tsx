@@ -13,10 +13,7 @@ const formatPrice = (price: number) => {
   return `$${price.toFixed(2)}`;
 };
 
-export function AdminProductsTableRow({
-  product,
-  onProductDeleted,
-}: AdminProductsTableRowProps) {
+export function AdminProductsTableRow({ product, onProductDeleted }: AdminProductsTableRowProps) {
   const deleteFlow = useAdminProductDelete({
     productId: product.id,
     onDeleted: () => onProductDeleted(product.title),
@@ -24,11 +21,7 @@ export function AdminProductsTableRow({
 
   return (
     <tr>
-      <th
-        className="admin-products-table__product-cell"
-        scope="row"
-        data-label="Product"
-      >
+      <th className="admin-products-table__product-cell" scope="row" data-label="Product">
         <div className="admin-products-table__product">
           <img
             className="admin-products-table__image"
@@ -38,13 +31,9 @@ export function AdminProductsTableRow({
           />
 
           <div className="admin-products-table__product-text">
-            <span className="admin-products-table__product-title">
-              {product.title}
-            </span>
+            <span className="admin-products-table__product-title">{product.title}</span>
 
-            <span className="admin-products-table__product-description">
-              {product.description}
-            </span>
+            <span className="admin-products-table__product-description">{product.description}</span>
           </div>
         </div>
       </th>

@@ -24,7 +24,4 @@ export const ADD_TO_CART_PRODUCT_B: AddToCartProductOverrides = {
   stock: 3,
 };
 
-export const ADD_TO_CART_PRODUCTS = [
-  ADD_TO_CART_PRODUCT_A,
-  ADD_TO_CART_PRODUCT_B,
-];
+export const ADD_TO_CART_PRODUCTS = [ADD_TO_CART_PRODUCT_A, ADD_TO_CART_PRODUCT_B];

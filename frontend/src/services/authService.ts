@@ -1,9 +1,5 @@
 import { mockUsers, type MockUserWithPassword } from "../data/mockUsers";
-import type {
-  AuthResponse,
-  LoginCredentials,
-  RegisterData,
-} from "../types/auth";
+import type { AuthResponse, LoginCredentials, RegisterData } from "../types/auth";
 import type { User } from "../types/user";
 import { UserRole } from "../types/user";
 import { storage } from "../utils/storage";
@@ -22,10 +18,7 @@ const createUserId = (): string => {
 };
 
 const getStoredAuthUsers = (): MockUserWithPassword[] => {
-  return storage.getItem<MockUserWithPassword[]>(
-    AUTH_USERS_STORAGE_KEY,
-    mockUsers,
-  );
+  return storage.getItem<MockUserWithPassword[]>(AUTH_USERS_STORAGE_KEY, mockUsers);
 };
 
 const saveStoredAuthUsers = (users: MockUserWithPassword[]): void => {

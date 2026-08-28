@@ -1,13 +1,9 @@
 import type { Product } from "../types";
 
-type CatalogProductOverrides = Pick<
-  Product,
-  "id" | "title" | "price" | "category"
-> &
+type CatalogProductOverrides = Pick<Product, "id" | "title" | "price" | "category"> &
   Partial<Product>;
 
-type QuantityProductOverrides = CatalogProductOverrides &
-  Pick<Product, "stock">;
+type QuantityProductOverrides = CatalogProductOverrides & Pick<Product, "stock">;
 
 export const CATALOG_PRODUCTS: CatalogProductOverrides[] = [
   {

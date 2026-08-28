@@ -16,8 +16,7 @@ export const SEEDED_REFERENCE_PRODUCT: ExpectedSeededProduct = {
   category: "Electronics",
   imageUrl:
     "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=800&q=80",
-  description:
-    "A comfortable wireless mouse for everyday work, study, and browsing.",
+  description: "A comfortable wireless mouse for everyday work, study, and browsing.",
   stock: 12,
 };
 
@@ -30,8 +29,7 @@ export const SEEDED_ACTIVE_PRODUCTS: ExpectedSeededProduct[] = [
     category: "Electronics",
     imageUrl:
       "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80",
-    description:
-      "A compact mechanical keyboard with responsive keys for coding and gaming.",
+    description: "A compact mechanical keyboard with responsive keys for coding and gaming.",
     stock: 8,
   },
   {
@@ -41,8 +39,7 @@ export const SEEDED_ACTIVE_PRODUCTS: ExpectedSeededProduct[] = [
     category: "Electronics",
     imageUrl:
       "https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=800&q=80",
-    description:
-      "A multi-port USB-C hub for connecting monitors, drives, and accessories.",
+    description: "A multi-port USB-C hub for connecting monitors, drives, and accessories.",
     stock: 15,
   },
   {
@@ -52,8 +49,7 @@ export const SEEDED_ACTIVE_PRODUCTS: ExpectedSeededProduct[] = [
     category: "Home",
     imageUrl:
       "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=800&q=80",
-    description:
-      "A minimal desk lamp with a clean design for a comfortable workspace.",
+    description: "A minimal desk lamp with a clean design for a comfortable workspace.",
     stock: 10,
   },
   {
@@ -63,8 +59,7 @@ export const SEEDED_ACTIVE_PRODUCTS: ExpectedSeededProduct[] = [
     category: "Home",
     imageUrl:
       "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=800&q=80",
-    description:
-      "A ceramic mug for coffee, tea, or late-night debugging sessions.",
+    description: "A ceramic mug for coffee, tea, or late-night debugging sessions.",
     stock: 20,
   },
   {
@@ -74,8 +69,7 @@ export const SEEDED_ACTIVE_PRODUCTS: ExpectedSeededProduct[] = [
     category: "Accessories",
     imageUrl:
       "https://images.unsplash.com/photo-1616628188508-42adf853b87c?auto=format&fit=crop&w=800&q=80",
-    description:
-      "An ergonomic laptop stand that helps improve posture at your desk.",
+    description: "An ergonomic laptop stand that helps improve posture at your desk.",
     stock: 7,
   },
   {
@@ -85,8 +79,7 @@ export const SEEDED_ACTIVE_PRODUCTS: ExpectedSeededProduct[] = [
     category: "Books",
     imageUrl:
       "https://images.unsplash.com/photo-1531346878377-a5be20888e57?auto=format&fit=crop&w=800&q=80",
-    description:
-      "A simple notebook for plans, notes, test ideas, and daily tasks.",
+    description: "A simple notebook for plans, notes, test ideas, and daily tasks.",
     stock: 25,
   },
   {
@@ -101,5 +94,4 @@ export const SEEDED_ACTIVE_PRODUCTS: ExpectedSeededProduct[] = [
   },
 ];
 
-export const SOFT_DELETED_SEEDED_PRODUCT_ID =
-  "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa9";
+export const SOFT_DELETED_SEEDED_PRODUCT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa9";

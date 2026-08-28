@@ -4,11 +4,7 @@ import { expect, test } from "@playwright/test";
 
 import { expectSingleValidationError, loginViaApi } from "../../src/helpers";
 import { productSchema } from "../../src/schemas";
-import {
-  ADMIN_USER,
-  REGULAR_USER,
-  createProductInput,
-} from "../../src/test-data";
+import { ADMIN_USER, REGULAR_USER, createProductInput } from "../../src/test-data";
 import type { Product, ApiErrorResponse } from "../../src/types";
 
 const validTextBoundaryCases = [
@@ -213,12 +209,7 @@ const requiredProductFields = [
   "stock",
 ] as const;
 
-const emptyStringProductFields = [
-  "title",
-  "category",
-  "imageUrl",
-  "description",
-];
+const emptyStringProductFields = ["title", "category", "imageUrl", "description"];
 
 test.describe("POST /products", () => {
   test.describe("admin", () => {
@@ -253,9 +244,7 @@ test.describe("POST /products", () => {
     });
 
     for (const validTextBoundaryCase of validTextBoundaryCases) {
-      test(`${validTextBoundaryCase.name}: creates product`, async ({
-        request,
-      }) => {
+      test(`${validTextBoundaryCase.name}: creates product`, async ({ request }) => {
         const requestBody = {
           ...createProductInput(),
           [validTextBoundaryCase.field]: validTextBoundaryCase.value,
@@ -273,9 +262,7 @@ test.describe("POST /products", () => {
     }
 
     for (const validNumericBoundaryCase of validNumericBoundaryCases) {
-      test(`${validNumericBoundaryCase.name}: creates product`, async ({
-        request,
-      }) => {
+      test(`${validNumericBoundaryCase.name}: creates product`, async ({ request }) => {
         const requestBody = {
           ...createProductInput(),
           [validNumericBoundaryCase.field]: validNumericBoundaryCase.value,
@@ -292,9 +279,7 @@ test.describe("POST /products", () => {
       });
     }
 
-    test("imageUrl with HTTP protocol: creates product", async ({
-      request,
-    }) => {
+    test("imageUrl with HTTP protocol: creates product", async ({ request }) => {
       const requestBody = createProductInput({
         imageUrl: "http://example.com/product.jpg",
       });
@@ -338,9 +323,7 @@ test.describe("POST /products", () => {
       expect(actualProduct).toEqual(createdProduct);
     });
 
-    test("created product: appears in the product list", async ({
-      request,
-    }) => {
+    test("created product: appears in the product list", async ({ request }) => {
       const newProductInput = createProductInput({
         title: "New Product",
       });
@@ -371,9 +354,7 @@ test.describe("POST /products", () => {
       expect(productListIds).toContain(createdProduct.id);
     });
 
-    test("server-managed fields: ignores client values", async ({
-      request,
-    }) => {
+    test("server-managed fields: ignores client values", async ({ request }) => {
       const requestedId = "00000000-0000-4000-8000-000000000099";
       const requestedTimestamp = "2020-01-01T00:00:00.000Z";
 
@@ -594,10 +575,7 @@ test.describe("POST /products", () => {
 
         const { details } = responseBody.error;
 
-        assert(
-          Array.isArray(details),
-          "Expected validation error details to be an array",
-        );
+        assert(Array.isArray(details), "Expected validation error details to be an array");
 
         const validationIssues: unknown[] = details;
 
@@ -614,9 +592,7 @@ test.describe("POST /products", () => {
   });
 
   test.describe("regular user", () => {
-    test("returns FORBIDDEN before validating product input", async ({
-      request,
-    }) => {
+    test("returns FORBIDDEN before validating product input", async ({ request }) => {
       const token = await loginViaApi(request, REGULAR_USER);
 
       const response = await request.post("/products", {
@@ -640,9 +616,7 @@ test.describe("POST /products", () => {
   });
 
   test.describe("without authentication", () => {
-    test("returns AUTHENTICATION_REQUIRED before validating product input", async ({
-      request,
-    }) => {
+    test("returns AUTHENTICATION_REQUIRED before validating product input", async ({ request }) => {
       const response = await request.post("/products", {
         data: {},
       });

@@ -7,10 +7,7 @@ type AdminProductsTableProps = {
   onProductDeleted: (productTitle: string) => void;
 };
 
-export function AdminProductsTable({
-  products,
-  onProductDeleted,
-}: AdminProductsTableProps) {
+export function AdminProductsTable({ products, onProductDeleted }: AdminProductsTableProps) {
   return (
     <div className="admin-products-table-wrapper">
       <table className="admin-products-table" aria-label="Admin products">

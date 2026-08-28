@@ -5,10 +5,7 @@ import type { TestAccount } from "../types";
 const AUTH_TOKEN_STORAGE_KEY = "novashop-auth-token";
 const AUTH_USER_STORAGE_KEY = "novashop-auth-user";
 
-export async function authenticateUser(
-  page: Page,
-  account: TestAccount,
-): Promise<void> {
+export async function authenticateUser(page: Page, account: TestAccount): Promise<void> {
   const token = `mock-token-${account.user.id}-e2e`;
 
   await page.addInitScript(

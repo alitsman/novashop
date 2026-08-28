@@ -1,16 +1,9 @@
 import { expect, test } from "../../src/fixtures";
 import { ProductCatalogPage } from "../../src/pages";
 import { authenticateUser, prepareProductCatalog } from "../../src/helpers";
-import {
-  createProduct,
-  CATALOG_PRODUCTS,
-  REGULAR_USER,
-} from "../../src/test-data";
+import { createProduct, CATALOG_PRODUCTS, REGULAR_USER } from "../../src/test-data";
 
-const MOUSE_CATEGORY_ELECTRONICS_PRICE_DESC = [
-  "Gaming Mouse",
-  "Wireless Mouse",
-];
+const MOUSE_CATEGORY_ELECTRONICS_PRICE_DESC = ["Gaming Mouse", "Wireless Mouse"];
 const MOUSE_NO_CATEGORY_PRICE_DEFAULT = [
   "Wireless Mouse",
   "Gaming Mouse",
@@ -39,14 +32,10 @@ test.describe("product catalog URL state", () => {
     await expect(page).toHaveURL("/products?q=mouse&category=Electronics");
 
     await catalogPage.sortByPrice("price-asc");
-    await expect(page).toHaveURL(
-      "/products?q=mouse&category=Electronics&sort=price-asc",
-    );
+    await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-asc");
 
     await catalogPage.clearSearchButton.click();
-    await expect(page).toHaveURL(
-      "/products?category=Electronics&sort=price-asc",
-    );
+    await expect(page).toHaveURL("/products?category=Electronics&sort=price-asc");
 
     await catalogPage.clearFiltersButton.click();
     await expect(page).toHaveURL("/products");
@@ -60,12 +49,8 @@ test.describe("product catalog URL state", () => {
     await expect(catalogPage.searchInput).toHaveValue("mouse");
     await expect(catalogPage.categorySelect).toHaveValue("Electronics");
     await expect(catalogPage.sortSelect).toHaveValue("price-desc");
-    await expect(catalogPage.productTitles).toHaveText(
-      MOUSE_CATEGORY_ELECTRONICS_PRICE_DESC,
-    );
-    await expect(page).toHaveURL(
-      "/products?q=mouse&category=Electronics&sort=price-desc",
-    );
+    await expect(catalogPage.productTitles).toHaveText(MOUSE_CATEGORY_ELECTRONICS_PRICE_DESC);
+    await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-desc");
   });
 
   test("preserves filters and results after reload", async ({ page }) => {
@@ -78,26 +63,18 @@ test.describe("product catalog URL state", () => {
     await expect(page).toHaveURL("/products?q=mouse&category=Electronics");
 
     await catalogPage.sortByPrice("price-desc");
-    await expect(page).toHaveURL(
-      "/products?q=mouse&category=Electronics&sort=price-desc",
-    );
+    await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-desc");
 
     await page.reload();
 
     await expect(catalogPage.searchInput).toHaveValue("mouse");
     await expect(catalogPage.categorySelect).toHaveValue("Electronics");
     await expect(catalogPage.sortSelect).toHaveValue("price-desc");
-    await expect(catalogPage.productTitles).toHaveText(
-      MOUSE_CATEGORY_ELECTRONICS_PRICE_DESC,
-    );
-    await expect(page).toHaveURL(
-      "/products?q=mouse&category=Electronics&sort=price-desc",
-    );
+    await expect(catalogPage.productTitles).toHaveText(MOUSE_CATEGORY_ELECTRONICS_PRICE_DESC);
+    await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-desc");
   });
 
-  test("restores filter states with browser Back and Forward", async ({
-    page,
-  }) => {
+  test("restores filter states with browser Back and Forward", async ({ page }) => {
     await test.step("Build filter history", async () => {
       await catalogPage.open();
 
@@ -108,9 +85,7 @@ test.describe("product catalog URL state", () => {
       await expect(page).toHaveURL("/products?q=mouse&category=Electronics");
 
       await catalogPage.sortByPrice("price-desc");
-      await expect(page).toHaveURL(
-        "/products?q=mouse&category=Electronics&sort=price-desc",
-      );
+      await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-desc");
 
       await catalogPage.clearFiltersButton.click();
       await expect(page).toHaveURL("/products");
@@ -123,12 +98,8 @@ test.describe("product catalog URL state", () => {
       await expect(catalogPage.searchInput).toHaveValue("mouse");
       await expect(catalogPage.categorySelect).toHaveValue("Electronics");
       await expect(catalogPage.sortSelect).toHaveValue("price-desc");
-      await expect(catalogPage.productTitles).toHaveText(
-        MOUSE_CATEGORY_ELECTRONICS_PRICE_DESC,
-      );
-      await expect(page).toHaveURL(
-        "/products?q=mouse&category=Electronics&sort=price-desc",
-      );
+      await expect(catalogPage.productTitles).toHaveText(MOUSE_CATEGORY_ELECTRONICS_PRICE_DESC);
+      await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-desc");
     });
 
     await test.step("Back restores the category state", async () => {
@@ -164,9 +135,7 @@ test.describe("product catalog URL state", () => {
       await expect(catalogPage.searchInput).toHaveValue("mouse");
       await expect(catalogPage.categorySelect).toHaveValue("Electronics");
       await expect(catalogPage.sortSelect).toHaveValue("price-desc");
-      await expect(page).toHaveURL(
-        "/products?q=mouse&category=Electronics&sort=price-desc",
-      );
+      await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-desc");
     });
 
     await test.step("Forward restores the cleared state", async () => {
@@ -179,20 +148,14 @@ test.describe("product catalog URL state", () => {
     });
   });
 
-  test("normalizes search and removes unsupported URL parameters", async ({
-    page,
-  }) => {
+  test("normalizes search and removes unsupported URL parameters", async ({ page }) => {
     // q is valid after trimming; category and sort have invalid values;
     // view is not a supported catalog parameter.
-    await page.goto(
-      "/products?q=%20mouse%20&category=Unknown&sort=price-up&view=grid",
-    );
+    await page.goto("/products?q=%20mouse%20&category=Unknown&sort=price-up&view=grid");
 
     // Category validation is postponed until products are loaded,
     // so wait for the final filtered results before asserting the URL.
-    await expect(catalogPage.productTitles).toHaveText(
-      MOUSE_NO_CATEGORY_PRICE_DEFAULT,
-    );
+    await expect(catalogPage.productTitles).toHaveText(MOUSE_NO_CATEGORY_PRICE_DEFAULT);
 
     await expect(catalogPage.searchInput).toHaveValue("mouse");
     await expect(catalogPage.categorySelect).toHaveValue("");

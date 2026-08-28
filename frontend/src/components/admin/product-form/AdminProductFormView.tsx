@@ -197,11 +197,7 @@ export function AdminProductFormView({
           )}
 
           <div className="admin-product-form__actions">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              aria-busy={isSubmitting}
-            >
+            <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
               {isSubmitting ? submittingButtonText : submitButtonText}
             </Button>
 
@@ -217,10 +213,7 @@ export function AdminProductFormView({
 
           <p className="admin-product-form__required-note">
             Required fields are marked with{" "}
-            <span
-              className="admin-product-form__required-mark"
-              aria-hidden="true"
-            >
+            <span className="admin-product-form__required-mark" aria-hidden="true">
               *
             </span>
             .

@@ -7,9 +7,7 @@ const uppercasePattern = /[A-Z]/;
 const numberPattern = /\d/;
 const specialCharacterPattern = /[^A-Za-z0-9\s]/;
 
-export function validateRegisterForm(
-  formValues: RegisterData,
-): RegisterFormErrors {
+export function validateRegisterForm(formValues: RegisterData): RegisterFormErrors {
   const errors: RegisterFormErrors = {};
 
   if (!formValues.name.trim()) {

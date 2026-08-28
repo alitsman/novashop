@@ -2,9 +2,7 @@ import type { LoginCredentials } from "../../types/auth";
 
 export type LoginFormErrors = Partial<Record<keyof LoginCredentials, string>>;
 
-export const validateLoginForm = (
-  formValues: LoginCredentials,
-): LoginFormErrors => {
+export const validateLoginForm = (formValues: LoginCredentials): LoginFormErrors => {
   const formErrors: LoginFormErrors = {};
 
   if (!formValues.email.trim()) {
