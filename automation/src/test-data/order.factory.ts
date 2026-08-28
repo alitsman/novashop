@@ -21,9 +21,6 @@ export function createOrderInput(
   };
 }
 
-export function createOrderItemInput(
-  productId: string,
-  quantity: number,
-): CreateOrderItemInput {
+export function createOrderItemInput(productId: string, quantity: number): CreateOrderItemInput {
   return { productId, quantity };
 }

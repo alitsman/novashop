@@ -28,9 +28,7 @@ export const createTestAuthToken = ({
   const jwtSecret = secret ?? process.env.JWT_SECRET;
 
   if (!jwtSecret) {
-    throw new Error(
-      "JWT_SECRET is required to create a test authentication token",
-    );
+    throw new Error("JWT_SECRET is required to create a test authentication token");
   }
 
   // Omitting role creates a correctly signed token that reaches backend claim validation.

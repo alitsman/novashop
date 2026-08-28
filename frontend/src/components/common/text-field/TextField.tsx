@@ -1,23 +1,10 @@
 import type { Ref } from "react";
 import "./text-field.css";
 
-export type TextFieldType =
-  | "text"
-  | "email"
-  | "password"
-  | "tel"
-  | "url"
-  | "number";
+export type TextFieldType = "text" | "email" | "password" | "tel" | "url" | "number";
 
 type TextFieldInputMode =
-  | "none"
-  | "text"
-  | "tel"
-  | "url"
-  | "email"
-  | "numeric"
-  | "decimal"
-  | "search";
+  "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
 
 type TextFieldProps = {
   id: string;

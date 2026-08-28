@@ -32,8 +32,7 @@ export function ConfirmDialog({
   const titleId = useId();
   const descriptionId = useId();
 
-  const confirmButtonVariant =
-    variant === "danger" ? ButtonVariant.Danger : ButtonVariant.Primary;
+  const confirmButtonVariant = variant === "danger" ? ButtonVariant.Danger : ButtonVariant.Primary;
 
   useEffect(() => {
     const dialogElement = dialogRef.current;
@@ -62,10 +61,7 @@ export function ConfirmDialog({
 
     const previouslyFocusedElement = previouslyFocusedElementRef.current;
 
-    if (
-      previouslyFocusedElement &&
-      document.contains(previouslyFocusedElement)
-    ) {
+    if (previouslyFocusedElement && document.contains(previouslyFocusedElement)) {
       previouslyFocusedElement.focus();
     }
 

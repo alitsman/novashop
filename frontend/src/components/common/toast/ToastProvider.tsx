@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ToastContext } from "./ToastContext";
 import { ToastViewport, type ToastViewModel } from "./ToastViewport";
 

@@ -51,14 +51,12 @@ export function AdminProductPreview({
 
   const titleText = trimmedTitle || "Product title";
   const categoryText = trimmedCategory || "Category";
-  const descriptionText =
-    trimmedDescription || "Product description will appear here.";
+  const descriptionText = trimmedDescription || "Product description will appear here.";
 
   const priceText = formatPreviewPrice(price);
   const stockText = formatPreviewStock(stock);
 
-  const hasImageError =
-    Boolean(trimmedImageUrl) && failedImageUrl === trimmedImageUrl;
+  const hasImageError = Boolean(trimmedImageUrl) && failedImageUrl === trimmedImageUrl;
 
   const shouldShowImage = Boolean(trimmedImageUrl) && !hasImageError;
 

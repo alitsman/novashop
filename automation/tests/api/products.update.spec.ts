@@ -1,10 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import {
-  createProductViaApi,
-  expectSingleValidationError,
-  loginViaApi,
-} from "../../src/helpers";
+import { createProductViaApi, expectSingleValidationError, loginViaApi } from "../../src/helpers";
 import { productSchema } from "../../src/schemas";
 import { ADMIN_USER, REGULAR_USER } from "../../src/test-data";
 import type { ApiErrorResponse } from "../../src/types";
@@ -26,24 +22,19 @@ test.describe("PATCH /products/:id", () => {
       token = await loginViaApi(request, ADMIN_USER);
     });
 
-    test("valid partial data: updates only provided field", async ({
-      request,
-    }) => {
+    test("valid partial data: updates only provided field", async ({ request }) => {
       const createdProduct = await createProductViaApi(request, token, {
         stock: 5,
       });
 
-      const updateResponse = await request.patch(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          data: {
-            stock: 15,
-          },
+      const updateResponse = await request.patch(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        data: {
+          stock: 15,
+        },
+      });
 
       expect(updateResponse.status()).toBe(200);
 
@@ -60,9 +51,7 @@ test.describe("PATCH /products/:id", () => {
       );
     });
 
-    test("multiple text fields: maps each value to the correct field", async ({
-      request,
-    }) => {
+    test("multiple text fields: maps each value to the correct field", async ({ request }) => {
       const productUpdateInput = {
         title: "Updated Product Title",
         category: "Updated Category",
@@ -72,15 +61,12 @@ test.describe("PATCH /products/:id", () => {
 
       const createdProduct = await createProductViaApi(request, token);
 
-      const updateResponse = await request.patch(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          data: productUpdateInput,
+      const updateResponse = await request.patch(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        data: productUpdateInput,
+      });
 
       expect(updateResponse.status()).toBe(200);
 
@@ -96,15 +82,12 @@ test.describe("PATCH /products/:id", () => {
 
       const createdProduct = await createProductViaApi(request, token);
 
-      const updateResponse = await request.patch(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          data: productUpdateInput,
+      const updateResponse = await request.patch(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        data: productUpdateInput,
+      });
 
       expect(updateResponse.status()).toBe(200);
 
@@ -125,9 +108,7 @@ test.describe("PATCH /products/:id", () => {
       expect(retrievedProduct).toEqual(updatedProduct);
     });
 
-    test("server-managed fields: ignores client values", async ({
-      request,
-    }) => {
+    test("server-managed fields: ignores client values", async ({ request }) => {
       const productUpdateInput = {
         stock: 15,
         id: CLIENT_REQUESTED_PRODUCT_ID,
@@ -140,15 +121,12 @@ test.describe("PATCH /products/:id", () => {
         stock: 5,
       });
 
-      const updateResponse = await request.patch(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          data: productUpdateInput,
+      const updateResponse = await request.patch(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        data: productUpdateInput,
+      });
 
       expect(updateResponse.status()).toBe(200);
 
@@ -176,20 +154,17 @@ test.describe("PATCH /products/:id", () => {
     test("server-managed fields only: returns object-level VALIDATION_ERROR", async ({
       request,
     }) => {
-      const updateResponse = await request.patch(
-        `/products/${NONEXISTENT_PRODUCT_ID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          data: {
-            id: CLIENT_REQUESTED_PRODUCT_ID,
-            deletedAt: null,
-            createdAt: CLIENT_REQUESTED_TIMESTAMP,
-            updatedAt: CLIENT_REQUESTED_TIMESTAMP,
-          },
+      const updateResponse = await request.patch(`/products/${NONEXISTENT_PRODUCT_ID}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        data: {
+          id: CLIENT_REQUESTED_PRODUCT_ID,
+          deletedAt: null,
+          createdAt: CLIENT_REQUESTED_TIMESTAMP,
+          updatedAt: CLIENT_REQUESTED_TIMESTAMP,
+        },
+      });
 
       await expectSingleValidationError(updateResponse, []);
     });
@@ -197,51 +172,40 @@ test.describe("PATCH /products/:id", () => {
     test("price with three decimal places: returns VALIDATION_ERROR for price", async ({
       request,
     }) => {
-      const updateResponse = await request.patch(
-        `/products/${NONEXISTENT_PRODUCT_ID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          data: {
-            price: 10.999,
-          },
+      const updateResponse = await request.patch(`/products/${NONEXISTENT_PRODUCT_ID}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        data: {
+          price: 10.999,
+        },
+      });
 
       await expectSingleValidationError(updateResponse, ["price"]);
     });
 
     test("invalid id: returns VALIDATION_ERROR for id", async ({ request }) => {
-      const updateResponse = await request.patch(
-        `/products/${INVALID_PRODUCT_ID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          data: {
-            stock: 15,
-          },
+      const updateResponse = await request.patch(`/products/${INVALID_PRODUCT_ID}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        data: {
+          stock: 15,
+        },
+      });
 
       await expectSingleValidationError(updateResponse, ["id"]);
     });
 
-    test("nonexistent product: returns PRODUCT_NOT_FOUND", async ({
-      request,
-    }) => {
-      const updateResponse = await request.patch(
-        `/products/${NONEXISTENT_PRODUCT_ID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          data: {
-            stock: 15,
-          },
+    test("nonexistent product: returns PRODUCT_NOT_FOUND", async ({ request }) => {
+      const updateResponse = await request.patch(`/products/${NONEXISTENT_PRODUCT_ID}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        data: {
+          stock: 15,
+        },
+      });
 
       expect(updateResponse.status()).toBe(404);
 
@@ -255,36 +219,28 @@ test.describe("PATCH /products/:id", () => {
       });
     });
 
-    test("deleted product: cannot be restored or updated", async ({
-      request,
-    }) => {
+    test("deleted product: cannot be restored or updated", async ({ request }) => {
       const createdProduct = await createProductViaApi(request, token, {
         stock: 5,
       });
 
-      const deleteResponse = await request.delete(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const deleteResponse = await request.delete(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       expect(deleteResponse.status()).toBe(204);
 
-      const updateResponse = await request.patch(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          data: {
-            stock: 15,
-            deletedAt: null,
-          },
+      const updateResponse = await request.patch(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        data: {
+          stock: 15,
+          deletedAt: null,
+        },
+      });
 
       expect(updateResponse.status()).toBe(404);
 
@@ -314,26 +270,21 @@ test.describe("PATCH /products/:id", () => {
       regularUserToken = await loginViaApi(request, REGULAR_USER);
     });
 
-    test("valid update: returns FORBIDDEN and leaves product unchanged", async ({
-      request,
-    }) => {
+    test("valid update: returns FORBIDDEN and leaves product unchanged", async ({ request }) => {
       const adminToken = await loginViaApi(request, ADMIN_USER);
 
       const createdProduct = await createProductViaApi(request, adminToken, {
         stock: 5,
       });
 
-      const updateResponse = await request.patch(
-        `/products/${createdProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${regularUserToken}`,
-          },
-          data: {
-            stock: 15,
-          },
+      const updateResponse = await request.patch(`/products/${createdProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${regularUserToken}`,
         },
-      );
+        data: {
+          stock: 15,
+        },
+      });
 
       expect(updateResponse.status()).toBe(403);
 
@@ -359,20 +310,15 @@ test.describe("PATCH /products/:id", () => {
       expect(retrievedProduct).toEqual(createdProduct);
     });
 
-    test("invalid id and body: returns FORBIDDEN before validation", async ({
-      request,
-    }) => {
-      const updateResponse = await request.patch(
-        `/products/${INVALID_PRODUCT_ID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${regularUserToken}`,
-          },
-          data: {
-            price: 10.999,
-          },
+    test("invalid id and body: returns FORBIDDEN before validation", async ({ request }) => {
+      const updateResponse = await request.patch(`/products/${INVALID_PRODUCT_ID}`, {
+        headers: {
+          Authorization: `Bearer ${regularUserToken}`,
         },
-      );
+        data: {
+          price: 10.999,
+        },
+      });
 
       expect(updateResponse.status()).toBe(403);
 
@@ -397,14 +343,11 @@ test.describe("PATCH /products/:id", () => {
         stock: 5,
       });
 
-      const updateResponse = await request.patch(
-        `/products/${createdProduct.id}`,
-        {
-          data: {
-            stock: 15,
-          },
+      const updateResponse = await request.patch(`/products/${createdProduct.id}`, {
+        data: {
+          stock: 15,
         },
-      );
+      });
 
       expect(updateResponse.status()).toBe(401);
 
@@ -433,14 +376,11 @@ test.describe("PATCH /products/:id", () => {
     test("invalid id and body: returns AUTHENTICATION_REQUIRED before validation", async ({
       request,
     }) => {
-      const updateResponse = await request.patch(
-        `/products/${INVALID_PRODUCT_ID}`,
-        {
-          data: {
-            price: 10.999,
-          },
+      const updateResponse = await request.patch(`/products/${INVALID_PRODUCT_ID}`, {
+        data: {
+          price: 10.999,
         },
-      );
+      });
 
       expect(updateResponse.status()).toBe(401);
 

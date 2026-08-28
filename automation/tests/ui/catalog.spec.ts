@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "../../src/fixtures";
 import { ProductCatalogPage } from "../../src/pages";
 import { authenticateUser, prepareProductCatalog } from "../../src/helpers";
 import {
@@ -30,9 +30,7 @@ test.describe("product catalog", () => {
   });
 
   test("shows the complete catalog in default order", async () => {
-    const expectedProductTitles = CATALOG_PRODUCTS.map(
-      (product) => product.title,
-    );
+    const expectedProductTitles = CATALOG_PRODUCTS.map((product) => product.title);
 
     await expect(catalogPage.productTitles).toHaveText(expectedProductTitles);
     await expect(catalogPage.productsStatus).toHaveText(
@@ -47,14 +45,8 @@ test.describe("product catalog", () => {
   });
 
   test("searches products by name and clears the search", async () => {
-    const expectedDefaultProductTitles = CATALOG_PRODUCTS.map(
-      (product) => product.title,
-    );
-    const expectedProductTitles = [
-      "Wireless Mouse",
-      "Gaming Mouse",
-      "Computer Mouse Handbook",
-    ];
+    const expectedDefaultProductTitles = CATALOG_PRODUCTS.map((product) => product.title);
+    const expectedProductTitles = ["Wireless Mouse", "Gaming Mouse", "Computer Mouse Handbook"];
     await catalogPage.searchFor(" MoUsE ");
     await expect(catalogPage.clearSearchButton).toBeVisible();
     await expect(catalogPage.productTitles).toHaveText(expectedProductTitles);
@@ -64,9 +56,7 @@ test.describe("product catalog", () => {
     await catalogPage.clearSearchButton.click();
     await expect(catalogPage.searchInput).toHaveValue("");
     await expect(catalogPage.clearSearchButton).toHaveCount(0);
-    await expect(catalogPage.productTitles).toHaveText(
-      expectedDefaultProductTitles,
-    );
+    await expect(catalogPage.productTitles).toHaveText(expectedDefaultProductTitles);
     await expect(catalogPage.productsStatus).toHaveText(
       `${expectedDefaultProductTitles.length} products found.`,
     );
@@ -89,52 +79,34 @@ test.describe("product catalog", () => {
       (product) => product.category === "Books",
     ).map((product) => product.title);
     await catalogPage.filterByCategory("Books");
-    await expect(catalogPage.productCards).toHaveCount(
-      expectedProductTitles.length,
-    );
+    await expect(catalogPage.productCards).toHaveCount(expectedProductTitles.length);
     await expect(catalogPage.productTitles).toHaveText(expectedProductTitles);
     await expect(catalogPage.productsStatus).toHaveText("1 product found.");
   });
 
   test("sorts products by price and restores default order", async () => {
     const expectedProductTitlesLowToHigh = [...CATALOG_PRODUCTS]
-      .sort(
-        (firstProduct, secondProduct) =>
-          firstProduct.price - secondProduct.price,
-      )
+      .sort((firstProduct, secondProduct) => firstProduct.price - secondProduct.price)
       .map((product) => product.title);
 
     const expectedProductTitlesHighToLow = [...CATALOG_PRODUCTS]
-      .sort(
-        (firstProduct, secondProduct) =>
-          secondProduct.price - firstProduct.price,
-      )
+      .sort((firstProduct, secondProduct) => secondProduct.price - firstProduct.price)
       .map((product) => product.title);
 
-    const expectedDefaultProductTitles = CATALOG_PRODUCTS.map(
-      (product) => product.title,
-    );
+    const expectedDefaultProductTitles = CATALOG_PRODUCTS.map((product) => product.title);
 
     await catalogPage.sortByPrice("price-asc");
-    await expect(catalogPage.productTitles).toHaveText(
-      expectedProductTitlesLowToHigh,
-    );
+    await expect(catalogPage.productTitles).toHaveText(expectedProductTitlesLowToHigh);
 
     await catalogPage.sortByPrice("price-desc");
-    await expect(catalogPage.productTitles).toHaveText(
-      expectedProductTitlesHighToLow,
-    );
+    await expect(catalogPage.productTitles).toHaveText(expectedProductTitlesHighToLow);
 
     await catalogPage.sortByPrice("default");
-    await expect(catalogPage.productTitles).toHaveText(
-      expectedDefaultProductTitles,
-    );
+    await expect(catalogPage.productTitles).toHaveText(expectedDefaultProductTitles);
   });
 
   test("combines search, category filtering, and sorting, then clears all filters", async () => {
-    const expectedDefaultProductTitles = CATALOG_PRODUCTS.map(
-      (product) => product.title,
-    );
+    const expectedDefaultProductTitles = CATALOG_PRODUCTS.map((product) => product.title);
     const expectedFilteredProductTitles = ["Gaming Mouse", "Wireless Mouse"];
 
     await catalogPage.searchFor("mouse");
@@ -146,9 +118,7 @@ test.describe("product catalog", () => {
     await expect(catalogPage.sortSelect).toHaveValue("price-desc");
     await expect(catalogPage.clearFiltersButton).toBeEnabled();
     await expect(catalogPage.clearSearchButton).toBeVisible();
-    await expect(catalogPage.productTitles).toHaveText(
-      expectedFilteredProductTitles,
-    );
+    await expect(catalogPage.productTitles).toHaveText(expectedFilteredProductTitles);
     await expect(catalogPage.productsStatus).toHaveText(
       `${expectedFilteredProductTitles.length} products found.`,
     );
@@ -160,9 +130,7 @@ test.describe("product catalog", () => {
     await expect(catalogPage.sortSelect).toHaveValue("default");
     await expect(catalogPage.clearFiltersButton).toBeDisabled();
     await expect(catalogPage.clearSearchButton).toHaveCount(0);
-    await expect(catalogPage.productTitles).toHaveText(
-      expectedDefaultProductTitles,
-    );
+    await expect(catalogPage.productTitles).toHaveText(expectedDefaultProductTitles);
     await expect(catalogPage.productsStatus).toHaveText(
       `${expectedDefaultProductTitles.length} products found.`,
     );
@@ -224,9 +192,7 @@ test.describe("product quantity", () => {
     await expect(productCard.addToCart.quantityInput).toHaveValue("1");
 
     await productCard.addToCart.increaseQuantity(QUANTITY_PRODUCT.stock - 1);
-    await expect(productCard.addToCart.quantityInput).toHaveValue(
-      String(QUANTITY_PRODUCT.stock),
-    );
+    await expect(productCard.addToCart.quantityInput).toHaveValue(String(QUANTITY_PRODUCT.stock));
     await expect(productCard.addToCart.increaseButton).toBeDisabled();
   });
 
@@ -244,18 +210,11 @@ test.describe("product quantity", () => {
     await productCard.addToCart.pressQuantityKey("ArrowDown");
     await expect(productCard.addToCart.quantityInput).toHaveValue("1");
 
-    await productCard.addToCart.pressQuantityKey(
-      "ArrowUp",
-      QUANTITY_PRODUCT.stock - 1,
-    );
-    await expect(productCard.addToCart.quantityInput).toHaveValue(
-      String(QUANTITY_PRODUCT.stock),
-    );
+    await productCard.addToCart.pressQuantityKey("ArrowUp", QUANTITY_PRODUCT.stock - 1);
+    await expect(productCard.addToCart.quantityInput).toHaveValue(String(QUANTITY_PRODUCT.stock));
 
     await productCard.addToCart.pressQuantityKey("ArrowUp");
-    await expect(productCard.addToCart.quantityInput).toHaveValue(
-      String(QUANTITY_PRODUCT.stock),
-    );
+    await expect(productCard.addToCart.quantityInput).toHaveValue(String(QUANTITY_PRODUCT.stock));
   });
 
   test("accepts a valid manually entered quantity", async () => {
@@ -263,9 +222,7 @@ test.describe("product quantity", () => {
 
     await expect(productCard.addToCart.quantityInput).toHaveValue("1");
 
-    await productCard.addToCart.fillQuantity(
-      String(QUANTITY_PRODUCT.stock - 1),
-    );
+    await productCard.addToCart.fillQuantity(String(QUANTITY_PRODUCT.stock - 1));
     await expect(productCard.addToCart.quantityInput).toHaveValue(
       String(QUANTITY_PRODUCT.stock - 1),
     );
@@ -273,9 +230,7 @@ test.describe("product quantity", () => {
     await expect(productCard.addToCart.addToCartButton).toBeEnabled();
 
     await productCard.addToCart.fillQuantity(String(QUANTITY_PRODUCT.stock));
-    await expect(productCard.addToCart.quantityInput).toHaveValue(
-      String(QUANTITY_PRODUCT.stock),
-    );
+    await expect(productCard.addToCart.quantityInput).toHaveValue(String(QUANTITY_PRODUCT.stock));
     await expect(productCard.addToCart.quantityError).toBeHidden();
     await expect(productCard.addToCart.addToCartButton).toBeEnabled();
   });
@@ -291,14 +246,9 @@ test.describe("product quantity", () => {
 
       await expect(productCard.addToCart.quantityInput).toHaveValue("0");
       await expect(productCard.addToCart.quantityError).toBeVisible();
-      await expect(productCard.addToCart.quantityError).toHaveText(
-        "Quantity must be at least 1.",
-      );
+      await expect(productCard.addToCart.quantityError).toHaveText("Quantity must be at least 1.");
       await expect(productCard.addToCart.quantityError).toHaveRole("alert");
-      await expect(productCard.addToCart.quantityInput).toHaveAttribute(
-        "aria-invalid",
-        "true",
-      );
+      await expect(productCard.addToCart.quantityInput).toHaveAttribute("aria-invalid", "true");
       await expect(productCard.addToCart.decreaseButton).toBeDisabled();
       await expect(productCard.addToCart.increaseButton).toBeEnabled();
       await expect(productCard.addToCart.addToCartButton).toBeDisabled();
@@ -307,10 +257,7 @@ test.describe("product quantity", () => {
 
       await expect(productCard.addToCart.quantityInput).toHaveValue("1");
       await expect(productCard.addToCart.quantityError).toBeHidden();
-      await expect(productCard.addToCart.quantityInput).toHaveAttribute(
-        "aria-invalid",
-        "false",
-      );
+      await expect(productCard.addToCart.quantityInput).toHaveAttribute("aria-invalid", "false");
       await expect(productCard.addToCart.decreaseButton).toBeDisabled();
       await expect(productCard.addToCart.increaseButton).toBeEnabled();
       await expect(productCard.addToCart.addToCartButton).toBeEnabled();
@@ -319,32 +266,22 @@ test.describe("product quantity", () => {
     await test.step("recover from a quantity above available stock", async () => {
       await productCard.addToCart.fillQuantity(String(excessiveQuantity));
 
-      await expect(productCard.addToCart.quantityInput).toHaveValue(
-        String(excessiveQuantity),
-      );
+      await expect(productCard.addToCart.quantityInput).toHaveValue(String(excessiveQuantity));
       await expect(productCard.addToCart.quantityError).toBeVisible();
       await expect(productCard.addToCart.quantityError).toHaveText(
         `Only ${QUANTITY_PRODUCT.stock} items are available to add.`,
       );
       await expect(productCard.addToCart.quantityError).toHaveRole("alert");
-      await expect(productCard.addToCart.quantityInput).toHaveAttribute(
-        "aria-invalid",
-        "true",
-      );
+      await expect(productCard.addToCart.quantityInput).toHaveAttribute("aria-invalid", "true");
       await expect(productCard.addToCart.decreaseButton).toBeEnabled();
       await expect(productCard.addToCart.increaseButton).toBeDisabled();
       await expect(productCard.addToCart.addToCartButton).toBeDisabled();
 
       await productCard.addToCart.decreaseQuantity();
 
-      await expect(productCard.addToCart.quantityInput).toHaveValue(
-        String(QUANTITY_PRODUCT.stock),
-      );
+      await expect(productCard.addToCart.quantityInput).toHaveValue(String(QUANTITY_PRODUCT.stock));
       await expect(productCard.addToCart.quantityError).toBeHidden();
-      await expect(productCard.addToCart.quantityInput).toHaveAttribute(
-        "aria-invalid",
-        "false",
-      );
+      await expect(productCard.addToCart.quantityInput).toHaveAttribute("aria-invalid", "false");
       await expect(productCard.addToCart.decreaseButton).toBeEnabled();
       await expect(productCard.addToCart.increaseButton).toBeDisabled();
       await expect(productCard.addToCart.addToCartButton).toBeEnabled();
@@ -366,10 +303,7 @@ test.describe("product quantity", () => {
       "This product cannot be added right now.",
     );
 
-    await expect(productCard.addToCart.quantityInput).toHaveAttribute(
-      "aria-invalid",
-      "false",
-    );
+    await expect(productCard.addToCart.quantityInput).toHaveAttribute("aria-invalid", "false");
     await expect(productCard.addToCart.quantityError).toBeHidden();
   });
 

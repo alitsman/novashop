@@ -3,18 +3,12 @@ import { randomUUID } from "node:crypto";
 
 import { expect, test } from "@playwright/test";
 
-import type {
-  ApiErrorResponse,
-  AuthUser,
-  AuthResponse,
-  NewAccount,
-} from "../../src/types";
+import type { ApiErrorResponse, AuthUser, AuthResponse, NewAccount } from "../../src/types";
 
 const JWT_WITH_THREE_NON_EMPTY_BASE64URL_PARTS_SEPARATED_BY_DOTS =
   /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const VALID_PASSWORD = "NewUser123!";
 
@@ -49,9 +43,7 @@ function buildNewAccount(name: string): NewAccount {
 
 test.describe("POST /auth/register", () => {
   test.describe("successful registration", () => {
-    test("valid data: creates a regular user and returns an auth response", async ({
-      request,
-    }) => {
+    test("valid data: creates a regular user and returns an auth response", async ({ request }) => {
       const newAccount = buildNewAccount("New Registered User");
 
       const response = await request.post("/auth/register", {
@@ -107,9 +99,7 @@ test.describe("POST /auth/register", () => {
   });
 
   test.describe("privilege escalation", () => {
-    test("admin role in request: creates a regular user", async ({
-      request,
-    }) => {
+    test("admin role in request: creates a regular user", async ({ request }) => {
       const newAccount = buildNewAccount("Role Injection User");
 
       const response = await request.post("/auth/register", {
@@ -141,8 +131,7 @@ test.describe("POST /auth/register", () => {
 
       expect(adminRouteResponse.status()).toBe(403);
 
-      const adminRouteResponseBody =
-        (await adminRouteResponse.json()) as ApiErrorResponse;
+      const adminRouteResponseBody = (await adminRouteResponse.json()) as ApiErrorResponse;
 
       expect(adminRouteResponseBody).toEqual({
         error: {
@@ -154,9 +143,7 @@ test.describe("POST /auth/register", () => {
   });
 
   test.describe("created account authentication", () => {
-    test("registered credentials: can log in as the created user", async ({
-      request,
-    }) => {
+    test("registered credentials: can log in as the created user", async ({ request }) => {
       const newAccount = buildNewAccount("Login After Registration User");
 
       const registerResponse = await request.post("/auth/register", {
@@ -169,8 +156,7 @@ test.describe("POST /auth/register", () => {
 
       expect(registerResponse.status()).toBe(201);
 
-      const registerResponseBody =
-        (await registerResponse.json()) as AuthResponse;
+      const registerResponseBody = (await registerResponse.json()) as AuthResponse;
 
       // Registration can return 201 even if the password was saved incorrectly.
       // A successful login proves that the saved password can be verified.
@@ -188,9 +174,7 @@ test.describe("POST /auth/register", () => {
       expect(loginResponseBody.user).toEqual(registerResponseBody.user);
     });
 
-    test("registration token: authenticates the created user", async ({
-      request,
-    }) => {
+    test("registration token: authenticates the created user", async ({ request }) => {
       const newAccount = buildNewAccount("Registration Token User");
 
       const registerResponse = await request.post("/auth/register", {
@@ -203,8 +187,7 @@ test.describe("POST /auth/register", () => {
 
       expect(registerResponse.status()).toBe(201);
 
-      const registerResponseBody =
-        (await registerResponse.json()) as AuthResponse;
+      const registerResponseBody = (await registerResponse.json()) as AuthResponse;
 
       // JWT format alone does not prove that the backend accepts the token.
       const meResponse = await request.get("/me", {
@@ -255,9 +238,7 @@ test.describe("POST /auth/register", () => {
       });
     });
 
-    test("same email with different casing: returns EMAIL_ALREADY_EXISTS", async ({
-      request,
-    }) => {
+    test("same email with different casing: returns EMAIL_ALREADY_EXISTS", async ({ request }) => {
       const newAccount = buildNewAccount("Case-Insensitive Duplicate User");
 
       const firstResponse = await request.post("/auth/register", {
@@ -292,9 +273,7 @@ test.describe("POST /auth/register", () => {
   });
 
   test.describe("validation", () => {
-    test("invalid email: returns VALIDATION_ERROR for email", async ({
-      request,
-    }) => {
+    test("invalid email: returns VALIDATION_ERROR for email", async ({ request }) => {
       const newAccount = buildNewAccount("Invalid Email User");
 
       const response = await request.post("/auth/register", {
@@ -314,10 +293,7 @@ test.describe("POST /auth/register", () => {
 
       const { details } = responseBody.error;
 
-      assert(
-        Array.isArray(details),
-        "Expected validation error details to be an array",
-      );
+      assert(Array.isArray(details), "Expected validation error details to be an array");
 
       const validationIssues: unknown[] = details;
 
@@ -330,9 +306,7 @@ test.describe("POST /auth/register", () => {
       });
     });
 
-    test("name containing only spaces: returns VALIDATION_ERROR for name", async ({
-      request,
-    }) => {
+    test("name containing only spaces: returns VALIDATION_ERROR for name", async ({ request }) => {
       const newAccount = buildNewAccount("Blank Name User");
 
       const response = await request.post("/auth/register", {
@@ -352,10 +326,7 @@ test.describe("POST /auth/register", () => {
 
       const { details } = responseBody.error;
 
-      assert(
-        Array.isArray(details),
-        "Expected validation error details to be an array",
-      );
+      assert(Array.isArray(details), "Expected validation error details to be an array");
 
       const validationIssues: unknown[] = details;
 
@@ -368,9 +339,7 @@ test.describe("POST /auth/register", () => {
       });
     });
 
-    test("missing password: returns VALIDATION_ERROR for password", async ({
-      request,
-    }) => {
+    test("missing password: returns VALIDATION_ERROR for password", async ({ request }) => {
       const newAccount = buildNewAccount("Missing Password User");
 
       const response = await request.post("/auth/register", {
@@ -389,10 +358,7 @@ test.describe("POST /auth/register", () => {
 
       const { details } = responseBody.error;
 
-      assert(
-        Array.isArray(details),
-        "Expected validation error details to be an array",
-      );
+      assert(Array.isArray(details), "Expected validation error details to be an array");
 
       const validationIssues: unknown[] = details;
 
@@ -432,10 +398,7 @@ test.describe("POST /auth/register", () => {
 
         const { details } = responseBody.error;
 
-        assert(
-          Array.isArray(details),
-          "Expected validation error details to be an array",
-        );
+        assert(Array.isArray(details), "Expected validation error details to be an array");
 
         const validationIssues: unknown[] = details;
 

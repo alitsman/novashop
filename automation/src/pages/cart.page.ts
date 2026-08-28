@@ -1,9 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
-import {
-  CartItemComponent,
-  ConfirmDialogComponent,
-  HeaderComponent,
-} from "../components";
+import { CartItemComponent, ConfirmDialogComponent, HeaderComponent } from "../components";
 
 export class CartPage {
   private readonly page: Page;
@@ -67,9 +63,7 @@ export class CartPage {
       exact: true,
     });
 
-    this.summaryQuantity = this.orderSummaryBlock.getByTestId(
-      "cart-summary-quantity",
-    );
+    this.summaryQuantity = this.orderSummaryBlock.getByTestId("cart-summary-quantity");
 
     this.summaryTotal = this.orderSummaryBlock.getByRole("status");
 

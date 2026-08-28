@@ -1,13 +1,8 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "../../src/fixtures";
 import { CartPage } from "../../src/pages";
 import { authenticateUser, prepareCart } from "../../src/helpers";
 import { formatUsd } from "../../src/utils";
-import {
-  CART_ITEM_A,
-  CART_ITEMS,
-  REGULAR_USER,
-  createCartItem,
-} from "../../src/test-data";
+import { CART_ITEM_A, CART_ITEMS, REGULAR_USER, createCartItem } from "../../src/test-data";
 
 const MIN_CART_QUANTITY = 1;
 
@@ -20,16 +15,12 @@ test.describe("cart", () => {
     cartPage = new CartPage(page);
   });
 
-  test("shows the empty-cart state and lets the user return to products", async ({
-    page,
-  }) => {
+  test("shows the empty-cart state and lets the user return to products", async ({ page }) => {
     await cartPage.open();
 
     await expect(page).toHaveURL("/cart");
     await expect(cartPage.heading).toBeVisible();
-    await expect(cartPage.header.cartLink).toHaveAccessibleName(
-      "Cart, 0 items",
-    );
+    await expect(cartPage.header.cartLink).toHaveAccessibleName("Cart, 0 items");
     await expect(cartPage.emptyCartTitle).toBeVisible();
     await expect(cartPage.cartItemsList).toHaveCount(0);
     await expect(cartPage.orderSummaryBlock).toHaveCount(0);
@@ -64,9 +55,7 @@ test.describe("cart", () => {
 
       await cartItem.decreaseQuantity(initialQuantity - MIN_CART_QUANTITY);
 
-      await expect(cartItem.quantityInput).toHaveValue(
-        String(MIN_CART_QUANTITY),
-      );
+      await expect(cartItem.quantityInput).toHaveValue(String(MIN_CART_QUANTITY));
       await expect(cartItem.decreaseButton).toBeDisabled();
       await expect(cartItem.increaseButton).toBeEnabled();
       await expect(cartItem.itemTotal).toHaveText(
@@ -76,9 +65,7 @@ test.describe("cart", () => {
       await expect(cartPage.summaryTotal).toHaveText(
         `Total: ${formatUsd(seedCartItem.price * MIN_CART_QUANTITY)}`,
       );
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        "Cart, 1 item",
-      );
+      await expect(cartPage.header.cartLink).toHaveAccessibleName("Cart, 1 item");
 
       await cartItem.increaseQuantity(initialQuantity - MIN_CART_QUANTITY);
 
@@ -93,15 +80,11 @@ test.describe("cart", () => {
       await expect(cartItem.itemTotal).toHaveText(
         `Item total: ${formatUsd(seedCartItem.price * maximumQuantity)}`,
       );
-      await expect(cartPage.summaryQuantity).toHaveText(
-        `${maximumQuantity} items in cart`,
-      );
+      await expect(cartPage.summaryQuantity).toHaveText(`${maximumQuantity} items in cart`);
       await expect(cartPage.summaryTotal).toHaveText(
         `Total: ${formatUsd(seedCartItem.price * maximumQuantity)}`,
       );
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        `Cart, ${maximumQuantity} items`,
-      );
+      await expect(cartPage.header.cartLink).toHaveAccessibleName(`Cart, ${maximumQuantity} items`);
     });
 
     test("changes item quantity with ArrowUp and ArrowDown and enforces boundaries", async () => {
@@ -109,52 +92,32 @@ test.describe("cart", () => {
 
       await expect(cartItem.quantityInput).toHaveValue(String(initialQuantity));
 
-      await cartItem.pressQuantityKey(
-        "ArrowDown",
-        initialQuantity - MIN_CART_QUANTITY,
-      );
+      await cartItem.pressQuantityKey("ArrowDown", initialQuantity - MIN_CART_QUANTITY);
 
-      await expect(cartItem.quantityInput).toHaveValue(
-        String(MIN_CART_QUANTITY),
-      );
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        "Cart, 1 item",
-      );
+      await expect(cartItem.quantityInput).toHaveValue(String(MIN_CART_QUANTITY));
+      await expect(cartPage.header.cartLink).toHaveAccessibleName("Cart, 1 item");
 
       await cartItem.pressQuantityKey("ArrowDown");
 
-      await expect(cartItem.quantityInput).toHaveValue(
-        String(MIN_CART_QUANTITY),
-      );
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        "Cart, 1 item",
-      );
+      await expect(cartItem.quantityInput).toHaveValue(String(MIN_CART_QUANTITY));
+      await expect(cartPage.header.cartLink).toHaveAccessibleName("Cart, 1 item");
 
-      await cartItem.pressQuantityKey(
-        "ArrowUp",
-        maximumQuantity - MIN_CART_QUANTITY,
-      );
+      await cartItem.pressQuantityKey("ArrowUp", maximumQuantity - MIN_CART_QUANTITY);
 
       await expect(cartItem.quantityInput).toHaveValue(String(maximumQuantity));
       await expect(cartItem.itemTotal).toHaveText(
         `Item total: ${formatUsd(seedCartItem.price * maximumQuantity)}`,
       );
-      await expect(cartPage.summaryQuantity).toHaveText(
-        `${maximumQuantity} items in cart`,
-      );
+      await expect(cartPage.summaryQuantity).toHaveText(`${maximumQuantity} items in cart`);
       await expect(cartPage.summaryTotal).toHaveText(
         `Total: ${formatUsd(seedCartItem.price * maximumQuantity)}`,
       );
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        `Cart, ${maximumQuantity} items`,
-      );
+      await expect(cartPage.header.cartLink).toHaveAccessibleName(`Cart, ${maximumQuantity} items`);
 
       await cartItem.pressQuantityKey("ArrowUp");
 
       await expect(cartItem.quantityInput).toHaveValue(String(maximumQuantity));
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        `Cart, ${maximumQuantity} items`,
-      );
+      await expect(cartPage.header.cartLink).toHaveAccessibleName(`Cart, ${maximumQuantity} items`);
     });
 
     test("validates invalid quantity drafts and restores a valid committed quantity", async () => {
@@ -166,13 +129,8 @@ test.describe("cart", () => {
         await cartItem.fillQuantity("0");
 
         await expect(cartItem.quantityInput).toHaveValue("0");
-        await expect(cartItem.quantityError).toHaveText(
-          "Quantity must be at least 1.",
-        );
-        await expect(cartItem.quantityInput).toHaveAttribute(
-          "aria-invalid",
-          "true",
-        );
+        await expect(cartItem.quantityError).toHaveText("Quantity must be at least 1.");
+        await expect(cartItem.quantityInput).toHaveAttribute("aria-invalid", "true");
         await expect(cartItem.quantityInput).toHaveAccessibleDescription(
           `Choose a quantity from 1 to ${maximumQuantity}. Quantity must be at least 1.`,
         );
@@ -181,71 +139,48 @@ test.describe("cart", () => {
         await expect(cartItem.itemTotal).toHaveText(
           `Item total: ${formatUsd(seedCartItem.price * initialQuantity)}`,
         );
-        await expect(cartPage.summaryQuantity).toHaveText(
-          `${initialQuantity} items in cart`,
-        );
+        await expect(cartPage.summaryQuantity).toHaveText(`${initialQuantity} items in cart`);
         await expect(cartPage.header.cartLink).toHaveAccessibleName(
           `Cart, ${initialQuantity} items`,
         );
 
         await cartItem.increaseQuantity();
 
-        await expect(cartItem.quantityInput).toHaveValue(
-          String(MIN_CART_QUANTITY),
-        );
+        await expect(cartItem.quantityInput).toHaveValue(String(MIN_CART_QUANTITY));
         await expect(cartItem.quantityError).toHaveCount(0);
-        await expect(cartItem.quantityInput).toHaveAttribute(
-          "aria-invalid",
-          "false",
-        );
+        await expect(cartItem.quantityInput).toHaveAttribute("aria-invalid", "false");
         await expect(cartItem.itemTotal).toHaveText(
           `Item total: ${formatUsd(seedCartItem.price * MIN_CART_QUANTITY)}`,
         );
         await expect(cartPage.summaryQuantity).toHaveText("1 item in cart");
-        await expect(cartPage.header.cartLink).toHaveAccessibleName(
-          "Cart, 1 item",
-        );
+        await expect(cartPage.header.cartLink).toHaveAccessibleName("Cart, 1 item");
       });
 
       await test.step("rejects a quantity above the available stock and recovers", async () => {
         await cartItem.fillQuantity(String(quantityFarAboveMaximum));
 
-        await expect(cartItem.quantityInput).toHaveValue(
-          String(quantityFarAboveMaximum),
-        );
+        await expect(cartItem.quantityInput).toHaveValue(String(quantityFarAboveMaximum));
         await expect(cartItem.quantityError).toHaveText(
           `Only ${maximumQuantity} items are available in total.`,
         );
-        await expect(cartItem.quantityInput).toHaveAttribute(
-          "aria-invalid",
-          "true",
-        );
+        await expect(cartItem.quantityInput).toHaveAttribute("aria-invalid", "true");
         await expect(cartItem.decreaseButton).toBeEnabled();
         await expect(cartItem.increaseButton).toBeDisabled();
         await expect(cartItem.itemTotal).toHaveText(
           `Item total: ${formatUsd(seedCartItem.price * MIN_CART_QUANTITY)}`,
         );
         await expect(cartPage.summaryQuantity).toHaveText("1 item in cart");
-        await expect(cartPage.header.cartLink).toHaveAccessibleName(
-          "Cart, 1 item",
-        );
+        await expect(cartPage.header.cartLink).toHaveAccessibleName("Cart, 1 item");
 
         await cartItem.decreaseQuantity();
 
-        await expect(cartItem.quantityInput).toHaveValue(
-          String(maximumQuantity),
-        );
+        await expect(cartItem.quantityInput).toHaveValue(String(maximumQuantity));
         await expect(cartItem.quantityError).toHaveCount(0);
-        await expect(cartItem.quantityInput).toHaveAttribute(
-          "aria-invalid",
-          "false",
-        );
+        await expect(cartItem.quantityInput).toHaveAttribute("aria-invalid", "false");
         await expect(cartItem.itemTotal).toHaveText(
           `Item total: ${formatUsd(seedCartItem.price * maximumQuantity)}`,
         );
-        await expect(cartPage.summaryQuantity).toHaveText(
-          `${maximumQuantity} items in cart`,
-        );
+        await expect(cartPage.summaryQuantity).toHaveText(`${maximumQuantity} items in cart`);
         await expect(cartPage.header.cartLink).toHaveAccessibleName(
           `Cart, ${maximumQuantity} items`,
         );
@@ -256,38 +191,26 @@ test.describe("cart", () => {
 
         await expect(cartItem.quantityInput).toHaveValue("");
         await expect(cartItem.quantityError).toHaveText("Enter a quantity.");
-        await expect(cartItem.quantityInput).toHaveAttribute(
-          "aria-invalid",
-          "true",
-        );
+        await expect(cartItem.quantityInput).toHaveAttribute("aria-invalid", "true");
         await expect(cartItem.decreaseButton).toBeDisabled();
         await expect(cartItem.increaseButton).toBeDisabled();
         await expect(cartItem.itemTotal).toHaveText(
           `Item total: ${formatUsd(seedCartItem.price * maximumQuantity)}`,
         );
-        await expect(cartPage.summaryQuantity).toHaveText(
-          `${maximumQuantity} items in cart`,
-        );
+        await expect(cartPage.summaryQuantity).toHaveText(`${maximumQuantity} items in cart`);
         await expect(cartPage.header.cartLink).toHaveAccessibleName(
           `Cart, ${maximumQuantity} items`,
         );
 
         await cartItem.fillQuantity(String(initialQuantity));
 
-        await expect(cartItem.quantityInput).toHaveValue(
-          String(initialQuantity),
-        );
+        await expect(cartItem.quantityInput).toHaveValue(String(initialQuantity));
         await expect(cartItem.quantityError).toHaveCount(0);
-        await expect(cartItem.quantityInput).toHaveAttribute(
-          "aria-invalid",
-          "false",
-        );
+        await expect(cartItem.quantityInput).toHaveAttribute("aria-invalid", "false");
         await expect(cartItem.itemTotal).toHaveText(
           `Item total: ${formatUsd(seedCartItem.price * initialQuantity)}`,
         );
-        await expect(cartPage.summaryQuantity).toHaveText(
-          `${initialQuantity} items in cart`,
-        );
+        await expect(cartPage.summaryQuantity).toHaveText(`${initialQuantity} items in cart`);
         await expect(cartPage.header.cartLink).toHaveAccessibleName(
           `Cart, ${initialQuantity} items`,
         );
@@ -316,9 +239,7 @@ test.describe("cart", () => {
       await expect(cartItem.itemTotal).toHaveText(
         `Item total: ${formatUsd(seedCartItem.price * pastedQuantity)}`,
       );
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        `Cart, ${pastedQuantity} items`,
-      );
+      await expect(cartPage.header.cartLink).toHaveAccessibleName(`Cart, ${pastedQuantity} items`);
 
       await cartItem.pasteQuantity("-4");
 
@@ -328,9 +249,7 @@ test.describe("cart", () => {
 
       await expect(cartItem.quantityInput).toHaveValue(String(pastedQuantity));
       await expect(cartItem.quantityError).toHaveCount(0);
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        `Cart, ${pastedQuantity} items`,
-      );
+      await expect(cartPage.header.cartLink).toHaveAccessibleName(`Cart, ${pastedQuantity} items`);
     });
 
     test("restores the committed cart state after reload", async ({ page }) => {
@@ -341,9 +260,7 @@ test.describe("cart", () => {
       await expect(cartItem.itemTotal).toHaveText(
         `Item total: ${formatUsd(seedCartItem.price * initialQuantity)}`,
       );
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        `Cart, ${initialQuantity} items`,
-      );
+      await expect(cartPage.header.cartLink).toHaveAccessibleName(`Cart, ${initialQuantity} items`);
 
       await cartItem.increaseQuantity();
 
@@ -355,9 +272,7 @@ test.describe("cart", () => {
       await expect(cartPage.summaryTotal).toHaveText(
         `Total: ${formatUsd(seedCartItem.price * updatedQuantity)}`,
       );
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        `Cart, ${updatedQuantity} items`,
-      );
+      await expect(cartPage.header.cartLink).toHaveAccessibleName(`Cart, ${updatedQuantity} items`);
 
       await page.reload();
 
@@ -369,9 +284,7 @@ test.describe("cart", () => {
       await expect(cartPage.summaryTotal).toHaveText(
         `Total: ${formatUsd(seedCartItem.price * updatedQuantity)}`,
       );
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        `Cart, ${updatedQuantity} items`,
-      );
+      await expect(cartPage.header.cartLink).toHaveAccessibleName(`Cart, ${updatedQuantity} items`);
     });
   });
 
@@ -389,41 +302,26 @@ test.describe("cart", () => {
       const cartItemA = cartPage.getCartItem(seedCartItemA.title);
       const cartItemB = cartPage.getCartItem(seedCartItemB.title);
 
-      const initialSummaryQuantity =
-        seedCartItemA.quantity + seedCartItemB.quantity;
+      const initialSummaryQuantity = seedCartItemA.quantity + seedCartItemB.quantity;
       const initialItemTotalA = seedCartItemA.quantity * seedCartItemA.price;
       const initialItemTotalB = seedCartItemB.quantity * seedCartItemB.price;
       const initialSummaryTotal = initialItemTotalA + initialItemTotalB;
 
       const updatedQuantityItemA = 4;
-      const updatedSummaryQuantity =
-        updatedQuantityItemA + seedCartItemB.quantity;
+      const updatedSummaryQuantity = updatedQuantityItemA + seedCartItemB.quantity;
       const updatedItemTotalA = updatedQuantityItemA * seedCartItemA.price;
       const updatedSummaryTotal = updatedItemTotalA + initialItemTotalB;
 
       await expect(cartPage.cartItems).toHaveCount(seedCartItems.length);
-      await expect(cartPage.cartItemTitles).toHaveText([
-        seedCartItemA.title,
-        seedCartItemB.title,
-      ]);
+      await expect(cartPage.cartItemTitles).toHaveText([seedCartItemA.title, seedCartItemB.title]);
 
-      await expect(cartItemA.quantityInput).toHaveValue(
-        String(seedCartItemA.quantity),
-      );
-      await expect(cartItemB.quantityInput).toHaveValue(
-        String(seedCartItemB.quantity),
-      );
+      await expect(cartItemA.quantityInput).toHaveValue(String(seedCartItemA.quantity));
+      await expect(cartItemB.quantityInput).toHaveValue(String(seedCartItemB.quantity));
 
-      await expect(cartItemA.itemTotal).toHaveText(
-        `Item total: ${formatUsd(initialItemTotalA)}`,
-      );
-      await expect(cartItemB.itemTotal).toHaveText(
-        `Item total: ${formatUsd(initialItemTotalB)}`,
-      );
+      await expect(cartItemA.itemTotal).toHaveText(`Item total: ${formatUsd(initialItemTotalA)}`);
+      await expect(cartItemB.itemTotal).toHaveText(`Item total: ${formatUsd(initialItemTotalB)}`);
 
-      await expect(cartPage.summaryTotal).toHaveText(
-        `Total: ${formatUsd(initialSummaryTotal)}`,
-      );
+      await expect(cartPage.summaryTotal).toHaveText(`Total: ${formatUsd(initialSummaryTotal)}`);
       await expect(cartPage.header.cartLink).toHaveAccessibleName(
         `Cart, ${initialSummaryQuantity} items`,
       );
@@ -433,31 +331,18 @@ test.describe("cart", () => {
       // would silently remove that coverage.
       await cartItemA.fillQuantity(String(updatedQuantityItemA));
 
-      await expect(cartItemA.quantityInput).toHaveValue(
-        String(updatedQuantityItemA),
-      );
-      await expect(cartItemB.quantityInput).toHaveValue(
-        String(seedCartItemB.quantity),
-      );
+      await expect(cartItemA.quantityInput).toHaveValue(String(updatedQuantityItemA));
+      await expect(cartItemB.quantityInput).toHaveValue(String(seedCartItemB.quantity));
 
-      await expect(cartItemA.itemTotal).toHaveText(
-        `Item total: ${formatUsd(updatedItemTotalA)}`,
-      );
-      await expect(cartItemB.itemTotal).toHaveText(
-        `Item total: ${formatUsd(initialItemTotalB)}`,
-      );
+      await expect(cartItemA.itemTotal).toHaveText(`Item total: ${formatUsd(updatedItemTotalA)}`);
+      await expect(cartItemB.itemTotal).toHaveText(`Item total: ${formatUsd(initialItemTotalB)}`);
 
-      await expect(cartPage.summaryTotal).toHaveText(
-        `Total: ${formatUsd(updatedSummaryTotal)}`,
-      );
+      await expect(cartPage.summaryTotal).toHaveText(`Total: ${formatUsd(updatedSummaryTotal)}`);
       await expect(cartPage.header.cartLink).toHaveAccessibleName(
         `Cart, ${updatedSummaryQuantity} items`,
       );
 
-      await expect(cartPage.cartItemTitles).toHaveText([
-        seedCartItemA.title,
-        seedCartItemB.title,
-      ]);
+      await expect(cartPage.cartItemTitles).toHaveText([seedCartItemA.title, seedCartItemB.title]);
     });
 
     test("blocks checkout while quantity drafts are invalid and focuses the first offending item", async ({
@@ -512,8 +397,7 @@ test.describe("cart", () => {
       const cartItemA = cartPage.getCartItem(seedCartItemA.title);
       const cartItemB = cartPage.getCartItem(seedCartItemB.title);
 
-      const initialSummaryQuantity =
-        seedCartItemA.quantity + seedCartItemB.quantity;
+      const initialSummaryQuantity = seedCartItemA.quantity + seedCartItemB.quantity;
       const initialItemTotalA = seedCartItemA.quantity * seedCartItemA.price;
       const initialItemTotalB = seedCartItemB.quantity * seedCartItemB.price;
       const initialSummaryTotal = initialItemTotalA + initialItemTotalB;
@@ -528,28 +412,15 @@ test.describe("cart", () => {
 
       await expect(cartPage.removeItemDialog.root).toHaveCount(0);
       await expect(cartPage.cartItems).toHaveCount(seedCartItems.length);
-      await expect(cartPage.cartItemTitles).toHaveText([
-        seedCartItemA.title,
-        seedCartItemB.title,
-      ]);
+      await expect(cartPage.cartItemTitles).toHaveText([seedCartItemA.title, seedCartItemB.title]);
 
-      await expect(cartItemA.quantityInput).toHaveValue(
-        String(seedCartItemA.quantity),
-      );
-      await expect(cartItemB.quantityInput).toHaveValue(
-        String(seedCartItemB.quantity),
-      );
+      await expect(cartItemA.quantityInput).toHaveValue(String(seedCartItemA.quantity));
+      await expect(cartItemB.quantityInput).toHaveValue(String(seedCartItemB.quantity));
 
-      await expect(cartItemA.itemTotal).toHaveText(
-        `Item total: ${formatUsd(initialItemTotalA)}`,
-      );
-      await expect(cartItemB.itemTotal).toHaveText(
-        `Item total: ${formatUsd(initialItemTotalB)}`,
-      );
+      await expect(cartItemA.itemTotal).toHaveText(`Item total: ${formatUsd(initialItemTotalA)}`);
+      await expect(cartItemB.itemTotal).toHaveText(`Item total: ${formatUsd(initialItemTotalB)}`);
 
-      await expect(cartPage.summaryTotal).toHaveText(
-        `Total: ${formatUsd(initialSummaryTotal)}`,
-      );
+      await expect(cartPage.summaryTotal).toHaveText(`Total: ${formatUsd(initialSummaryTotal)}`);
       await expect(cartPage.header.cartLink).toHaveAccessibleName(
         `Cart, ${initialSummaryQuantity} items`,
       );
@@ -571,10 +442,7 @@ test.describe("cart", () => {
       await expect(cartPage.removeItemDialog.root).toHaveCount(0);
       await expect(cartItemB.removeButton).toBeFocused();
       await expect(cartPage.cartItems).toHaveCount(seedCartItems.length);
-      await expect(cartPage.cartItemTitles).toHaveText([
-        seedCartItemA.title,
-        seedCartItemB.title,
-      ]);
+      await expect(cartPage.cartItemTitles).toHaveText([seedCartItemA.title, seedCartItemB.title]);
     });
 
     test("removes the selected item, recalculates the cart, and reaches the empty state", async () => {
@@ -594,16 +462,10 @@ test.describe("cart", () => {
       await expect(cartPage.removeItemDialog.root).toHaveCount(0);
       await expect(cartPage.cartItems).toHaveCount(seedCartItems.length - 1);
       await expect(cartPage.cartItemTitles).toHaveText([seedCartItemA.title]);
-      await expect(cartItemA.quantityInput).toHaveValue(
-        String(seedCartItemA.quantity),
-      );
-      await expect(cartItemA.itemTotal).toHaveText(
-        `Item total: ${formatUsd(initialItemTotalA)}`,
-      );
+      await expect(cartItemA.quantityInput).toHaveValue(String(seedCartItemA.quantity));
+      await expect(cartItemA.itemTotal).toHaveText(`Item total: ${formatUsd(initialItemTotalA)}`);
 
-      await expect(cartPage.summaryTotal).toHaveText(
-        `Total: ${formatUsd(initialItemTotalA)}`,
-      );
+      await expect(cartPage.summaryTotal).toHaveText(`Total: ${formatUsd(initialItemTotalA)}`);
       await expect(cartPage.header.cartLink).toHaveAccessibleName(
         `Cart, ${seedCartItemA.quantity} items`,
       );
@@ -617,14 +479,10 @@ test.describe("cart", () => {
       await expect(cartPage.cartItemsList).toHaveCount(0);
       await expect(cartPage.orderSummaryBlock).toHaveCount(0);
       await expect(cartPage.emptyCartTitle).toBeVisible();
-      await expect(cartPage.header.cartLink).toHaveAccessibleName(
-        "Cart, 0 items",
-      );
+      await expect(cartPage.header.cartLink).toHaveAccessibleName("Cart, 0 items");
     });
 
-    test("clears the checkout block when the invalid item is removed", async ({
-      page,
-    }) => {
+    test("clears the checkout block when the invalid item is removed", async ({ page }) => {
       const cartItemB = cartPage.getCartItem(seedCartItemB.title);
 
       const initialItemTotalA = seedCartItemA.quantity * seedCartItemA.price;
@@ -656,9 +514,7 @@ test.describe("cart", () => {
       await expect(cartPage.cartItems).toHaveCount(seedCartItems.length - 1);
       await expect(cartPage.cartItemTitles).toHaveText([seedCartItemA.title]);
       await expect(cartPage.checkoutError).toHaveCount(0);
-      await expect(cartPage.summaryTotal).toHaveText(
-        `Total: ${formatUsd(initialItemTotalA)}`,
-      );
+      await expect(cartPage.summaryTotal).toHaveText(`Total: ${formatUsd(initialItemTotalA)}`);
       await expect(cartPage.header.cartLink).toHaveAccessibleName(
         `Cart, ${seedCartItemA.quantity} items`,
       );

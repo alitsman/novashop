@@ -3,8 +3,7 @@ export const DeliveryMethod = {
   Express: "express",
 } as const;
 
-export type DeliveryMethod =
-  (typeof DeliveryMethod)[keyof typeof DeliveryMethod];
+export type DeliveryMethod = (typeof DeliveryMethod)[keyof typeof DeliveryMethod];
 
 export const PaymentMethod = {
   Cash: "cash",

@@ -12,10 +12,7 @@ const seedStoredProducts = (): Product[] => {
 };
 
 const getStoredProducts = (): Product[] => {
-  const storedProducts = storage.getItem<Product[] | null>(
-    PRODUCTS_STORAGE_KEY,
-    null,
-  );
+  const storedProducts = storage.getItem<Product[] | null>(PRODUCTS_STORAGE_KEY, null);
 
   if (!storedProducts) {
     return seedStoredProducts();

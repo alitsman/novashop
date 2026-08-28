@@ -1,9 +1,5 @@
-import { test, expect } from "@playwright/test";
-import {
-  CartPage,
-  ProductCatalogPage,
-  ProductDetailsPage,
-} from "../../src/pages";
+import { expect, test } from "../../src/fixtures";
+import { CartPage, ProductCatalogPage, ProductDetailsPage } from "../../src/pages";
 import { HeaderComponent, ToastComponent } from "../../src/components";
 import { authenticateUser, prepareProductCatalog } from "../../src/helpers";
 import { formatUsd } from "../../src/utils";
@@ -26,9 +22,7 @@ test.describe("add to cart", () => {
   test.beforeEach(async ({ page }) => {
     await authenticateUser(page, REGULAR_USER);
 
-    const catalogProducts = ADD_TO_CART_PRODUCTS.map((product) =>
-      createProduct(product),
-    );
+    const catalogProducts = ADD_TO_CART_PRODUCTS.map((product) => createProduct(product));
 
     await prepareProductCatalog(page, catalogProducts);
 
@@ -65,9 +59,7 @@ test.describe("add to cart", () => {
       await expect(toast.message).toBeEmpty();
       await expect(toast.closeButton).toHaveCount(0);
 
-      await expect(header.cartLink).toHaveAccessibleName(
-        `Cart, ${quantityToAdd} items`,
-      );
+      await expect(header.cartLink).toHaveAccessibleName(`Cart, ${quantityToAdd} items`);
     });
 
     await test.step("Open the cart and verify its contents and totals", async () => {
@@ -81,19 +73,11 @@ test.describe("add to cart", () => {
 
       await expect(cartItem.title).toHaveText(product.title);
       await expect(cartItem.quantityInput).toHaveValue(String(quantityToAdd));
-      await expect(cartItem.price).toHaveText(
-        `Price: ${formatUsd(product.price)}`,
-      );
-      await expect(cartItem.itemTotal).toHaveText(
-        `Item total: ${formatUsd(expectedItemTotal)}`,
-      );
+      await expect(cartItem.price).toHaveText(`Price: ${formatUsd(product.price)}`);
+      await expect(cartItem.itemTotal).toHaveText(`Item total: ${formatUsd(expectedItemTotal)}`);
 
-      await expect(cartPage.summaryQuantity).toHaveText(
-        `${quantityToAdd} items in cart`,
-      );
-      await expect(cartPage.summaryTotal).toHaveText(
-        `Total: ${formatUsd(expectedItemTotal)}`,
-      );
+      await expect(cartPage.summaryQuantity).toHaveText(`${quantityToAdd} items in cart`);
+      await expect(cartPage.summaryTotal).toHaveText(`Total: ${formatUsd(expectedItemTotal)}`);
     });
 
     await test.step("Return to the catalog and verify the updated product state", async () => {
@@ -103,9 +87,7 @@ test.describe("add to cart", () => {
       await expect(productCard.addToCart.available).toHaveText(
         `Available: ${expectedAvailableQuantity}`,
       );
-      await expect(productCard.addToCart.inCart).toHaveText(
-        `In cart: ${quantityToAdd}`,
-      );
+      await expect(productCard.addToCart.inCart).toHaveText(`In cart: ${quantityToAdd}`);
     });
   });
 
@@ -126,13 +108,9 @@ test.describe("add to cart", () => {
       await expect(page).toHaveURL(`/products/${product.id}`);
 
       await expect(productDetailsPage.heading).toHaveText(product.title);
-      await expect(productDetailsPage.description).toHaveText(
-        product.description,
-      );
+      await expect(productDetailsPage.description).toHaveText(product.description);
       await expect(productDetailsPage.category).toHaveText(product.category);
-      await expect(productDetailsPage.price).toHaveText(
-        formatUsd(product.price),
-      );
+      await expect(productDetailsPage.price).toHaveText(formatUsd(product.price));
 
       await expect(productDetailsPage.addToCart.available).toHaveText(
         `Available: ${product.stock}`,
@@ -155,9 +133,7 @@ test.describe("add to cart", () => {
       await expect(productDetailsPage.addToCart.available).toHaveText(
         `Available: ${expectedAvailableQuantity}`,
       );
-      await expect(productDetailsPage.addToCart.inCart).toHaveText(
-        `In cart: ${quantityToAdd}`,
-      );
+      await expect(productDetailsPage.addToCart.inCart).toHaveText(`In cart: ${quantityToAdd}`);
       await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
       await expect(productDetailsPage.addToCart.quantityHint).toHaveText(
         `Choose a quantity from 1 to ${expectedAvailableQuantity}.`,
@@ -172,9 +148,7 @@ test.describe("add to cart", () => {
     });
 
     await test.step("Open the cart and verify the added product quantity", async () => {
-      await expect(header.cartLink).toHaveAccessibleName(
-        `Cart, ${quantityToAdd} items`,
-      );
+      await expect(header.cartLink).toHaveAccessibleName(`Cart, ${quantityToAdd} items`);
 
       await header.openCart();
 
@@ -207,9 +181,7 @@ test.describe("add to cart", () => {
       await expect(productCard.addToCart.available).toHaveText(
         `Available: ${product.stock - quantityPerAddition}`,
       );
-      await expect(productCard.addToCart.inCart).toHaveText(
-        `In cart: ${quantityPerAddition}`,
-      );
+      await expect(productCard.addToCart.inCart).toHaveText(`In cart: ${quantityPerAddition}`);
     });
 
     await test.step("Open product details and verify that the cart state is preserved", async () => {
@@ -226,9 +198,7 @@ test.describe("add to cart", () => {
     });
 
     await test.step(`Add ${quantityPerAddition} more units from product details`, async () => {
-      await productDetailsPage.addToCart.fillQuantity(
-        String(quantityPerAddition),
-      );
+      await productDetailsPage.addToCart.fillQuantity(String(quantityPerAddition));
       await productDetailsPage.addToCart.submit();
 
       await expect(productDetailsPage.addToCart.available).toHaveText(
@@ -239,9 +209,7 @@ test.describe("add to cart", () => {
       );
       await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
 
-      await expect(header.cartLink).toHaveAccessibleName(
-        `Cart, ${expectedQuantityInCart} items`,
-      );
+      await expect(header.cartLink).toHaveAccessibleName(`Cart, ${expectedQuantityInCart} items`);
     });
 
     await test.step("Open the cart and verify that both additions were merged", async () => {
@@ -253,12 +221,8 @@ test.describe("add to cart", () => {
       const cartItem = cartPage.getCartItem(product.title);
 
       await expect(cartItem.title).toHaveText(product.title);
-      await expect(cartItem.quantityInput).toHaveValue(
-        String(expectedQuantityInCart),
-      );
-      await expect(cartItem.itemTotal).toHaveText(
-        `Item total: ${formatUsd(expectedItemTotal)}`,
-      );
+      await expect(cartItem.quantityInput).toHaveValue(String(expectedQuantityInCart));
+      await expect(cartItem.itemTotal).toHaveText(`Item total: ${formatUsd(expectedItemTotal)}`);
     });
   });
 
@@ -285,9 +249,7 @@ test.describe("add to cart", () => {
       await productACard.addToCart.fillQuantity(String(productAQuantity));
       await productACard.addToCart.submit();
 
-      await expect(header.cartLink).toHaveAccessibleName(
-        `Cart, ${productAQuantity} items`,
-      );
+      await expect(header.cartLink).toHaveAccessibleName(`Cart, ${productAQuantity} items`);
     });
 
     await test.step(`Open the details for ${productB.title} and add ${productBQuantity} unit`, async () => {
@@ -299,9 +261,7 @@ test.describe("add to cart", () => {
       await productDetailsPage.addToCart.fillQuantity(String(productBQuantity));
       await productDetailsPage.addToCart.submit();
 
-      await expect(header.cartLink).toHaveAccessibleName(
-        `Cart, ${expectedCartQuantity} items`,
-      );
+      await expect(header.cartLink).toHaveAccessibleName(`Cart, ${expectedCartQuantity} items`);
     });
 
     await test.step("Open the cart and verify that both products are preserved", async () => {
@@ -314,29 +274,21 @@ test.describe("add to cart", () => {
       const productBCartItem = cartPage.getCartItem(productB.title);
 
       await expect(productACartItem.title).toHaveText(productA.title);
-      await expect(productACartItem.quantityInput).toHaveValue(
-        String(productAQuantity),
-      );
+      await expect(productACartItem.quantityInput).toHaveValue(String(productAQuantity));
       await expect(productACartItem.itemTotal).toHaveText(
         `Item total: ${formatUsd(expectedProductATotal)}`,
       );
 
       await expect(productBCartItem.title).toHaveText(productB.title);
-      await expect(productBCartItem.quantityInput).toHaveValue(
-        String(productBQuantity),
-      );
+      await expect(productBCartItem.quantityInput).toHaveValue(String(productBQuantity));
       await expect(productBCartItem.itemTotal).toHaveText(
         `Item total: ${formatUsd(expectedProductBTotal)}`,
       );
     });
 
     await test.step("Verify the combined cart quantity and total", async () => {
-      await expect(cartPage.summaryQuantity).toHaveText(
-        `${expectedCartQuantity} items in cart`,
-      );
-      await expect(cartPage.summaryTotal).toHaveText(
-        `Total: ${formatUsd(expectedCartTotal)}`,
-      );
+      await expect(cartPage.summaryQuantity).toHaveText(`${expectedCartQuantity} items in cart`);
+      await expect(cartPage.summaryTotal).toHaveText(`Total: ${formatUsd(expectedCartTotal)}`);
     });
   });
 });

@@ -23,9 +23,7 @@ export function createProduct(overrides: Partial<Product> = {}): Product {
   };
 }
 
-export function createProductInput(
-  overrides: Partial<ProductInput> = {},
-): ProductInput {
+export function createProductInput(overrides: Partial<ProductInput> = {}): ProductInput {
   return {
     ...DEFAULT_PRODUCT_INPUT,
     ...overrides,

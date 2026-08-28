@@ -7,8 +7,7 @@ export const AuthRequestStatus = {
   Failed: "failed",
 } as const;
 
-export type AuthRequestStatus =
-  (typeof AuthRequestStatus)[keyof typeof AuthRequestStatus];
+export type AuthRequestStatus = (typeof AuthRequestStatus)[keyof typeof AuthRequestStatus];
 
 export type AuthState = {
   user: User | null;

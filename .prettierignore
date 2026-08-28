@@ -9,3 +9,7 @@ frontend/dist
 
 backend/node_modules
 backend/dist
+
+automation/playwright-report
+automation/test-results
+automation/blob-report

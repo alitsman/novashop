@@ -22,21 +22,14 @@ export function AdminProductDeleteSection({
   onConfirmDelete,
 }: AdminProductDeleteSectionProps) {
   return (
-    <section
-      className="admin-product-delete-section"
-      aria-labelledby="admin-product-delete-title"
-    >
+    <section className="admin-product-delete-section" aria-labelledby="admin-product-delete-title">
       <div className="admin-product-delete-section__content">
-        <h2
-          id="admin-product-delete-title"
-          className="admin-product-delete-section__title"
-        >
+        <h2 id="admin-product-delete-title" className="admin-product-delete-section__title">
           Delete product
         </h2>
 
         <p className="admin-product-delete-section__description">
-          This action permanently removes the product from the catalog. It
-          cannot be undone.
+          This action permanently removes the product from the catalog. It cannot be undone.
         </p>
 
         {deleteError && (

@@ -29,10 +29,7 @@ export function AppRouter() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/products" element={<ProductsPage />} />
-            <Route
-              path="/products/:productId"
-              element={<ProductDetailsPage />}
-            />
+            <Route path="/products/:productId" element={<ProductDetailsPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/orders" element={<OrdersPage />} />
@@ -40,14 +37,8 @@ export function AppRouter() {
 
           <Route element={<AdminRoute />}>
             <Route path="/admin/products" element={<AdminProductsPage />} />
-            <Route
-              path="/admin/products/new"
-              element={<AdminProductCreatePage />}
-            />
-            <Route
-              path="/admin/products/:productId/edit"
-              element={<AdminProductEditPage />}
-            />
+            <Route path="/admin/products/new" element={<AdminProductCreatePage />} />
+            <Route path="/admin/products/:productId/edit" element={<AdminProductEditPage />} />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />

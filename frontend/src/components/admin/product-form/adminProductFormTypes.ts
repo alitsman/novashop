@@ -11,9 +11,7 @@ export type AdminProductFormValues = {
   description: string;
 };
 
-export type AdminProductFormErrors = Partial<
-  Record<keyof AdminProductFormValues, string>
->;
+export type AdminProductFormErrors = Partial<Record<keyof AdminProductFormValues, string>>;
 
 export type UseAdminProductFormParams = {
   mode: AdminProductFormMode;

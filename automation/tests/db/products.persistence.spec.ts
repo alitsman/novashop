@@ -10,10 +10,7 @@ type ProductPersistenceRow = {
 test.describe("Product persistence", () => {
   // The API returns 404 for both soft-deleted and physically deleted products.
   // This DB check proves that the row still exists and only deleted_at was set.
-  test("soft delete: keeps the product row and sets deleted_at", async ({
-    request,
-    dbPool,
-  }) => {
+  test("soft delete: keeps the product row and sets deleted_at", async ({ request, dbPool }) => {
     const adminToken = await loginViaApi(request, ADMIN_USER);
     const createdProduct = await createProductViaApi(request, adminToken);
 
@@ -37,14 +34,11 @@ test.describe("Product persistence", () => {
       },
     ]);
 
-    const deleteResponse = await request.delete(
-      `/products/${createdProduct.id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-        },
+    const deleteResponse = await request.delete(`/products/${createdProduct.id}`, {
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
       },
-    );
+    });
 
     expect(deleteResponse.status()).toBe(204);
 

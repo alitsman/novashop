@@ -20,9 +20,7 @@ export async function createProductViaApi(
   });
 
   if (response.status() !== 201) {
-    throw new Error(
-      `Product setup failed: expected status 201, received ${response.status()}`,
-    );
+    throw new Error(`Product setup failed: expected status 201, received ${response.status()}`);
   }
 
   return productSchema.parse(await response.json());

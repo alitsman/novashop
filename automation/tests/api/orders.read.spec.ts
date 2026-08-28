@@ -9,11 +9,7 @@ import {
   registerUserViaApi,
 } from "../../src/helpers";
 import { orderListSchema, orderSchema } from "../../src/schemas";
-import {
-  ADMIN_USER,
-  createOrderInput,
-  createOrderItemInput,
-} from "../../src/test-data";
+import { ADMIN_USER, createOrderInput, createOrderItemInput } from "../../src/test-data";
 import type { ApiErrorResponse, AuthResponse } from "../../src/types";
 
 const NONEXISTENT_ORDER_ID = "00000000-0000-4000-8000-000000000000";
@@ -28,9 +24,7 @@ test.describe("GET /orders", () => {
       regularUserAuth = await registerUserViaApi(request);
     });
 
-    test("own orders: returns created orders with complete items", async ({
-      request,
-    }) => {
+    test("own orders: returns created orders with complete items", async ({ request }) => {
       const adminToken = await loginViaApi(request, ADMIN_USER);
 
       const firstProduct = await createProductViaApi(request, adminToken, {
@@ -49,9 +43,7 @@ test.describe("GET /orders", () => {
         Authorization: `Bearer ${regularUserAuth.token}`,
       };
 
-      const firstOrderInput = createOrderInput([
-        createOrderItemInput(firstProduct.id, 1),
-      ]);
+      const firstOrderInput = createOrderInput([createOrderItemInput(firstProduct.id, 1)]);
 
       const firstOrderResponse = await request.post("/orders", {
         headers: userHeaders,
@@ -60,9 +52,7 @@ test.describe("GET /orders", () => {
 
       expect(firstOrderResponse.status()).toBe(201);
 
-      const firstCreatedOrder = orderSchema.parse(
-        await firstOrderResponse.json(),
-      );
+      const firstCreatedOrder = orderSchema.parse(await firstOrderResponse.json());
 
       // The second order has two items so the list response must also return
       // complete items in the same saved order.
@@ -78,9 +68,7 @@ test.describe("GET /orders", () => {
 
       expect(secondOrderResponse.status()).toBe(201);
 
-      const secondCreatedOrder = orderSchema.parse(
-        await secondOrderResponse.json(),
-      );
+      const secondCreatedOrder = orderSchema.parse(await secondOrderResponse.json());
 
       const response = await request.get("/orders", {
         headers: userHeaders,
@@ -92,13 +80,9 @@ test.describe("GET /orders", () => {
 
       expect(userOrders).toHaveLength(2);
 
-      expect(userOrders).toEqual(
-        expect.arrayContaining([firstCreatedOrder, secondCreatedOrder]),
-      );
+      expect(userOrders).toEqual(expect.arrayContaining([firstCreatedOrder, secondCreatedOrder]));
 
-      const listedSecondOrder = userOrders.find(
-        (order) => order.id === secondCreatedOrder.id,
-      );
+      const listedSecondOrder = userOrders.find((order) => order.id === secondCreatedOrder.id);
 
       assert(
         listedSecondOrder !== undefined,
@@ -113,9 +97,7 @@ test.describe("GET /orders", () => {
       ).toEqual(secondOrderInput.items);
     });
 
-    test("newest first: returns the last created order at the top", async ({
-      request,
-    }) => {
+    test("newest first: returns the last created order at the top", async ({ request }) => {
       const adminToken = await loginViaApi(request, ADMIN_USER);
 
       const testProduct = await createProductViaApi(request, adminToken, {
@@ -127,9 +109,7 @@ test.describe("GET /orders", () => {
         Authorization: `Bearer ${regularUserAuth.token}`,
       };
 
-      const orderInput = createOrderInput([
-        createOrderItemInput(testProduct.id, 1),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, 1)]);
 
       const firstOrderResponse = await request.post("/orders", {
         headers: userHeaders,
@@ -138,9 +118,7 @@ test.describe("GET /orders", () => {
 
       expect(firstOrderResponse.status()).toBe(201);
 
-      const firstCreatedOrder = orderSchema.parse(
-        await firstOrderResponse.json(),
-      );
+      const firstCreatedOrder = orderSchema.parse(await firstOrderResponse.json());
 
       const secondOrderResponse = await request.post("/orders", {
         headers: userHeaders,
@@ -149,9 +127,7 @@ test.describe("GET /orders", () => {
 
       expect(secondOrderResponse.status()).toBe(201);
 
-      const secondCreatedOrder = orderSchema.parse(
-        await secondOrderResponse.json(),
-      );
+      const secondCreatedOrder = orderSchema.parse(await secondOrderResponse.json());
 
       const response = await request.get("/orders", {
         headers: userHeaders,
@@ -167,9 +143,7 @@ test.describe("GET /orders", () => {
       ]);
     });
 
-    test("another user's order: is not returned in the user's order list", async ({
-      request,
-    }) => {
+    test("another user's order: is not returned in the user's order list", async ({ request }) => {
       const orderOwnerAuth = await registerUserViaApi(request);
       const adminToken = await loginViaApi(request, ADMIN_USER);
 
@@ -178,9 +152,7 @@ test.describe("GET /orders", () => {
         stock: 10,
       });
 
-      const orderInput = createOrderInput([
-        createOrderItemInput(testProduct.id, 1),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, 1)]);
 
       const orderResponse = await request.post("/orders", {
         headers: {
@@ -201,9 +173,7 @@ test.describe("GET /orders", () => {
 
       expect(ownerOrdersResponse.status()).toBe(200);
 
-      const ownerOrders = orderListSchema.parse(
-        await ownerOrdersResponse.json(),
-      );
+      const ownerOrders = orderListSchema.parse(await ownerOrdersResponse.json());
 
       // The owner's response proves that the order exists and GET /orders returns it.
       expect(ownerOrders).toEqual([createdOrder]);
@@ -216,9 +186,7 @@ test.describe("GET /orders", () => {
 
       expect(anotherUserOrdersResponse.status()).toBe(200);
 
-      const anotherUserOrders = orderListSchema.parse(
-        await anotherUserOrdersResponse.json(),
-      );
+      const anotherUserOrders = orderListSchema.parse(await anotherUserOrdersResponse.json());
 
       // The user from beforeEach has no own orders and cannot see the owner's order.
       expect(anotherUserOrders).toEqual([]);
@@ -326,9 +294,7 @@ test.describe("GET /orders/:id", () => {
       ).toEqual(orderInput.items);
     });
 
-    test("another user's order: returns ORDER_NOT_FOUND", async ({
-      request,
-    }) => {
+    test("another user's order: returns ORDER_NOT_FOUND", async ({ request }) => {
       const orderOwnerAuth = await registerUserViaApi(request);
       const adminToken = await loginViaApi(request, ADMIN_USER);
 
@@ -337,9 +303,7 @@ test.describe("GET /orders/:id", () => {
         stock: 10,
       });
 
-      const orderInput = createOrderInput([
-        createOrderItemInput(testProduct.id, 1),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, 1)]);
 
       const orderResponse = await request.post("/orders", {
         headers: {
@@ -365,19 +329,15 @@ test.describe("GET /orders/:id", () => {
       // This proves that the order exists and its owner can access it.
       expect(ownerOrder).toEqual(createdOrder);
 
-      const anotherUserResponse = await request.get(
-        `/orders/${createdOrder.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${regularUserAuth.token}`,
-          },
+      const anotherUserResponse = await request.get(`/orders/${createdOrder.id}`, {
+        headers: {
+          Authorization: `Bearer ${regularUserAuth.token}`,
         },
-      );
+      });
 
       expect(anotherUserResponse.status()).toBe(404);
 
-      const errorResponse =
-        (await anotherUserResponse.json()) as ApiErrorResponse;
+      const errorResponse = (await anotherUserResponse.json()) as ApiErrorResponse;
 
       expect(errorResponse).toEqual({
         error: {
@@ -406,9 +366,7 @@ test.describe("GET /orders/:id", () => {
       });
     });
 
-    test("invalid order id: returns VALIDATION_ERROR for id", async ({
-      request,
-    }) => {
+    test("invalid order id: returns VALIDATION_ERROR for id", async ({ request }) => {
       const response = await request.get(`/orders/${INVALID_ORDER_ID}`, {
         headers: {
           Authorization: `Bearer ${regularUserAuth.token}`,
@@ -435,9 +393,7 @@ test.describe("GET /orders/:id", () => {
         Authorization: `Bearer ${regularUserAuth.token}`,
       };
 
-      const orderInput = createOrderInput([
-        createOrderItemInput(testProduct.id, orderedQuantity),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, orderedQuantity)]);
 
       const orderResponse = await request.post("/orders", {
         headers: userHeaders,
@@ -448,14 +404,11 @@ test.describe("GET /orders/:id", () => {
 
       const createdOrder = orderSchema.parse(await orderResponse.json());
 
-      const deleteResponse = await request.delete(
-        `/products/${testProduct.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${adminToken}`,
-          },
+      const deleteResponse = await request.delete(`/products/${testProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
         },
-      );
+      });
 
       expect(deleteResponse.status()).toBe(204);
 
@@ -522,9 +475,7 @@ test.describe("Orders API access", () => {
         Authorization: `Bearer ${adminToken}`,
       };
 
-      const orderInput = createOrderInput([
-        createOrderItemInput(testProduct.id, 2),
-      ]);
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, 2)]);
 
       const createResponse = await request.post("/orders", {
         headers: adminHeaders,
@@ -545,12 +496,9 @@ test.describe("Orders API access", () => {
 
       expect(adminOrders).toEqual(expect.arrayContaining([createdOrder]));
 
-      const orderByIdResponse = await request.get(
-        `/orders/${createdOrder.id}`,
-        {
-          headers: adminHeaders,
-        },
-      );
+      const orderByIdResponse = await request.get(`/orders/${createdOrder.id}`, {
+        headers: adminHeaders,
+      });
 
       expect(orderByIdResponse.status()).toBe(200);
 

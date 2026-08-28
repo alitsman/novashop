@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "../../src/fixtures";
 import { CartPage, LoginPage, ProductCatalogPage } from "../../src/pages";
 import { prepareProductCatalog } from "../../src/helpers";
 import { formatUsd } from "../../src/utils";
@@ -12,9 +12,7 @@ import {
 } from "../../src/test-data";
 
 test.describe("cart isolation between users", () => {
-  const seedProducts = ADD_TO_CART_PRODUCTS.map((product) =>
-    createProduct(product),
-  );
+  const seedProducts = ADD_TO_CART_PRODUCTS.map((product) => createProduct(product));
 
   const regularUserProduct = ADD_TO_CART_PRODUCT_A;
   const adminUserProduct = ADD_TO_CART_PRODUCT_B;
@@ -41,19 +39,13 @@ test.describe("cart isolation between users", () => {
 
   // Single BrowserContext on purpose: separate contexts have separate
   // localStorage, so Playwright would provide the isolation instead of the app.
-  test("keeps carts isolated when users switch in the same browser context", async ({
-    page,
-  }) => {
+  test("keeps carts isolated when users switch in the same browser context", async ({ page }) => {
     await test.step("signs in as the regular user and adds a product", async () => {
       await loginPage.signIn(REGULAR_USER.user.email, REGULAR_USER.password);
 
       await expect(page).toHaveURL("/products");
-      await expect(catalogPage.header.currentUserName).toHaveText(
-        REGULAR_USER.user.name,
-      );
-      await expect(catalogPage.header.cartLink).toHaveAccessibleName(
-        "Cart, 0 items",
-      );
+      await expect(catalogPage.header.currentUserName).toHaveText(REGULAR_USER.user.name);
+      await expect(catalogPage.header.cartLink).toHaveAccessibleName("Cart, 0 items");
 
       const productCard = catalogPage.getProductCard(regularUserProduct.title);
 
@@ -73,12 +65,8 @@ test.describe("cart isolation between users", () => {
       await loginPage.signIn(ADMIN_USER.user.email, ADMIN_USER.password);
 
       await expect(page).toHaveURL("/products");
-      await expect(catalogPage.header.currentUserName).toHaveText(
-        ADMIN_USER.user.name,
-      );
-      await expect(catalogPage.header.cartLink).toHaveAccessibleName(
-        "Cart, 0 items",
-      );
+      await expect(catalogPage.header.currentUserName).toHaveText(ADMIN_USER.user.name);
+      await expect(catalogPage.header.cartLink).toHaveAccessibleName("Cart, 0 items");
 
       await catalogPage.header.openCart();
 
@@ -103,9 +91,7 @@ test.describe("cart isolation between users", () => {
       await catalogPage.header.openCart();
 
       await expect(cartPage.cartItems).toHaveCount(1);
-      await expect(cartPage.cartItemTitles).toHaveText([
-        adminUserProduct.title,
-      ]);
+      await expect(cartPage.cartItemTitles).toHaveText([adminUserProduct.title]);
     });
 
     await test.step("signs back in as the regular user and restores the original cart", async () => {
@@ -116,9 +102,7 @@ test.describe("cart isolation between users", () => {
       await loginPage.signIn(REGULAR_USER.user.email, REGULAR_USER.password);
 
       await expect(page).toHaveURL("/products");
-      await expect(catalogPage.header.currentUserName).toHaveText(
-        REGULAR_USER.user.name,
-      );
+      await expect(catalogPage.header.currentUserName).toHaveText(REGULAR_USER.user.name);
       await expect(catalogPage.header.cartLink).toHaveAccessibleName(
         `Cart, ${regularUserQuantity} items`,
       );
@@ -126,15 +110,11 @@ test.describe("cart isolation between users", () => {
       await catalogPage.header.openCart();
 
       await expect(cartPage.cartItems).toHaveCount(1);
-      await expect(cartPage.cartItemTitles).toHaveText([
-        regularUserProduct.title,
-      ]);
+      await expect(cartPage.cartItemTitles).toHaveText([regularUserProduct.title]);
 
       const cartItem = cartPage.getCartItem(regularUserProduct.title);
 
-      await expect(cartItem.quantityInput).toHaveValue(
-        String(regularUserQuantity),
-      );
+      await expect(cartItem.quantityInput).toHaveValue(String(regularUserQuantity));
       await expect(cartPage.summaryTotal).toHaveText(
         `Total: ${formatUsd(regularUserProduct.price * regularUserQuantity)}`,
       );

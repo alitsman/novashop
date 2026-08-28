@@ -10,8 +10,7 @@ export const OrdersRequestStatus = {
   Failed: "failed",
 } as const;
 
-export type OrdersRequestStatus =
-  (typeof OrdersRequestStatus)[keyof typeof OrdersRequestStatus];
+export type OrdersRequestStatus = (typeof OrdersRequestStatus)[keyof typeof OrdersRequestStatus];
 
 export type OrdersState = {
   items: Order[];
@@ -21,37 +20,35 @@ export type OrdersState = {
   createError: string | null;
 };
 
-export const fetchMyOrders = createAsyncThunk<
-  Order[],
-  string,
-  { rejectValue: string }
->("orders/fetchMyOrders", async (userId, { rejectWithValue }) => {
-  try {
-    return await ordersService.getMyOrders(userId);
-  } catch (error) {
-    if (error instanceof Error) {
-      return rejectWithValue(error.message);
+export const fetchMyOrders = createAsyncThunk<Order[], string, { rejectValue: string }>(
+  "orders/fetchMyOrders",
+  async (userId, { rejectWithValue }) => {
+    try {
+      return await ordersService.getMyOrders(userId);
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+
+      return rejectWithValue("Failed to fetch orders.");
     }
+  },
+);
 
-    return rejectWithValue("Failed to fetch orders.");
-  }
-});
+export const createOrder = createAsyncThunk<Order, CreateOrderPayload, { rejectValue: string }>(
+  "orders/createOrder",
+  async (orderData, { rejectWithValue }) => {
+    try {
+      return await ordersService.createOrder(orderData);
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
 
-export const createOrder = createAsyncThunk<
-  Order,
-  CreateOrderPayload,
-  { rejectValue: string }
->("orders/createOrder", async (orderData, { rejectWithValue }) => {
-  try {
-    return await ordersService.createOrder(orderData);
-  } catch (error) {
-    if (error instanceof Error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue("Failed to create order.");
     }
-
-    return rejectWithValue("Failed to create order.");
-  }
-});
+  },
+);
 
 const initialState: OrdersState = {
   items: [],

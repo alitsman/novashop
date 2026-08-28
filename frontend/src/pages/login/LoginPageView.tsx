@@ -48,36 +48,28 @@ export function LoginPageView({
             className="auth-page-layout__demo-credentials"
             aria-labelledby="login-demo-credentials-title"
           >
-            <h2
-              id="login-demo-credentials-title"
-              className="auth-page-layout__demo-title"
-            >
+            <h2 id="login-demo-credentials-title" className="auth-page-layout__demo-title">
               Demo accounts
             </h2>
 
             <p className="auth-page-layout__demo-text">
-              Use these mock accounts to review the application as a regular
-              user or as an administrator.
+              Use these mock accounts to review the application as a regular user or as an
+              administrator.
             </p>
 
             <dl className="auth-page-layout__demo-list">
               <div className="auth-page-layout__demo-item">
                 <dt>User</dt>
                 <dd>
-                  <code className="auth-page-layout__demo-code">
-                    user@test.com
-                  </code>{" "}
-                  / <code className="auth-page-layout__demo-code">user123</code>
+                  <code className="auth-page-layout__demo-code">user@test.com</code> /{" "}
+                  <code className="auth-page-layout__demo-code">user123</code>
                 </dd>
               </div>
 
               <div className="auth-page-layout__demo-item">
                 <dt>Admin</dt>
                 <dd>
-                  <code className="auth-page-layout__demo-code">
-                    admin@test.com
-                  </code>{" "}
-                  /{" "}
+                  <code className="auth-page-layout__demo-code">admin@test.com</code> /{" "}
                   <code className="auth-page-layout__demo-code">admin123</code>
                 </dd>
               </div>
@@ -125,11 +117,7 @@ export function LoginPageView({
             </p>
           )}
 
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            aria-busy={isSubmitting}
-          >
+          <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
             {isSubmitting ? "Signing in..." : "Sign in"}
           </Button>
 
@@ -141,10 +129,7 @@ export function LoginPageView({
 
           <p className="auth-page-layout__required-note">
             Required fields are marked with{" "}
-            <span
-              className="auth-page-layout__required-mark"
-              aria-hidden="true"
-            >
+            <span className="auth-page-layout__required-mark" aria-hidden="true">
               *
             </span>
             .

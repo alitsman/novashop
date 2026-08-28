@@ -2,12 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import type { RootState } from "../../app/store";
 import { authService } from "../../services/authService";
-import type {
-  AuthResponse,
-  AuthState,
-  LoginCredentials,
-  RegisterData,
-} from "../../types/auth";
+import type { AuthResponse, AuthState, LoginCredentials, RegisterData } from "../../types/auth";
 import { AuthRequestStatus } from "../../types/auth";
 
 const initialState: AuthState = {
@@ -24,37 +19,35 @@ export const restoreAuth = createAsyncThunk<AuthResponse | null, void>(
   },
 );
 
-export const loginUser = createAsyncThunk<
-  AuthResponse,
-  LoginCredentials,
-  { rejectValue: string }
->("auth/loginUser", async (credentials, { rejectWithValue }) => {
-  try {
-    return await authService.login(credentials);
-  } catch (error) {
-    if (error instanceof Error) {
-      return rejectWithValue(error.message);
+export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials, { rejectValue: string }>(
+  "auth/loginUser",
+  async (credentials, { rejectWithValue }) => {
+    try {
+      return await authService.login(credentials);
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+
+      return rejectWithValue("Failed to login");
     }
+  },
+);
 
-    return rejectWithValue("Failed to login");
-  }
-});
+export const registerUser = createAsyncThunk<AuthResponse, RegisterData, { rejectValue: string }>(
+  "auth/registerUser",
+  async (data, { rejectWithValue }) => {
+    try {
+      return await authService.register(data);
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
 
-export const registerUser = createAsyncThunk<
-  AuthResponse,
-  RegisterData,
-  { rejectValue: string }
->("auth/registerUser", async (data, { rejectWithValue }) => {
-  try {
-    return await authService.register(data);
-  } catch (error) {
-    if (error instanceof Error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue("Failed to register");
     }
-
-    return rejectWithValue("Failed to register");
-  }
-});
+  },
+);
 
 export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
   "auth/logoutUser",

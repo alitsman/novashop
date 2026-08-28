@@ -15,9 +15,7 @@ const WRONG_PASSWORD = "wrongPassword";
 const MISSING_EMAIL = "missing@email.novashop";
 
 test.describe("POST /auth/login", () => {
-  test("valid credentials: returns a token and the safe user", async ({
-    request,
-  }) => {
+  test("valid credentials: returns a token and the safe user", async ({ request }) => {
     const response = await request.post("/auth/login", {
       data: {
         email: REGULAR_USER.user.email,
@@ -34,14 +32,10 @@ test.describe("POST /auth/login", () => {
       user: REGULAR_USER.user,
     });
 
-    expect(token).toMatch(
-      JWT_WITH_THREE_NON_EMPTY_BASE64URL_PARTS_SEPARATED_BY_DOTS,
-    );
+    expect(token).toMatch(JWT_WITH_THREE_NON_EMPTY_BASE64URL_PARTS_SEPARATED_BY_DOTS);
   });
 
-  test("valid credentials: issues a JWT with the expected claims", async ({
-    request,
-  }) => {
+  test("valid credentials: issues a JWT with the expected claims", async ({ request }) => {
     const response = await request.post("/auth/login", {
       data: {
         email: REGULAR_USER.user.email,
@@ -79,10 +73,8 @@ test.describe("POST /auth/login", () => {
   test("email with surrounding spaces and different casing: logs in successfully", async ({
     request,
   }) => {
-    const emailWithMixedCase = Array.from(
-      REGULAR_USER.user.email,
-      (character, index) =>
-        index % 2 === 0 ? character.toUpperCase() : character.toLowerCase(),
+    const emailWithMixedCase = Array.from(REGULAR_USER.user.email, (character, index) =>
+      index % 2 === 0 ? character.toUpperCase() : character.toLowerCase(),
     ).join("");
 
     const response = await request.post("/auth/login", {
@@ -101,9 +93,7 @@ test.describe("POST /auth/login", () => {
       user: REGULAR_USER.user,
     });
 
-    expect(token).toMatch(
-      JWT_WITH_THREE_NON_EMPTY_BASE64URL_PARTS_SEPARATED_BY_DOTS,
-    );
+    expect(token).toMatch(JWT_WITH_THREE_NON_EMPTY_BASE64URL_PARTS_SEPARATED_BY_DOTS);
   });
 
   test("invalid password: returns INVALID_CREDENTIALS", async ({ request }) => {
@@ -138,9 +128,7 @@ test.describe("POST /auth/login", () => {
     expect(responseBody.error.message).toBe("Invalid email or password");
   });
 
-  test("missing password: returns VALIDATION_ERROR with details", async ({
-    request,
-  }) => {
+  test("missing password: returns VALIDATION_ERROR with details", async ({ request }) => {
     const response = await request.post("/auth/login", {
       data: {
         email: REGULAR_USER.user.email,
@@ -156,10 +144,7 @@ test.describe("POST /auth/login", () => {
 
     const { details } = responseBody.error;
 
-    assert(
-      Array.isArray(details),
-      "Expected validation error details to be an array",
-    );
+    assert(Array.isArray(details), "Expected validation error details to be an array");
 
     const validationIssues: unknown[] = details;
 

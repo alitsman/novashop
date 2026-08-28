@@ -1,9 +1,6 @@
 import type { CartItem } from "../types";
 
-type CartItemOverrides = Pick<
-  CartItem,
-  "productId" | "title" | "price" | "quantity" | "stock"
-> &
+type CartItemOverrides = Pick<CartItem, "productId" | "title" | "price" | "quantity" | "stock"> &
   Partial<CartItem>;
 
 export const CART_ITEM_A: CartItemOverrides = {

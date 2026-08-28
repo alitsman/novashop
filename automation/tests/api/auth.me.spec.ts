@@ -42,9 +42,7 @@ const invalidTokenCases = [
 ];
 
 test.describe("GET /me", () => {
-  test("regular user login token: returns the regular user", async ({
-    request,
-  }) => {
+  test("regular user login token: returns the regular user", async ({ request }) => {
     const token = await loginViaApi(request, REGULAR_USER);
 
     const meResponse = await request.get("/me", {
@@ -75,9 +73,7 @@ test.describe("GET /me", () => {
     expect(responseBody).toEqual(ADMIN_USER.user);
   });
 
-  test("missing authorization header: returns AUTHENTICATION_REQUIRED", async ({
-    request,
-  }) => {
+  test("missing authorization header: returns AUTHENTICATION_REQUIRED", async ({ request }) => {
     const meResponse = await request.get("/me");
 
     expect(meResponse.status()).toBe(401);
@@ -92,9 +88,7 @@ test.describe("GET /me", () => {
     });
   });
 
-  test("non-Bearer authorization scheme: returns AUTHENTICATION_REQUIRED", async ({
-    request,
-  }) => {
+  test("non-Bearer authorization scheme: returns AUTHENTICATION_REQUIRED", async ({ request }) => {
     const meResponse = await request.get("/me", {
       headers: {
         Authorization: "Basic credentials",
@@ -114,9 +108,7 @@ test.describe("GET /me", () => {
   });
 
   for (const invalidTokenCase of invalidTokenCases) {
-    test(`${invalidTokenCase.name}: returns INVALID_TOKEN`, async ({
-      request,
-    }) => {
+    test(`${invalidTokenCase.name}: returns INVALID_TOKEN`, async ({ request }) => {
       const token = invalidTokenCase.createToken();
 
       const meResponse = await request.get("/me", {
@@ -165,9 +157,7 @@ test.describe("GET /me", () => {
 
   // This token passes JWT verification.
   // The request fails later because the user does not exist in the database.
-  test("valid token for a non-existent user: returns INVALID_TOKEN", async ({
-    request,
-  }) => {
+  test("valid token for a non-existent user: returns INVALID_TOKEN", async ({ request }) => {
     const token = createTestAuthToken({
       sub: NON_EXISTENT_USER_ID,
       role: REGULAR_USER.user.role,
