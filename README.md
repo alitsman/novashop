@@ -1,34 +1,37 @@
-﻿# NovaShop
+# NovaShop
 
-Frontend diploma e-commerce project built with React and TypeScript.
+NovaShop is a full-stack e-commerce portfolio project built as a realistic application and automation target.
 
-Current stage: **frontend implementation**.
+## Project components
 
-## Live demo
+- **Frontend:** React, TypeScript, Redux Toolkit, React Router, and Vite.
+- **Backend:** Express, TypeScript, PostgreSQL, and JWT authentication.
+- **Automation:** Playwright tests for UI, API, and database behaviour.
+- **CI:** Automated code-quality checks and blocking API/DB regression.
 
-[Open NovaShop](https://novashop-phi.vercel.app)
+## Current status
 
-## Frontend
+Minimal CI is complete. Frontend-backend integration is currently in progress.
 
-The frontend application includes:
+Authentication already uses the real backend API:
 
-- Authentication and protected routes
-- Product catalog with search, filters, sorting, and product details
-- Cart with quantity management and stock validation
-- Checkout flow and order history
-- Admin-only product CRUD panel
-- Mock service layer with localStorage persistence
-- Accessibility-focused forms, dialogs, loaders, and status messages
+- registration through `POST /auth/register`;
+- login through `POST /auth/login`;
+- session restoration through `GET /me`;
+- JWT storage in the browser;
+- backend-controlled user roles and authorization.
 
-Detailed frontend documentation is available here:
+Products, cart, checkout, orders, and admin functionality will be connected to the backend in the following integration stages.
 
-[Frontend README](./frontend/README.md)
+## Demo accounts
 
-## Project roadmap
+The backend seed creates two demo accounts:
 
-Planned next stages:
+| Role  | Email          | Password  |
+| ----- | -------------- | --------- |
+| User  | user@test.com  | User123!  |
+| Admin | admin@test.com | Admin123! |
 
-1. Backend API
-2. Database integration
-3. Deployment
-4. Playwright UI/API test coverage
+## Documentation
+
+Detailed architecture, local setup, testing, and deployment documentation will be added after frontend-backend integration is complete.

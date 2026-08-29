@@ -22,8 +22,37 @@ const requireEnv = (name: string, value: string | undefined): string => {
   return value;
 };
 
+const parseHttpOrigin = (name: string, value: string | undefined): string => {
+  const requiredValue = requireEnv(name, value);
+
+  let parsedUrl: URL;
+
+  try {
+    parsedUrl = new URL(requiredValue);
+  } catch {
+    throw new Error(`${name} must be a valid absolute URL`);
+  }
+
+  if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+    throw new Error(`${name} must use HTTP or HTTPS`);
+  }
+
+  if (
+    parsedUrl.username ||
+    parsedUrl.password ||
+    parsedUrl.pathname !== "/" ||
+    parsedUrl.search ||
+    parsedUrl.hash
+  ) {
+    throw new Error(`${name} must contain only an origin`);
+  }
+
+  return parsedUrl.origin;
+};
+
 export const env = {
   port: parsePort(process.env.PORT),
+  frontendUrl: parseHttpOrigin("FRONTEND_URL", process.env.FRONTEND_URL),
   databaseUrl: requireEnv("DATABASE_URL", process.env.DATABASE_URL),
   jwtSecret: requireEnv("JWT_SECRET", process.env.JWT_SECRET),
 };

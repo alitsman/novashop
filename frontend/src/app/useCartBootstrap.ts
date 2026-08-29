@@ -10,10 +10,10 @@ import {
 import { cartService } from "../services/cartService";
 
 type UseCartBootstrapParams = {
-  isAuthRestored: boolean;
+  isAuthResolved: boolean;
 };
 
-export function useCartBootstrap({ isAuthRestored }: UseCartBootstrapParams) {
+export function useCartBootstrap({ isAuthResolved }: UseCartBootstrapParams) {
   const dispatch = useAppDispatch();
 
   const currentUser = useAppSelector(selectCurrentUser);
@@ -23,7 +23,7 @@ export function useCartBootstrap({ isAuthRestored }: UseCartBootstrapParams) {
   const currentUserId = currentUser?.id ?? null;
 
   useEffect(() => {
-    if (!isAuthRestored) {
+    if (!isAuthResolved) {
       return;
     }
 
@@ -40,9 +40,9 @@ export function useCartBootstrap({ isAuthRestored }: UseCartBootstrapParams) {
         items: storedCartItems,
       }),
     );
-  }, [currentUserId, dispatch, isAuthRestored]);
+  }, [currentUserId, dispatch, isAuthResolved]);
 
-  const isCartRestored = isAuthRestored && (!currentUserId || cartOwnerUserId === currentUserId);
+  const isCartRestored = isAuthResolved && (!currentUserId || cartOwnerUserId === currentUserId);
 
   useEffect(() => {
     if (!isCartRestored || !currentUserId) {

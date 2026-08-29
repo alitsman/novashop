@@ -12,10 +12,18 @@ const initialState: AuthState = {
   error: null,
 };
 
-export const restoreAuth = createAsyncThunk<AuthResponse | null, void>(
+export const restoreAuth = createAsyncThunk<AuthResponse | null, void, { rejectValue: string }>(
   "auth/restoreAuth",
-  async () => {
-    return authService.restoreAuthFromStorage();
+  async (_, { rejectWithValue }) => {
+    try {
+      return await authService.restoreAuthFromStorage();
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+
+      return rejectWithValue("Failed to restore authentication");
+    }
   },
 );
 
@@ -74,6 +82,10 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(restoreAuth.pending, (authState) => {
+        authState.status = AuthRequestStatus.Loading;
+        authState.error = null;
+      })
       .addCase(restoreAuth.fulfilled, (authState, action) => {
         if (!action.payload) {
           authState.user = null;
@@ -87,6 +99,12 @@ const authSlice = createSlice({
         authState.token = action.payload.token;
         authState.status = AuthRequestStatus.Succeeded;
         authState.error = null;
+      })
+      .addCase(restoreAuth.rejected, (authState, action) => {
+        authState.user = null;
+        authState.token = null;
+        authState.status = AuthRequestStatus.Failed;
+        authState.error = action.payload ?? "Failed to restore authentication";
       })
       .addCase(loginUser.pending, (authState) => {
         authState.status = AuthRequestStatus.Loading;

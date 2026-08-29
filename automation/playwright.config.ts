@@ -38,6 +38,7 @@ const getExplicitUrlPort = (name: string, value: string): string => {
 
 const frontendUrl = getRequiredEnv("FRONTEND_URL");
 const apiUrl = getRequiredEnv("API_URL");
+const viteApiUrl = getRequiredEnv("VITE_API_URL");
 const backendPort = getRequiredEnv("PORT");
 
 getRequiredEnv("DATABASE_URL");
@@ -48,6 +49,10 @@ const apiPort = getExplicitUrlPort("API_URL", apiUrl);
 
 if (apiPort !== backendPort) {
   throw new Error(`PORT (${backendPort}) must match the port in API_URL (${apiPort})`);
+}
+
+if (viteApiUrl !== apiUrl) {
+  throw new Error(`VITE_API_URL (${viteApiUrl}) must match API_URL (${apiUrl})`);
 }
 
 const backendHealthUrl = new URL("/health", apiUrl).toString();

@@ -4,14 +4,14 @@ import { useAppDispatch } from "./hooks";
 
 export function useAuthBootstrap() {
   const dispatch = useAppDispatch();
-  const [isAuthRestored, setIsAuthRestored] = useState(false);
+  const [isAuthResolved, setIsAuthResolved] = useState(false);
 
   useEffect(() => {
     let isEffectActive = true;
 
     dispatch(restoreAuth()).finally(() => {
       if (isEffectActive) {
-        setIsAuthRestored(true);
+        setIsAuthResolved(true);
       }
     });
 
@@ -20,5 +20,5 @@ export function useAuthBootstrap() {
     };
   }, [dispatch]);
 
-  return isAuthRestored;
+  return isAuthResolved;
 }
