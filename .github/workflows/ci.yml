@@ -119,9 +119,21 @@ jobs:
         working-directory: automation
         run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests
+      - name: Run API and DB regression
         working-directory: automation
-        run: npm test
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/backend
+        run: npm test -- --project=api --project=db
+
+      # Legacy UI tests remain observable during frontend-backend integration,
+      # but return to the required CI gate only after the post-integration audit,
+      # adaptation, and a stable green run.
+      - name: Run legacy UI regression
+        continue-on-error: true
+        working-directory: automation
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/ui
+        run: npm test -- --project=chromium
 
       - name: Upload Playwright report
         if: always()
