@@ -1,6 +1,7 @@
 import cors from "cors";
 import express from "express";
 
+import { env } from "./config/env.js";
 import { checkDbConnection } from "./db/index.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
 
@@ -11,7 +12,11 @@ import { userRouter } from "./modules/users/index.js";
 
 export const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: env.frontendUrl,
+  }),
+);
 app.use(express.json());
 
 app.get("/health", (_request, response) => {
