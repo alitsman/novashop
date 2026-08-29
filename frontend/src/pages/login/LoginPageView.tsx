@@ -53,7 +53,7 @@ export function LoginPageView({
             </h2>
 
             <p className="auth-page-layout__demo-text">
-              Use these mock accounts to review the application as a regular user or as an
+              Use these demo accounts to review the application as a regular user or as an
               administrator.
             </p>
 
@@ -62,7 +62,7 @@ export function LoginPageView({
                 <dt>User</dt>
                 <dd>
                   <code className="auth-page-layout__demo-code">user@test.com</code> /{" "}
-                  <code className="auth-page-layout__demo-code">user123</code>
+                  <code className="auth-page-layout__demo-code">User123!</code>
                 </dd>
               </div>
 
@@ -70,7 +70,7 @@ export function LoginPageView({
                 <dt>Admin</dt>
                 <dd>
                   <code className="auth-page-layout__demo-code">admin@test.com</code> /{" "}
-                  <code className="auth-page-layout__demo-code">admin123</code>
+                  <code className="auth-page-layout__demo-code">Admin123!</code>
                 </dd>
               </div>
             </dl>
