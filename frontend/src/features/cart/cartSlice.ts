@@ -1,6 +1,11 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../../app/store";
-import type { CartItem, CartState } from "../../types/cart";
+import { cartService } from "../../services/cartService";
+import { productsService } from "../../services/productsService";
+import { CartRequestStatus, type CartItem, type CartState } from "../../types/cart";
+import type { Product } from "../../types/product";
+import { selectAuthToken, selectCurrentUser } from "../auth/authSlice";
+import { handleRequestError } from "../auth/handleRequestError";
 
 type SetQuantityPayload = {
   productId: string;
@@ -16,7 +21,42 @@ const initialState: CartState = {
   items: [],
   error: null,
   ownerUserId: null,
+  syncStatus: CartRequestStatus.Idle,
+  syncRequestId: null,
+  syncError: null,
 };
+
+export const syncCart = createAsyncThunk<
+  Product[],
+  void,
+  { state: RootState; rejectValue: string }
+>(
+  "cart/syncCart",
+  async (_, { dispatch, getState, rejectWithValue }) => {
+    const sessionToken = selectAuthToken(getState());
+
+    try {
+      return await productsService.getProducts();
+    } catch (error) {
+      return rejectWithValue(
+        handleRequestError(error, "Failed to check cart. Please try again.", {
+          dispatch,
+          sessionToken,
+        }),
+      );
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      const currentUser = selectCurrentUser(state);
+
+      return Boolean(
+        selectAuthToken(state) && currentUser && state.cart.ownerUserId === currentUser.id,
+      );
+    },
+  },
+);
 
 const cartSlice = createSlice({
   name: "cart",
@@ -26,12 +66,19 @@ const cartSlice = createSlice({
       cartState.items = action.payload.items;
       cartState.error = null;
       cartState.ownerUserId = action.payload.userId;
+      cartState.syncStatus = CartRequestStatus.Idle;
+      cartState.syncRequestId = null;
+      cartState.syncError = null;
     },
 
-    resetCart: (cartState) => {
-      cartState.items = [];
-      cartState.error = null;
-      cartState.ownerUserId = null;
+    resetCart: () => {
+      return initialState;
+    },
+
+    invalidateCartSync: (cartState) => {
+      cartState.syncStatus = CartRequestStatus.Idle;
+      cartState.syncRequestId = null;
+      cartState.syncError = null;
     },
 
     addToCart: (cartState, action: PayloadAction<CartItem>) => {
@@ -126,13 +173,43 @@ const cartSlice = createSlice({
     clearCart: (cartState) => {
       cartState.items = [];
       cartState.error = null;
+      cartState.syncStatus = CartRequestStatus.Idle;
+      cartState.syncRequestId = null;
+      cartState.syncError = null;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(syncCart.pending, (cartState, action) => {
+        cartState.syncStatus = CartRequestStatus.Loading;
+        cartState.syncRequestId = action.meta.requestId;
+        cartState.syncError = null;
+      })
+      .addCase(syncCart.fulfilled, (cartState, action) => {
+        if (cartState.syncRequestId !== action.meta.requestId) {
+          return;
+        }
+
+        cartState.items = cartService.reconcileCartItems(cartState.items, action.payload);
+        cartState.syncStatus = CartRequestStatus.Succeeded;
+        cartState.syncError = null;
+        // Keep the ID so checkout can verify that this was its sync request.
+      })
+      .addCase(syncCart.rejected, (cartState, action) => {
+        if (cartState.syncRequestId !== action.meta.requestId) {
+          return;
+        }
+
+        cartState.syncStatus = CartRequestStatus.Failed;
+        cartState.syncError = action.payload ?? "Failed to check cart. Please try again.";
+      });
   },
 });
 
 export const {
   restoreCart,
   resetCart,
+  invalidateCartSync,
   addToCart,
   clearCartError,
   removeFromCart,
@@ -152,6 +229,22 @@ export const selectCartOwnerUserId = (state: RootState) => {
   return state.cart.ownerUserId;
 };
 
+export const selectCartSyncStatus = (state: RootState) => {
+  return state.cart.syncStatus;
+};
+
+export const selectCartSyncError = (state: RootState) => {
+  return state.cart.syncError;
+};
+
+export const selectCartSyncRequestId = (state: RootState) => {
+  return state.cart.syncRequestId;
+};
+
+export const selectCartCheckoutError = (state: RootState) => {
+  return cartService.getCheckoutError(state.cart.items);
+};
+
 export const selectCartTotalQuantity = (state: RootState) => {
   return state.cart.items.reduce((totalQuantity, cartItem) => {
     return totalQuantity + cartItem.quantity;
@@ -159,9 +252,13 @@ export const selectCartTotalQuantity = (state: RootState) => {
 };
 
 export const selectCartTotalPrice = (state: RootState) => {
-  return state.cart.items.reduce((totalPrice, cartItem) => {
-    return totalPrice + cartItem.price * cartItem.quantity;
+  const totalInCents = state.cart.items.reduce((total, cartItem) => {
+    const priceInCents = Math.round(cartItem.price * 100);
+
+    return total + priceInCents * cartItem.quantity;
   }, 0);
+
+  return totalInCents / 100;
 };
 
 export const selectIsCartEmpty = (state: RootState) => {

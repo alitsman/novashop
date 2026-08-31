@@ -21,10 +21,13 @@ export type Order = {
   createdAt: string;
 };
 
+export type CreateOrderItemInput = {
+  productId: string;
+  quantity: number;
+};
+
 export type CreateOrderPayload = {
-  userId: string;
-  items: OrderItem[];
-  totalPrice: number;
+  items: CreateOrderItemInput[];
   fullName: string;
   phone: string;
   address: string;

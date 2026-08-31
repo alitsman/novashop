@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "../../app/store";
-import { ApiError } from "../../services/apiClient";
 import { productsService } from "../../services/productsService";
 import type { Product, ProductInput } from "../../types/product";
-import { loginUser, registerUser, selectAuthToken, sessionExpired } from "../auth/authSlice";
+import { loginUser, registerUser, selectAuthToken } from "../auth/authSlice";
+import { handleRequestError } from "../auth/handleRequestError";
 
 export const ProductsRequestStatus = {
   Idle: "idle",
@@ -54,24 +54,6 @@ const initialState: ProductsState = {
   detailError: null,
   mutationError: null,
   deleteError: null,
-};
-
-const handleRequestError = (
-  error: unknown,
-  fallbackMessage: string,
-  {
-    dispatch,
-    sessionToken,
-  }: {
-    dispatch: (action: ReturnType<typeof sessionExpired>) => void;
-    sessionToken: string | null;
-  },
-): string => {
-  if (error instanceof ApiError && error.statusCode === 401) {
-    dispatch(sessionExpired(sessionToken));
-  }
-
-  return error instanceof Error ? error.message : fallbackMessage;
 };
 
 export const fetchProducts = createAsyncThunk<
@@ -160,6 +142,9 @@ const productsSlice = createSlice({
   name: "products",
   initialState,
   reducers: {
+    invalidateProducts: () => {
+      return initialState;
+    },
     clearSelectedProduct: (productsState) => {
       productsState.selectedProduct = null;
       productsState.detailStatus = ProductsRequestStatus.Idle;
@@ -324,8 +309,12 @@ const productsSlice = createSlice({
   },
 });
 
-export const { clearSelectedProduct, clearProductsMutationError, clearProductsDeleteError } =
-  productsSlice.actions;
+export const {
+  invalidateProducts,
+  clearSelectedProduct,
+  clearProductsMutationError,
+  clearProductsDeleteError,
+} = productsSlice.actions;
 
 export const productsReducer = productsSlice.reducer;
 

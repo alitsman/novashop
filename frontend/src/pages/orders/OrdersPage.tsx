@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { selectCurrentUser } from "../../features/auth/authSlice";
+import { selectAuthToken, selectCurrentUser } from "../../features/auth/authSlice";
 import {
   fetchMyOrders,
   OrdersRequestStatus,
@@ -84,6 +84,7 @@ export function OrdersPage() {
   const dispatch = useAppDispatch();
 
   const currentUser = useAppSelector(selectCurrentUser);
+  const sessionToken = useAppSelector(selectAuthToken);
   const orders = useAppSelector(selectOrders);
   const fetchStatus = useAppSelector(selectOrdersFetchStatus);
   const fetchError = useAppSelector(selectOrdersFetchError);
@@ -91,12 +92,12 @@ export function OrdersPage() {
   const currentUserId = currentUser?.id;
 
   useEffect(() => {
-    if (!currentUserId) {
+    if (!currentUserId || !sessionToken) {
       return;
     }
 
-    void dispatch(fetchMyOrders(currentUserId));
-  }, [dispatch, currentUserId]);
+    void dispatch(fetchMyOrders());
+  }, [dispatch, currentUserId, sessionToken]);
 
   const orderViewModels = orders.map(mapOrderToViewModel);
   const isLoading = fetchStatus === OrdersRequestStatus.Loading;

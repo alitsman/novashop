@@ -21,11 +21,15 @@ type CartPageViewProps = {
   items: CartPageItemViewModel[];
   totalPriceText: string;
   totalQuantityText: string;
-  showCheckoutError: boolean;
+  checkoutError: string | null;
+  isSyncing: boolean;
+  canCheckout: boolean;
+  showRetrySync: boolean;
   onRequestRemoveItem: (productId: string) => void;
   onQuantityChange: (productId: string, quantity: number) => void;
   onQuantityValidityChange: (productId: string, isValid: boolean) => void;
   onQuantityInputRef: (productId: string, input: HTMLInputElement | null) => void;
+  onRetrySync: () => void;
   onCheckout: () => void;
 };
 
@@ -34,11 +38,15 @@ export function CartPageView({
   items,
   totalPriceText,
   totalQuantityText,
-  showCheckoutError,
+  checkoutError,
+  isSyncing,
+  canCheckout,
+  showRetrySync,
   onRequestRemoveItem,
   onQuantityChange,
   onQuantityValidityChange,
   onQuantityInputRef,
+  onRetrySync,
   onCheckout,
 }: CartPageViewProps) {
   return (
@@ -94,15 +102,22 @@ export function CartPageView({
                   </div>
 
                   <div className="cart-page__item-actions">
-                    <CartQuantityControl
-                      productId={item.productId}
-                      title={item.title}
-                      quantity={item.quantity}
-                      stock={item.stock}
-                      onQuantityChange={onQuantityChange}
-                      onValidityChange={onQuantityValidityChange}
-                      onInputRef={onQuantityInputRef}
-                    />
+                    {item.stock > 0 ? (
+                      <CartQuantityControl
+                        productId={item.productId}
+                        title={item.title}
+                        quantity={item.quantity}
+                        stock={item.stock}
+                        onQuantityChange={onQuantityChange}
+                        onValidityChange={onQuantityValidityChange}
+                        onInputRef={onQuantityInputRef}
+                      />
+                    ) : (
+                      <p className="cart-page__checkout-error">
+                        This product is unavailable. Quantity in cart: {item.quantity}. Remove it to
+                        continue.
+                      </p>
+                    )}
 
                     <div className="cart-page__item-footer">
                       <p className="cart-page__item-total" data-testid="item-total">
@@ -139,15 +154,28 @@ export function CartPageView({
               </p>
             </div>
 
-            {showCheckoutError && (
-              <p className="cart-page__checkout-error" id="cart-checkout-error" role="alert">
-                Enter a valid quantity for each cart item before checkout.
+            {isSyncing && (
+              <p className="cart-page__summary-text" role="status">
+                Checking prices and availability...
               </p>
+            )}
+
+            {checkoutError && (
+              <p className="cart-page__checkout-error" id="cart-checkout-error" role="alert">
+                {checkoutError}
+              </p>
+            )}
+
+            {showRetrySync && (
+              <Button variant={ButtonVariant.Secondary} onClick={onRetrySync}>
+                Check cart again
+              </Button>
             )}
 
             <Button
               className="cart-page__checkout-link"
-              aria-describedby={showCheckoutError ? "cart-checkout-error" : undefined}
+              disabled={!canCheckout}
+              aria-describedby={checkoutError ? "cart-checkout-error" : undefined}
               onClick={onCheckout}
             >
               Go to checkout

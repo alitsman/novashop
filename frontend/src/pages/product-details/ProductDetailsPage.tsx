@@ -20,7 +20,8 @@ export function ProductDetailsPage() {
   const detailStatus = useAppSelector(selectProductDetailsStatus);
   const detailError = useAppSelector(selectProductDetailError);
 
-  const isLoading = detailStatus === ProductsRequestStatus.Loading;
+  const isLoading =
+    detailStatus === ProductsRequestStatus.Idle || detailStatus === ProductsRequestStatus.Loading;
   const hasError = detailStatus === ProductsRequestStatus.Failed;
   const isLoaded = detailStatus === ProductsRequestStatus.Succeeded;
   const isNotFound = isLoaded && product === null;
@@ -36,16 +37,18 @@ export function ProductDetailsPage() {
     : null;
 
   useEffect(() => {
-    if (!productId) {
-      return;
-    }
-
-    void dispatch(fetchProductById(productId));
-
     return () => {
       dispatch(clearSelectedProduct());
     };
   }, [dispatch, productId]);
+
+  useEffect(() => {
+    if (!productId || detailStatus !== ProductsRequestStatus.Idle) {
+      return;
+    }
+
+    void dispatch(fetchProductById(productId));
+  }, [dispatch, productId, detailStatus]);
 
   return (
     <ProductDetailsPageView
