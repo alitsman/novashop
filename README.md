@@ -11,7 +11,9 @@ NovaShop is a full-stack e-commerce portfolio project built as a realistic appli
 
 ## Current status
 
-Minimal CI is complete. Frontend-backend integration is currently in progress.
+Frontend-backend integration is complete. Minimal CI is in place.
+
+Legacy UI tests still need to be updated for the integrated application and are not a blocking CI check.
 
 Authentication already uses the real backend API:
 
@@ -23,7 +25,9 @@ Authentication already uses the real backend API:
 
 Products also use the backend API for catalog browsing, product details, and admin product creation, editing, and deletion.
 
-Cart, checkout, and orders will be connected to the backend in the following integration stages.
+The cart stays in browser storage and is not synchronized across devices. Prices and availability are checked against the backend when opening the cart or checkout and before placing an order.
+
+Checkout creates orders through `POST /orders`, and order history loads through `GET /orders`. The backend calculates order totals and updates product stock.
 
 ## Demo accounts
 
@@ -36,4 +40,4 @@ The backend seed creates two demo accounts:
 
 ## Documentation
 
-Detailed architecture, local setup, testing, and deployment documentation will be added after frontend-backend integration is complete.
+Detailed architecture, local setup, testing, and deployment documentation will be added separately.
