@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { RootState } from "../../app/store";
 import { authService } from "../../services/authService";
@@ -77,6 +77,17 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     clearAuthError(authState) {
+      authState.error = null;
+    },
+
+    sessionExpired(authState, action: PayloadAction<string | null>) {
+      if (!authState.token || authState.token !== action.payload) {
+        return;
+      }
+
+      authState.user = null;
+      authState.token = null;
+      authState.status = AuthRequestStatus.Idle;
       authState.error = null;
     },
   },
@@ -164,6 +175,6 @@ export const selectIsAuthenticated = (rootState: RootState) => {
   return Boolean(rootState.auth.user && rootState.auth.token);
 };
 
-export const { clearAuthError } = authSlice.actions;
+export const { clearAuthError, sessionExpired } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

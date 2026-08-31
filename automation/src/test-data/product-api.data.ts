@@ -68,7 +68,7 @@ export const SEEDED_ACTIVE_PRODUCTS: ExpectedSeededProduct[] = [
     price: 34.99,
     category: "Accessories",
     imageUrl:
-      "https://images.unsplash.com/photo-1616628188508-42adf853b87c?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1623567238235-940ff1311da7?auto=format&fit=crop&w=800&q=80",
     description: "An ergonomic laptop stand that helps improve posture at your desk.",
     stock: 7,
   },

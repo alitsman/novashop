@@ -66,6 +66,8 @@ export const validateAdminProductForm = (
     formErrors.price = "Price must be greater than 0.";
   } else if (price > maxPrice) {
     formErrors.price = `Price must be ${maxPrice} or less.`;
+  } else if (Number(price.toFixed(2)) !== price) {
+    formErrors.price = "Price can have at most 2 decimal places.";
   }
 
   if (!category) {
