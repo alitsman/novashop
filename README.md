@@ -21,7 +21,9 @@ Authentication already uses the real backend API:
 - JWT storage in the browser;
 - backend-controlled user roles and authorization.
 
-Products, cart, checkout, orders, and admin functionality will be connected to the backend in the following integration stages.
+Products also use the backend API for catalog browsing, product details, and admin product creation, editing, and deletion.
+
+Cart, checkout, and orders will be connected to the backend in the following integration stages.
 
 ## Demo accounts
 

@@ -1,112 +1,53 @@
-import { mockProducts } from "../data/mockProducts";
 import type { Product, ProductInput } from "../types/product";
-import { delay } from "../utils/delay";
-import { storage } from "../utils/storage";
-
-const PRODUCTS_STORAGE_KEY = "novashop-products";
-
-const seedStoredProducts = (): Product[] => {
-  storage.setItem<Product[]>(PRODUCTS_STORAGE_KEY, mockProducts);
-
-  return mockProducts;
-};
-
-const getStoredProducts = (): Product[] => {
-  const storedProducts = storage.getItem<Product[] | null>(PRODUCTS_STORAGE_KEY, null);
-
-  if (!storedProducts) {
-    return seedStoredProducts();
-  }
-
-  return storedProducts;
-};
-
-const saveStoredProducts = (products: Product[]): void => {
-  storage.setItem<Product[]>(PRODUCTS_STORAGE_KEY, products);
-};
-
-const createProductId = (): string => {
-  return crypto.randomUUID();
-};
+import { ApiError, apiRequest } from "./apiClient";
 
 export const productsService = {
   async getProducts(): Promise<Product[]> {
-    await delay();
-
-    return getStoredProducts();
+    return apiRequest<Product[]>("/products", {
+      requiresAuth: true,
+    });
   },
 
   async getProductById(id: string): Promise<Product | null> {
-    await delay();
+    try {
+      return await apiRequest<Product>(`/products/${encodeURIComponent(id)}`, {
+        requiresAuth: true,
+      });
+    } catch (error) {
+      if (error instanceof ApiError) {
+        const isProductNotFound = error.statusCode === 404 && error.code === "PRODUCT_NOT_FOUND";
 
-    const products = getStoredProducts();
+        const isInvalidProductId = error.statusCode === 400 && error.code === "VALIDATION_ERROR";
 
-    return products.find((product) => product.id === id) ?? null;
+        if (isProductNotFound || isInvalidProductId) {
+          return null;
+        }
+      }
+
+      throw error;
+    }
   },
 
   async createProduct(data: ProductInput): Promise<Product> {
-    await delay();
-
-    const products = getStoredProducts();
-    const now = new Date().toISOString();
-
-    const newProduct: Product = {
-      id: createProductId(),
-      ...data,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    const updatedProducts = [...products, newProduct];
-
-    saveStoredProducts(updatedProducts);
-
-    return newProduct;
+    return apiRequest<Product>("/products", {
+      method: "POST",
+      body: data,
+      requiresAuth: true,
+    });
   },
 
   async updateProduct(id: string, data: ProductInput): Promise<Product> {
-    await delay();
-
-    const products = getStoredProducts();
-    const existingProduct = products.find((product) => product.id === id);
-
-    if (!existingProduct) {
-      throw new Error("Product not found");
-    }
-
-    const now = new Date().toISOString();
-
-    const updatedProduct: Product = {
-      ...existingProduct,
-      ...data,
-      updatedAt: now,
-    };
-
-    const updatedProducts = products.map((product) => {
-      if (product.id === id) {
-        return updatedProduct;
-      }
-
-      return product;
+    return apiRequest<Product>(`/products/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: data,
+      requiresAuth: true,
     });
-
-    saveStoredProducts(updatedProducts);
-
-    return updatedProduct;
   },
 
   async deleteProduct(id: string): Promise<void> {
-    await delay();
-
-    const products = getStoredProducts();
-    const productExists = products.some((product) => product.id === id);
-
-    if (!productExists) {
-      throw new Error("Product not found");
-    }
-
-    const updatedProducts = products.filter((product) => product.id !== id);
-
-    saveStoredProducts(updatedProducts);
+    await apiRequest<void>(`/products/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      requiresAuth: true,
+    });
   },
 };

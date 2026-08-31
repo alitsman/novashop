@@ -3,6 +3,7 @@ import { authReducer } from "../features/auth/authSlice";
 import { productsReducer } from "../features/products/productsSlice";
 import { cartReducer } from "../features/cart/cartSlice";
 import { ordersReducer } from "../features/orders/ordersSlice";
+import { authListenerMiddleware } from "../features/auth/authListenerMiddleware";
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +12,8 @@ export const store = configureStore({
     cart: cartReducer,
     orders: ordersReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().prepend(authListenerMiddleware.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
