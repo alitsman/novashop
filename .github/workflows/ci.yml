@@ -125,24 +125,33 @@ jobs:
       - name: Run API and DB regression
         working-directory: automation
         env:
-          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/backend
-        run: npm test -- --project=api --project=db
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/api-db
+        run: npm run test:integrated -- --project=api --project=db --output=test-results/api-db
 
-      # Legacy UI tests remain observable during frontend-backend integration,
-      # but return to the required CI gate only after the post-integration audit,
-      # adaptation, and a stable green run.
-      - name: Run legacy UI regression
+      # Browser tests remain observable during the migration,
+      # but return to the required CI gate only after adaptation
+      # and a stable green Chromium run.
+      - name: Run integrated browser regression
         continue-on-error: true
         working-directory: automation
         env:
-          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/ui
-        run: npm test -- --project=chromium
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/integrated-browser
+        run: npm run test:integrated -- --project=hybrid-chromium --project=e2e-chromium --output=test-results/integrated-browser
 
-      - name: Upload Playwright report
+      - name: Run isolated UI regression
+        continue-on-error: true
+        working-directory: automation
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/isolated-ui
+        run: npm run test:ui -- --project=ui-chromium --output=test-results/isolated-ui
+
+      - name: Upload Playwright artifacts
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
-          path: automation/playwright-report/
+          name: playwright-artifacts
+          path: |
+            automation/playwright-report/
+            automation/test-results/
           if-no-files-found: ignore
           retention-days: 14
