@@ -1,15 +1,15 @@
-import { expect, test } from "../../src/fixtures";
-import { CartPage, ProductCatalogPage, ProductDetailsPage } from "../../src/pages";
 import { HeaderComponent, ToastComponent } from "../../src/components";
-import { authenticateUser, prepareProductCatalog } from "../../src/helpers";
-import { formatUsd } from "../../src/utils";
+import { expect, test } from "../../src/fixtures";
+import { prepareMockedAuthenticatedSession, prepareProductCatalog } from "../../src/helpers";
+import { CartPage, ProductCatalogPage, ProductDetailsPage } from "../../src/pages";
 import {
-  REGULAR_USER,
   ADD_TO_CART_PRODUCT_A,
   ADD_TO_CART_PRODUCT_B,
   ADD_TO_CART_PRODUCTS,
+  REGULAR_USER,
   createProduct,
 } from "../../src/test-data";
+import { formatUsd } from "../../src/utils";
 
 const TOAST_AUTO_DISMISS_TIMEOUT_MS = 8_000;
 
@@ -20,7 +20,7 @@ test.describe("add to cart", () => {
   let header: HeaderComponent;
 
   test.beforeEach(async ({ page }) => {
-    await authenticateUser(page, REGULAR_USER);
+    await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
 
     const catalogProducts = ADD_TO_CART_PRODUCTS.map((product) => createProduct(product));
 

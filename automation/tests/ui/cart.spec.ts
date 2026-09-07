@@ -1,8 +1,8 @@
 import { expect, test } from "../../src/fixtures";
+import { prepareCart, prepareMockedAuthenticatedSession } from "../../src/helpers";
 import { CartPage } from "../../src/pages";
-import { authenticateUser, prepareCart } from "../../src/helpers";
-import { formatUsd } from "../../src/utils";
 import { CART_ITEM_A, CART_ITEMS, REGULAR_USER, createCartItem } from "../../src/test-data";
+import { formatUsd } from "../../src/utils";
 
 const MIN_CART_QUANTITY = 1;
 
@@ -10,7 +10,7 @@ test.describe("cart", () => {
   let cartPage: CartPage;
 
   test.beforeEach(async ({ page }) => {
-    await authenticateUser(page, REGULAR_USER);
+    await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
 
     cartPage = new CartPage(page);
   });

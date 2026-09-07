@@ -1,13 +1,13 @@
 import { expect, test } from "../../src/fixtures";
+import { prepareMockedAuthenticatedSession, prepareProductCatalog } from "../../src/helpers";
 import { ProductCatalogPage } from "../../src/pages";
-import { authenticateUser, prepareProductCatalog } from "../../src/helpers";
 import {
-  REGULAR_USER,
   CATALOG_PRODUCTS,
   EMPTY_CATALOG_PRODUCTS,
-  QUANTITY_PRODUCTS,
-  QUANTITY_PRODUCT,
   OUT_OF_STOCK_PRODUCT,
+  QUANTITY_PRODUCT,
+  QUANTITY_PRODUCTS,
+  REGULAR_USER,
   createProduct,
 } from "../../src/test-data";
 
@@ -15,7 +15,7 @@ test.describe("product catalog", () => {
   let catalogPage: ProductCatalogPage;
 
   test.beforeEach(async ({ page }) => {
-    await authenticateUser(page, REGULAR_USER);
+    await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
 
     const products = CATALOG_PRODUCTS.map((product) => createProduct(product));
     await prepareProductCatalog(page, products);
@@ -141,7 +141,7 @@ test.describe("empty product catalog", () => {
   let catalogPage: ProductCatalogPage;
 
   test.beforeEach(async ({ page }) => {
-    await authenticateUser(page, REGULAR_USER);
+    await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
 
     await prepareProductCatalog(page, EMPTY_CATALOG_PRODUCTS);
 
@@ -164,7 +164,7 @@ test.describe("product quantity", () => {
   let catalogPage: ProductCatalogPage;
 
   test.beforeEach(async ({ page }) => {
-    await authenticateUser(page, REGULAR_USER);
+    await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
 
     const products = QUANTITY_PRODUCTS.map((product) => createProduct(product));
     await prepareProductCatalog(page, products);

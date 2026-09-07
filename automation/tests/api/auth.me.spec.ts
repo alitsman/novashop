@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 import { createTestAuthToken, loginViaApi } from "../../src/helpers";
+import { userSchema } from "../../src/schemas";
 import { ADMIN_USER, REGULAR_USER } from "../../src/test-data";
-import type { ApiErrorResponse, AuthUser } from "../../src/types";
+import type { ApiErrorResponse } from "../../src/types";
 
 // This is a valid UUID that does not match any seeded user.
 const NON_EXISTENT_USER_ID = "00000000-0000-4000-8000-000000000000";
@@ -53,7 +54,8 @@ test.describe("GET /me", () => {
 
     expect(meResponse.status()).toBe(200);
 
-    const responseBody = (await meResponse.json()) as AuthUser;
+    const responseBody = userSchema.parse(await meResponse.json());
+
     expect(responseBody).toEqual(REGULAR_USER.user);
   });
 
@@ -68,7 +70,7 @@ test.describe("GET /me", () => {
 
     expect(meResponse.status()).toBe(200);
 
-    const responseBody = (await meResponse.json()) as AuthUser;
+    const responseBody = userSchema.parse(await meResponse.json());
 
     expect(responseBody).toEqual(ADMIN_USER.user);
   });

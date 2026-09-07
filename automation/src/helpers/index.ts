@@ -1,5 +1,5 @@
 export { loginViaApi, registerUserViaApi } from "./auth-api.helper";
-export { authenticateUser } from "./auth.helper";
+export { prepareMockedAuthenticatedSession } from "./auth.helper";
 export { prepareCart } from "./cart.helper";
 export { pasteText } from "./clipboard.helper";
 export { createTestAuthToken } from "./jwt.helper";

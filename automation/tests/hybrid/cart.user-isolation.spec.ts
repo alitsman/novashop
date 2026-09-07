@@ -24,9 +24,8 @@ test.describe("cart isolation between users", () => {
   let catalogPage: ProductCatalogPage;
   let cartPage: CartPage;
 
-  // Deliberately no authenticateUser here: it seeds auth through
-  // addInitScript, which re-runs on every navigation and would silently
-  // sign the user back in after logout. This spec must log in through the UI.
+  // Use UI login here. Mocked session setup would restore the token
+  // after logout and break the user-isolation flow.
   test.beforeEach(async ({ page }) => {
     await prepareProductCatalog(page, seedProducts);
 
