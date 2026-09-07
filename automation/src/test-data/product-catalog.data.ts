@@ -7,26 +7,26 @@ type QuantityProductOverrides = CatalogProductOverrides & Pick<Product, "stock">
 
 export const CATALOG_PRODUCTS: CatalogProductOverrides[] = [
   {
-    id: "catalog-product-1",
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1",
     title: "Wireless Mouse",
     price: 49.99,
     category: "Electronics",
   },
   {
-    id: "catalog-product-2",
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2",
     title: "Gaming Mouse",
     price: 89.99,
     category: "Electronics",
   },
   {
-    id: "catalog-product-3",
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3",
     title: "Mechanical Keyboard",
     description: "A comfortable keyboard for everyday work.",
     price: 69.99,
     category: "Electronics",
   },
   {
-    id: "catalog-product-4",
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb4",
     title: "Computer Mouse Handbook",
     price: 29.99,
     category: "Books",
@@ -36,7 +36,7 @@ export const CATALOG_PRODUCTS: CatalogProductOverrides[] = [
 export const EMPTY_CATALOG_PRODUCTS: Product[] = [];
 
 export const QUANTITY_PRODUCT: QuantityProductOverrides = {
-  id: "quantity-product",
+  id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc1",
   title: "Quantity Test Product",
   price: 49.99,
   category: "Electronics",
@@ -44,7 +44,7 @@ export const QUANTITY_PRODUCT: QuantityProductOverrides = {
 };
 
 export const OUT_OF_STOCK_PRODUCT: QuantityProductOverrides = {
-  id: "out-of-stock-product",
+  id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc2",
   title: "Out of Stock Product",
   price: 49.99,
   category: "Electronics",
