@@ -21,6 +21,6 @@ export default defineConfig({
   webServer: {
     command: `npm --prefix ../frontend run dev -- --port ${frontendPort}`,
     url: frontendUrl,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
   },
 });
