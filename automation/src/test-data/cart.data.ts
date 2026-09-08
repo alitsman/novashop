@@ -1,22 +1,17 @@
-import type { CartItem } from "../types";
+import { createProduct } from "./product.factory";
 
-type CartItemOverrides = Pick<CartItem, "productId" | "title" | "price" | "quantity" | "stock"> &
-  Partial<CartItem>;
-
-export const CART_ITEM_A: CartItemOverrides = {
-  productId: "cart-product-a",
+export const CART_PRODUCT_A = createProduct({
+  id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1",
   title: "Cart Product A",
   price: 49.99,
-  quantity: 2,
   stock: 5,
-};
+});
 
-export const CART_ITEM_B: CartItemOverrides = {
-  productId: "cart-product-b",
+export const CART_PRODUCT_B = createProduct({
+  id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2",
   title: "Cart Product B",
   price: 19.99,
-  quantity: 1,
   stock: 3,
-};
+});
 
-export const CART_ITEMS: CartItemOverrides[] = [CART_ITEM_A, CART_ITEM_B];
+export const CART_PRODUCTS = [CART_PRODUCT_A, CART_PRODUCT_B];

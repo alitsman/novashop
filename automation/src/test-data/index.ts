@@ -5,7 +5,7 @@ export {
   ADD_TO_CART_PRODUCTS,
 } from "./add-to-cart.data";
 export { createCartItem } from "./cart-item.factory";
-export { CART_ITEM_A, CART_ITEM_B, CART_ITEMS } from "./cart.data";
+export { CART_PRODUCT_A, CART_PRODUCT_B, CART_PRODUCTS } from "./cart.data";
 export { createOrderInput, createOrderItemInput } from "./order.factory";
 export {
   SEEDED_ACTIVE_PRODUCTS,
