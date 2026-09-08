@@ -1,6 +1,10 @@
 import { HeaderComponent, ToastComponent } from "../../src/components";
 import { expect, test } from "../../src/fixtures";
-import { prepareMockedAuthenticatedSession, prepareProductCatalog } from "../../src/helpers";
+import {
+  prepareMockedAuthenticatedSession,
+  prepareProductCatalog,
+  prepareProductDetails,
+} from "../../src/helpers";
 import { CartPage, ProductCatalogPage, ProductDetailsPage } from "../../src/pages";
 import {
   ADD_TO_CART_PRODUCT_A,
@@ -25,6 +29,10 @@ test.describe("add to cart", () => {
     const catalogProducts = ADD_TO_CART_PRODUCTS.map((product) => createProduct(product));
 
     await prepareProductCatalog(page, catalogProducts);
+
+    for (const product of catalogProducts) {
+      await prepareProductDetails(page, product);
+    }
 
     catalogPage = new ProductCatalogPage(page);
     cartPage = new CartPage(page);
