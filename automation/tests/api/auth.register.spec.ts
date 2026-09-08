@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto";
 
 import { expect, test } from "@playwright/test";
 
-import type { ApiErrorResponse, AuthUser, AuthResponse, NewAccount } from "../../src/types";
+import { userSchema } from "../../src/schemas";
+import type { ApiErrorResponse, AuthResponse, NewAccount } from "../../src/types";
 
 const JWT_WITH_THREE_NON_EMPTY_BASE64URL_PARTS_SEPARATED_BY_DOTS =
   /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
@@ -198,7 +199,7 @@ test.describe("POST /auth/register", () => {
 
       expect(meResponse.status()).toBe(200);
 
-      const meResponseBody = (await meResponse.json()) as AuthUser;
+      const meResponseBody = userSchema.parse(await meResponse.json());
 
       expect(meResponseBody).toEqual(registerResponseBody.user);
     });

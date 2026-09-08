@@ -7,7 +7,7 @@ type AddToCartProductOverrides = Pick<
   Partial<Product>;
 
 export const ADD_TO_CART_PRODUCT_A: AddToCartProductOverrides = {
-  id: "add-to-cart-product-a",
+  id: "dddddddd-dddd-4ddd-8ddd-ddddddddddd1",
   title: "Add To Cart Product A",
   description: "Description of product A.",
   price: 49.99,
@@ -16,7 +16,7 @@ export const ADD_TO_CART_PRODUCT_A: AddToCartProductOverrides = {
 };
 
 export const ADD_TO_CART_PRODUCT_B: AddToCartProductOverrides = {
-  id: "add-to-cart-product-b",
+  id: "dddddddd-dddd-4ddd-8ddd-ddddddddddd2",
   title: "Add To Cart Product B",
   description: "Description of product B.",
   price: 19.99,

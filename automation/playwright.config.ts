@@ -69,7 +69,7 @@ export default defineConfig({
     {
       command: `npm --prefix ../frontend run dev -- --port ${frontendPort}`,
       url: frontendUrl,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
     },
     {
       command: "npm --prefix ../backend run dev:test",

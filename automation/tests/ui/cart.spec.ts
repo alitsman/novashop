@@ -1,8 +1,18 @@
 import { expect, test } from "../../src/fixtures";
+import {
+  prepareCart,
+  prepareMockedAuthenticatedSession,
+  prepareProductCatalog,
+} from "../../src/helpers";
 import { CartPage } from "../../src/pages";
-import { authenticateUser, prepareCart } from "../../src/helpers";
+import {
+  CART_PRODUCT_A,
+  CART_PRODUCT_B,
+  CART_PRODUCTS,
+  REGULAR_USER,
+  createCartItem,
+} from "../../src/test-data";
 import { formatUsd } from "../../src/utils";
-import { CART_ITEM_A, CART_ITEMS, REGULAR_USER, createCartItem } from "../../src/test-data";
 
 const MIN_CART_QUANTITY = 1;
 
@@ -10,7 +20,7 @@ test.describe("cart", () => {
   let cartPage: CartPage;
 
   test.beforeEach(async ({ page }) => {
-    await authenticateUser(page, REGULAR_USER);
+    await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
 
     cartPage = new CartPage(page);
   });
@@ -31,7 +41,9 @@ test.describe("cart", () => {
   });
 
   test.describe("with a single item", () => {
-    const seedCartItem = createCartItem(CART_ITEM_A);
+    const seedCartItem = createCartItem(CART_PRODUCT_A, {
+      quantity: 2,
+    });
 
     const initialQuantity = seedCartItem.quantity;
     const maximumQuantity = seedCartItem.stock;
@@ -42,6 +54,7 @@ test.describe("cart", () => {
     const quantityFarAboveMaximum = maximumQuantity + 10;
 
     test.beforeEach(async ({ page }) => {
+      await prepareProductCatalog(page, [CART_PRODUCT_A]);
       await prepareCart(page, REGULAR_USER.user.id, [seedCartItem]);
 
       await cartPage.open();
@@ -289,10 +302,16 @@ test.describe("cart", () => {
   });
 
   test.describe("with multiple items", () => {
-    const seedCartItems = CART_ITEMS.map((item) => createCartItem(item));
+    const seedCartItems = [
+      createCartItem(CART_PRODUCT_A, {
+        quantity: 2,
+      }),
+      createCartItem(CART_PRODUCT_B),
+    ];
     const [seedCartItemA, seedCartItemB] = seedCartItems;
 
     test.beforeEach(async ({ page }) => {
+      await prepareProductCatalog(page, CART_PRODUCTS);
       await prepareCart(page, REGULAR_USER.user.id, seedCartItems);
 
       await cartPage.open();
