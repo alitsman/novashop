@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { expect, test } from "@playwright/test";
 
+import { expectSingleValidationError } from "../../src/helpers";
 import { userSchema } from "../../src/schemas";
 import type { ApiErrorResponse, AuthResponse, NewAccount } from "../../src/types";
 
@@ -274,6 +275,19 @@ test.describe("POST /auth/register", () => {
   });
 
   test.describe("validation", () => {
+    test("missing email: returns VALIDATION_ERROR for email", async ({ request }) => {
+      const newAccount = buildNewAccount("Missing Email User");
+
+      const response = await request.post("/auth/register", {
+        data: {
+          name: newAccount.user.name,
+          password: newAccount.password,
+        },
+      });
+
+      await expectSingleValidationError(response, ["email"]);
+    });
+
     test("invalid email: returns VALIDATION_ERROR for email", async ({ request }) => {
       const newAccount = buildNewAccount("Invalid Email User");
 
@@ -305,6 +319,19 @@ test.describe("POST /auth/register", () => {
       expect(validationIssue).toMatchObject({
         path: ["email"],
       });
+    });
+
+    test("missing name: returns VALIDATION_ERROR for name", async ({ request }) => {
+      const newAccount = buildNewAccount("Missing Name User");
+
+      const response = await request.post("/auth/register", {
+        data: {
+          email: newAccount.user.email,
+          password: newAccount.password,
+        },
+      });
+
+      await expectSingleValidationError(response, ["name"]);
     });
 
     test("name containing only spaces: returns VALIDATION_ERROR for name", async ({ request }) => {
