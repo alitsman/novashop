@@ -7,13 +7,11 @@ NovaShop is a full-stack e-commerce portfolio project built as a realistic appli
 - **Frontend:** React, TypeScript, Redux Toolkit, React Router, and Vite.
 - **Backend:** Express, TypeScript, PostgreSQL, and JWT authentication.
 - **Automation:** Playwright tests for UI, API, and database behaviour.
-- **CI:** Automated code-quality checks and blocking API/DB regression.
+- **CI:** Automated code-quality checks and blocking API, database, and Chromium browser regression.
 
 ## Current status
 
-Frontend-backend integration is complete. Minimal CI is in place.
-
-Legacy UI tests still need to be updated for the integrated application and are not a blocking CI check.
+Frontend-backend integration and the Chromium browser-test migration are complete. CI runs API, database, hybrid, E2E, and isolated UI regression as a blocking pull-request gate.
 
 Authentication already uses the real backend API:
 
@@ -33,10 +31,10 @@ Checkout creates orders through `POST /orders`, and order history loads through 
 
 The backend seed creates two demo accounts:
 
-| Role  | Email          | Password  |
-| ----- | -------------- | --------- |
-| User  | user@test.com  | User123!  |
-| Admin | admin@test.com | Admin123! |
+| Role  | Email            | Password    |
+| ----- | ---------------- | ----------- |
+| User  | `user@test.com`  | `User123!`  |
+| Admin | `admin@test.com` | `Admin123!` |
 
 ## Documentation
 
