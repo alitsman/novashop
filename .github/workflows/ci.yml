@@ -1,3 +1,5 @@
+# Job names are required status-check contracts for main.
+# Keep the Protect main ruleset in sync when renaming them.
 name: CI
 
 on:
@@ -21,6 +23,7 @@ jobs:
     name: Code quality
     runs-on: ubuntu-latest
     env:
+      # Validation-only URL; this job does not start application servers.
       VITE_API_URL: http://localhost:4000
     timeout-minutes: 10
 
@@ -128,18 +131,15 @@ jobs:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/api-db
         run: npm run test:integrated -- --project=api --project=db --output=test-results/api-db
 
-      # Browser tests remain observable during the migration,
-      # but return to the required CI gate only after adaptation
-      # and a stable green Chromium run.
       - name: Run integrated browser regression
-        continue-on-error: true
+        if: ${{ !cancelled() }}
         working-directory: automation
         env:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/integrated-browser
         run: npm run test:integrated -- --project=hybrid-chromium --project=e2e-chromium --output=test-results/integrated-browser
 
       - name: Run isolated UI regression
-        continue-on-error: true
+        if: ${{ !cancelled() }}
         working-directory: automation
         env:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/isolated-ui
