@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { expect, test } from "@playwright/test";
 import jsonwebtoken from "jsonwebtoken";
 
+import { expectSingleValidationError } from "../../src/helpers";
 import { REGULAR_USER } from "../../src/test-data";
 import type { ApiErrorResponse, AuthResponse } from "../../src/types";
 
@@ -12,7 +13,7 @@ const JWT_WITH_THREE_NON_EMPTY_BASE64URL_PARTS_SEPARATED_BY_DOTS =
 const EXPECTED_TOKEN_LIFETIME_SECONDS = 7 * 24 * 60 * 60;
 
 const WRONG_PASSWORD = "wrongPassword";
-const MISSING_EMAIL = "missing@email.novashop";
+const UNREGISTERED_EMAIL = "unregistered@email.novashop";
 
 test.describe("POST /auth/login", () => {
   test("valid credentials: returns a token and the safe user", async ({ request }) => {
@@ -112,10 +113,10 @@ test.describe("POST /auth/login", () => {
     expect(responseBody.error.message).toBe("Invalid email or password");
   });
 
-  test("unknown email: returns INVALID_CREDENTIALS", async ({ request }) => {
+  test("unregistered email: returns INVALID_CREDENTIALS", async ({ request }) => {
     const response = await request.post("/auth/login", {
       data: {
-        email: MISSING_EMAIL,
+        email: UNREGISTERED_EMAIL,
         password: WRONG_PASSWORD,
       },
     });
@@ -126,6 +127,27 @@ test.describe("POST /auth/login", () => {
 
     expect(responseBody.error.code).toBe("INVALID_CREDENTIALS");
     expect(responseBody.error.message).toBe("Invalid email or password");
+  });
+
+  test("missing email: returns VALIDATION_ERROR for email", async ({ request }) => {
+    const response = await request.post("/auth/login", {
+      data: {
+        password: REGULAR_USER.password,
+      },
+    });
+
+    await expectSingleValidationError(response, ["email"]);
+  });
+
+  test("invalid email: returns VALIDATION_ERROR for email", async ({ request }) => {
+    const response = await request.post("/auth/login", {
+      data: {
+        email: "not-an-email",
+        password: REGULAR_USER.password,
+      },
+    });
+
+    await expectSingleValidationError(response, ["email"]);
   });
 
   test("missing password: returns VALIDATION_ERROR with details", async ({ request }) => {
@@ -155,5 +177,16 @@ test.describe("POST /auth/login", () => {
     expect(validationIssue).toMatchObject({
       path: ["password"],
     });
+  });
+
+  test("empty password: returns VALIDATION_ERROR for password", async ({ request }) => {
+    const response = await request.post("/auth/login", {
+      data: {
+        email: REGULAR_USER.user.email,
+        password: "",
+      },
+    });
+
+    await expectSingleValidationError(response, ["password"]);
   });
 });
