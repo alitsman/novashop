@@ -9,6 +9,8 @@ export class LoginPage {
   readonly emailError: Locator;
   readonly passwordError: Locator;
   readonly signInButton: Locator;
+  readonly signingInButton: Locator;
+  readonly statusMessage: Locator;
   readonly errorMessage: Locator;
 
   constructor(page: Page) {
@@ -26,6 +28,16 @@ export class LoginPage {
       name: "Sign in",
       exact: true,
     });
+    this.signingInButton = page.getByRole("button", {
+      name: "Signing in...",
+      exact: true,
+    });
+    this.statusMessage = page
+      .getByRole("form", {
+        name: "Sign in",
+        exact: true,
+      })
+      .getByRole("status");
     this.errorMessage = page.getByRole("alert");
   }
 
