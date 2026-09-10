@@ -13,6 +13,8 @@ export class RegisterPage {
   readonly passwordError: Locator;
   readonly confirmPasswordError: Locator;
   readonly createAccountButton: Locator;
+  readonly creatingAccountButton: Locator;
+  readonly statusMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -33,6 +35,16 @@ export class RegisterPage {
       name: "Create account",
       exact: true,
     });
+    this.creatingAccountButton = page.getByRole("button", {
+      name: "Creating account...",
+      exact: true,
+    });
+    this.statusMessage = page
+      .getByRole("form", {
+        name: "Create an account",
+        exact: true,
+      })
+      .getByRole("status");
   }
 
   async open(): Promise<void> {
