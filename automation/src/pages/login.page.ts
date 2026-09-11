@@ -38,7 +38,7 @@ export class LoginPage {
         exact: true,
       })
       .getByRole("status");
-    this.errorMessage = page.getByRole("alert");
+    this.errorMessage = page.locator(".auth-page-layout__form-footer").getByRole("alert");
   }
 
   async open(): Promise<void> {
