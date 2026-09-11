@@ -15,6 +15,7 @@ export class RegisterPage {
   readonly createAccountButton: Locator;
   readonly creatingAccountButton: Locator;
   readonly statusMessage: Locator;
+  readonly errorMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -45,9 +46,19 @@ export class RegisterPage {
         exact: true,
       })
       .getByRole("status");
+
+    this.errorMessage = page.locator(".auth-page-layout__form-footer").getByRole("alert");
   }
 
   async open(): Promise<void> {
     await this.page.goto("/register");
+  }
+
+  async register(name: string, email: string, password: string): Promise<void> {
+    await this.nameInput.fill(name);
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.confirmPasswordInput.fill(password);
+    await this.createAccountButton.click();
   }
 }
