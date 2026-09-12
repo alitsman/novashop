@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAppSelector } from "../../app/hooks";
 import {
@@ -30,8 +30,14 @@ export function useProductsFilters() {
     shouldValidateCategory,
   });
 
-  const [searchDraft, setSearchDraft] = useState(appliedQuery);
+  const [searchDraft, setSearchDraftState] = useState(appliedQuery);
+  const latestSearchDraftRef = useRef(searchDraft);
   const debouncedSearchQuery = useDebouncedValue(searchDraft);
+
+  const updateSearchDraft = useCallback((query: string) => {
+    latestSearchDraftRef.current = query;
+    setSearchDraftState(query);
+  }, []);
 
   const pendingSearchEcho = useRef<string | null>(null);
   const setSearchParamsRef = useRef(setSearchParams);
@@ -87,13 +93,20 @@ export function useProductsFilters() {
     pendingSearchEcho.current = null;
 
     if (expectedSearchEcho !== appliedQuery) {
-      setSearchDraft(appliedQuery);
+      updateSearchDraft(appliedQuery);
     }
-  }, [appliedQuery]);
+  }, [appliedQuery, updateSearchDraft]);
 
   useEffect(() => {
     const appliedFilters = appliedFiltersRef.current;
     const normalizedDebouncedQuery = debouncedSearchQuery.trim();
+    const normalizedLatestSearchDraft = latestSearchDraftRef.current.trim();
+
+    // Back or Forward can replace the draft while an earlier debounce is finishing.
+    // Only the debounce for the latest intended draft may update the URL.
+    if (normalizedDebouncedQuery !== normalizedLatestSearchDraft) {
+      return;
+    }
 
     if (normalizedDebouncedQuery !== appliedFilters.q) {
       const nextSearchParams = serializeProductsSearchParams({
@@ -110,11 +123,11 @@ export function useProductsFilters() {
   }, [debouncedSearchQuery]);
 
   const handleSearchChange = (query: string) => {
-    setSearchDraft(query);
+    updateSearchDraft(query);
   };
 
   const handleSearchClear = () => {
-    setSearchDraft("");
+    updateSearchDraft("");
 
     const nextSearchParams = serializeProductsSearchParams({
       q: "",
@@ -150,7 +163,7 @@ export function useProductsFilters() {
   };
 
   const handleClearFilters = () => {
-    setSearchDraft("");
+    updateSearchDraft("");
 
     const nextSearchParams = serializeProductsSearchParams({
       q: "",
