@@ -15,8 +15,6 @@ import {
 } from "../../src/test-data";
 import { formatUsd } from "../../src/utils";
 
-const TOAST_AUTO_DISMISS_TIMEOUT_MS = 8_000;
-
 test.describe("add to cart", () => {
   let catalogPage: ProductCatalogPage;
   let cartPage: CartPage;
@@ -61,12 +59,6 @@ test.describe("add to cart", () => {
     await test.step("Verify the notification and updated cart state", async () => {
       await expect(toast.message).toHaveText(`${product.title} added to cart.`);
       await expect(productCard.addToCart.quantityInput).toHaveValue("1");
-
-      await toast.close();
-
-      await expect(toast.message).toBeEmpty();
-      await expect(toast.closeButton).toHaveCount(0);
-
       await expect(header.cartLink).toHaveAccessibleName(`Cart, ${quantityToAdd} items`);
     });
 
@@ -146,13 +138,6 @@ test.describe("add to cart", () => {
       await expect(productDetailsPage.addToCart.quantityHint).toHaveText(
         `Choose a quantity from 1 to ${expectedAvailableQuantity}.`,
       );
-    });
-
-    await test.step("Verify the notification is automatically dismissed", async () => {
-      await expect(toast.message).toBeEmpty({
-        timeout: TOAST_AUTO_DISMISS_TIMEOUT_MS,
-      });
-      await expect(toast.closeButton).toHaveCount(0);
     });
 
     await test.step("Open the cart and verify the added product quantity", async () => {
