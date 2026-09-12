@@ -1,6 +1,8 @@
 import type { Locator, Page } from "@playwright/test";
 
 export class HeaderComponent {
+  readonly root: Locator;
+
   readonly currentUserName: Locator;
   readonly logoutButton: Locator;
 
@@ -11,30 +13,30 @@ export class HeaderComponent {
   readonly manageProducts: Locator;
 
   constructor(page: Page) {
-    const root = page.getByRole("banner");
+    this.root = page.getByRole("banner");
 
-    this.currentUserName = root.getByTestId("current-user-name");
+    this.currentUserName = this.root.getByTestId("current-user-name");
 
-    this.logoutButton = root.getByRole("button", {
+    this.logoutButton = this.root.getByRole("button", {
       name: "Logout",
       exact: true,
     });
 
-    this.productsLink = root.getByRole("link", {
+    this.productsLink = this.root.getByRole("link", {
       name: "Products",
       exact: true,
     });
 
-    this.cartLink = root.getByRole("link", {
+    this.cartLink = this.root.getByRole("link", {
       name: /^Cart,/,
     });
 
-    this.myOrdersLink = root.getByRole("link", {
+    this.myOrdersLink = this.root.getByRole("link", {
       name: "My orders",
       exact: true,
     });
 
-    this.manageProducts = root.getByRole("link", {
+    this.manageProducts = this.root.getByRole("link", {
       name: "Manage products",
       exact: true,
     });

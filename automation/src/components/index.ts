@@ -1,6 +1,8 @@
 export { AddToCartControlComponent } from "./add-to-cart-control.component";
+export { AppBootstrapScreenComponent } from "./app-bootstrap-screen.component";
 export { CartItemComponent } from "./cart-item.component";
 export { ConfirmDialogComponent } from "./confirm-dialog.component";
 export { HeaderComponent } from "./header.component";
+export { LayoutComponent } from "./layout.component";
 export { ProductCardComponent } from "./product-card.component";
 export { ToastComponent } from "./toast.component";
