@@ -5,6 +5,7 @@ export class ProductCardComponent {
   private readonly root: Locator;
   readonly addToCart: AddToCartControlComponent;
 
+  readonly image: Locator;
   readonly title: Locator;
   readonly category: Locator;
   readonly description: Locator;
@@ -19,6 +20,10 @@ export class ProductCardComponent {
         name: /^Add to cart controls for /,
       }),
     );
+
+    // The product image is decorative (alt=""), so it has no accessible
+    // img role and must be located structurally.
+    this.image = this.root.locator("img");
 
     this.title = this.root.getByRole("heading", { level: 2 });
     this.category = this.root.getByTestId("product-category");

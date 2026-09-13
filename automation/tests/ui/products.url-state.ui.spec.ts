@@ -135,6 +135,7 @@ test.describe("product catalog URL state", () => {
       await expect(catalogPage.searchInput).toHaveValue("mouse");
       await expect(catalogPage.categorySelect).toHaveValue("Electronics");
       await expect(catalogPage.sortSelect).toHaveValue("price-desc");
+      await expect(catalogPage.productTitles).toHaveText(MOUSE_CATEGORY_ELECTRONICS_PRICE_DESC);
       await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-desc");
     });
 
@@ -161,5 +162,17 @@ test.describe("product catalog URL state", () => {
     await expect(catalogPage.categorySelect).toHaveValue("");
     await expect(catalogPage.sortSelect).toHaveValue("default");
     await expect(page).toHaveURL("/products?q=mouse");
+  });
+
+  test("removes default-equivalent values from a direct URL", async ({ page }) => {
+    const expectedProductTitles = CATALOG_PRODUCTS.map((product) => product.title);
+
+    await page.goto("/products?q=%20%20&sort=default");
+
+    await expect(catalogPage.productTitles).toHaveText(expectedProductTitles);
+    await expect(catalogPage.searchInput).toHaveValue("");
+    await expect(catalogPage.categorySelect).toHaveValue("");
+    await expect(catalogPage.sortSelect).toHaveValue("default");
+    await expect(page).toHaveURL("/products");
   });
 });

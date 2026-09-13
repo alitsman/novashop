@@ -2,13 +2,19 @@ import type { Page, Route } from "@playwright/test";
 
 const DEFAULT_REQUEST_DEADLINE_MS = 10_000;
 
+type HeldRequestFulfillment = {
+  status: number;
+  json: unknown;
+};
+
 type HoldRequestOptions = {
   url: string;
   method: string;
   deadlineMs?: number;
+  fulfillWith?: HeldRequestFulfillment;
 };
 
-type HeldRequestController = {
+export type HeldRequestController = {
   requestObserved: Promise<void>;
   release: () => void;
   dispose: () => Promise<void>;
@@ -42,7 +48,7 @@ const normalizeError = (error: unknown, fallbackMessage: string): Error => {
 
 export async function holdRequestUntilReleased(
   page: Page,
-  { url, method, deadlineMs = DEFAULT_REQUEST_DEADLINE_MS }: HoldRequestOptions,
+  { url, method, deadlineMs = DEFAULT_REQUEST_DEADLINE_MS, fulfillWith }: HoldRequestOptions,
 ): Promise<HeldRequestController> {
   const requestObservedSignal = createDeferredSignal();
   const releaseSignal = createDeferredSignal();
@@ -76,9 +82,17 @@ export async function holdRequestUntilReleased(
     const handlerCompletion = (async () => {
       try {
         await releaseSignal.promise;
-        await route.continue();
+
+        if (fulfillWith) {
+          await route.fulfill({
+            status: fulfillWith.status,
+            json: fulfillWith.json,
+          });
+        } else {
+          await route.continue();
+        }
       } catch (error) {
-        handlerErrors.push(normalizeError(error, "Failed to continue the held request."));
+        handlerErrors.push(normalizeError(error, "Failed to complete the held request."));
       }
     })();
 
