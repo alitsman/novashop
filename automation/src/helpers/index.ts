@@ -9,8 +9,13 @@ export {
 export { prepareCart } from "./cart.helper";
 export { pasteText } from "./clipboard.helper";
 export { holdRequestUntilReleased } from "./held-request.helper";
+export type { HeldRequestController } from "./held-request.helper";
 export { createTestAuthToken } from "./jwt.helper";
 export { createProductViaApi } from "./product-api-setup.helper";
-export { prepareProductCatalog } from "./product-catalog.helper";
+export {
+  holdProductCatalogUntilReleased,
+  prepareProductCatalog,
+  prepareProductCatalogNetworkFailure,
+} from "./product-catalog.helper";
 export { prepareProductDetails } from "./product-details.helper";
 export { trackAndAbortRequest } from "./request-tracker.helper";
