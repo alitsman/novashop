@@ -17,5 +17,11 @@ export {
   prepareProductCatalog,
   prepareProductCatalogNetworkFailure,
 } from "./product-catalog.helper";
-export { prepareProductDetails } from "./product-details.helper";
+export {
+  holdProductDetailsUntilReleased,
+  prepareProductDetails,
+  prepareProductDetailsNotFound,
+  prepareProductDetailsServerFailure,
+  prepareProductDetailsValidationFailure,
+} from "./product-details.helper";
 export { trackAndAbortRequest } from "./request-tracker.helper";

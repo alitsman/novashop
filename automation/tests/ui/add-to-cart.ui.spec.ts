@@ -1,287 +1,196 @@
-import { HeaderComponent, ToastComponent } from "../../src/components";
+import { ToastComponent } from "../../src/components";
 import { expect, test } from "../../src/fixtures";
 import {
   prepareMockedAuthenticatedSession,
   prepareProductCatalog,
   prepareProductDetails,
 } from "../../src/helpers";
-import { CartPage, ProductCatalogPage, ProductDetailsPage } from "../../src/pages";
+import { ProductCatalogPage, ProductDetailsPage } from "../../src/pages";
 import {
   ADD_TO_CART_PRODUCT_A,
   ADD_TO_CART_PRODUCT_B,
-  ADD_TO_CART_PRODUCTS,
   REGULAR_USER,
+  SINGLE_STOCK_PRODUCT,
   createProduct,
 } from "../../src/test-data";
-import { formatUsd } from "../../src/utils";
 
 test.describe("add to cart", () => {
   let catalogPage: ProductCatalogPage;
-  let cartPage: CartPage;
+  let productDetailsPage: ProductDetailsPage;
   let toast: ToastComponent;
-  let header: HeaderComponent;
 
   test.beforeEach(async ({ page }) => {
     await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
 
-    const catalogProducts = ADD_TO_CART_PRODUCTS.map((product) => createProduct(product));
-
-    await prepareProductCatalog(page, catalogProducts);
-
-    for (const product of catalogProducts) {
-      await prepareProductDetails(page, product);
-    }
-
     catalogPage = new ProductCatalogPage(page);
-    cartPage = new CartPage(page);
+    productDetailsPage = new ProductDetailsPage(page);
     toast = new ToastComponent(page);
-    header = new HeaderComponent(page);
-
-    await catalogPage.open();
   });
 
-  test("adds the selected quantity from a catalog card and reflects it in the catalog", async ({
-    page,
-  }) => {
-    const product = ADD_TO_CART_PRODUCT_A;
-    const quantityToAdd = 3;
-
-    const expectedAvailableQuantity = product.stock - quantityToAdd;
-    const expectedItemTotal = product.price * quantityToAdd;
-
-    const productCard = catalogPage.getProductCard(product.title);
-
-    await test.step(`Add ${quantityToAdd} units of ${product.title} from the catalog`, async () => {
-      await productCard.addToCart.fillQuantity(String(quantityToAdd));
-      await productCard.addToCart.submit();
-    });
-
-    await test.step("Verify the notification and updated cart state", async () => {
-      await expect(toast.message).toHaveText(`${product.title} added to cart.`);
-      await expect(productCard.addToCart.quantityInput).toHaveValue("1");
-      await expect(header.cartLink).toHaveAccessibleName(`Cart, ${quantityToAdd} items`);
-    });
-
-    await test.step("Open the cart and verify its contents and totals", async () => {
-      await header.openCart();
-
-      await expect(page).toHaveURL("/cart");
-      await expect(cartPage.heading).toHaveText("Cart");
-      await expect(cartPage.cartItems).toHaveCount(1);
-
-      const cartItem = cartPage.getCartItem(product.title);
-
-      await expect(cartItem.title).toHaveText(product.title);
-      await expect(cartItem.quantityInput).toHaveValue(String(quantityToAdd));
-      await expect(cartItem.price).toHaveText(`Price: ${formatUsd(product.price)}`);
-      await expect(cartItem.itemTotal).toHaveText(`Item total: ${formatUsd(expectedItemTotal)}`);
-
-      await expect(cartPage.summaryQuantity).toHaveText(`${quantityToAdd} items in cart`);
-      await expect(cartPage.summaryTotal).toHaveText(`Total: ${formatUsd(expectedItemTotal)}`);
-    });
-
-    await test.step("Return to the catalog and verify the updated product state", async () => {
-      await cartPage.continueShoppingLink.click();
-
-      await expect(page).toHaveURL("/products");
-      await expect(productCard.addToCart.available).toHaveText(
-        `Available: ${expectedAvailableQuantity}`,
-      );
-      await expect(productCard.addToCart.inCart).toHaveText(`In cart: ${quantityToAdd}`);
-    });
-  });
-
-  test("adds the selected quantity from product details and updates the page state", async ({
-    page,
-  }) => {
-    const productDetailsPage = new ProductDetailsPage(page);
-    const product = ADD_TO_CART_PRODUCT_A;
-    const quantityToAdd = 2;
-
-    const expectedAvailableQuantity = product.stock - quantityToAdd;
-
-    const productCard = catalogPage.getProductCard(product.title);
-
-    await test.step("Open product details and verify the initial state", async () => {
-      await productCard.openDetails();
-
-      await expect(page).toHaveURL(`/products/${product.id}`);
-
-      await expect(productDetailsPage.heading).toHaveText(product.title);
-      await expect(productDetailsPage.description).toHaveText(product.description);
-      await expect(productDetailsPage.category).toHaveText(product.category);
-      await expect(productDetailsPage.price).toHaveText(formatUsd(product.price));
-
-      await expect(productDetailsPage.addToCart.available).toHaveText(
-        `Available: ${product.stock}`,
-      );
-      await expect(productDetailsPage.addToCart.inCart).toHaveCount(0);
-      await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
-      await expect(productDetailsPage.addToCart.quantityHint).toHaveText(
-        `Choose a quantity from 1 to ${product.stock}.`,
-      );
-    });
-
-    await test.step(`Add ${quantityToAdd} units of ${product.title} from product details`, async () => {
-      await productDetailsPage.addToCart.fillQuantity(String(quantityToAdd));
-      await productDetailsPage.addToCart.submit();
-    });
-
-    await test.step("Verify the notification and updated product state", async () => {
-      await expect(toast.message).toHaveText(`${product.title} added to cart.`);
-
-      await expect(productDetailsPage.addToCart.available).toHaveText(
-        `Available: ${expectedAvailableQuantity}`,
-      );
-      await expect(productDetailsPage.addToCart.inCart).toHaveText(`In cart: ${quantityToAdd}`);
-      await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
-      await expect(productDetailsPage.addToCart.quantityHint).toHaveText(
-        `Choose a quantity from 1 to ${expectedAvailableQuantity}.`,
-      );
-    });
-
-    await test.step("Open the cart and verify the added product quantity", async () => {
-      await expect(header.cartLink).toHaveAccessibleName(`Cart, ${quantityToAdd} items`);
-
-      await header.openCart();
-
-      await expect(page).toHaveURL("/cart");
-      await expect(cartPage.cartItems).toHaveCount(1);
-
-      const cartItem = cartPage.getCartItem(product.title);
-
-      await expect(cartItem.title).toHaveText(product.title);
-      await expect(cartItem.quantityInput).toHaveValue(String(quantityToAdd));
-    });
-  });
-
-  test("merges repeated additions of the same product and preserves its state across entry points", async ({
-    page,
-  }) => {
-    const productDetailsPage = new ProductDetailsPage(page);
-    const product = ADD_TO_CART_PRODUCT_A;
+  test("adds and merges repeated quantities from product details", async ({ page }) => {
+    const product = createProduct(ADD_TO_CART_PRODUCT_A);
     const quantityPerAddition = 2;
-    const expectedQuantityInCart = quantityPerAddition * 2;
-    const expectedAvailableQuantity = product.stock - expectedQuantityInCart;
-    const expectedItemTotal = product.price * expectedQuantityInCart;
 
-    const productCard = catalogPage.getProductCard(product.title);
+    await prepareProductDetails(page, product);
+    await productDetailsPage.open(product.id);
 
-    await test.step(`Add ${quantityPerAddition} units of ${product.title} from the catalog`, async () => {
-      await productCard.addToCart.fillQuantity(String(quantityPerAddition));
-      await productCard.addToCart.submit();
+    await test.step("add the selected quantity", async () => {
+      await productDetailsPage.addToCart.fillQuantity(String(quantityPerAddition));
+      await productDetailsPage.addToCart.submit();
 
-      await expect(productCard.addToCart.available).toHaveText(
-        `Available: ${product.stock - quantityPerAddition}`,
-      );
-      await expect(productCard.addToCart.inCart).toHaveText(`In cart: ${quantityPerAddition}`);
-    });
-
-    await test.step("Open product details and verify that the cart state is preserved", async () => {
-      await productCard.openDetails();
-
-      await expect(page).toHaveURL(`/products/${product.id}`);
-      await expect(productDetailsPage.heading).toHaveText(product.title);
-      await expect(productDetailsPage.addToCart.available).toHaveText(
-        `Available: ${product.stock - quantityPerAddition}`,
+      await expect(toast.message).toHaveText(`${product.title} added to cart.`);
+      await expect(productDetailsPage.header.cartLink).toHaveAccessibleName(
+        `Cart, ${quantityPerAddition} items`,
       );
       await expect(productDetailsPage.addToCart.inCart).toHaveText(
         `In cart: ${quantityPerAddition}`,
       );
+      await expect(productDetailsPage.addToCart.available).toHaveText(
+        `Available: ${product.stock - quantityPerAddition}`,
+      );
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
+      await expect(productDetailsPage.addToCart.quantityHint).toHaveText(
+        `Choose a quantity from 1 to ${product.stock - quantityPerAddition}.`,
+      );
     });
 
-    await test.step(`Add ${quantityPerAddition} more units from product details`, async () => {
+    await test.step("merge a repeated addition of the same product", async () => {
+      // The repeated addition shows the same message, so close the first toast
+      // to make sure the next assertion observes a new notification.
+      await toast.close();
+
       await productDetailsPage.addToCart.fillQuantity(String(quantityPerAddition));
       await productDetailsPage.addToCart.submit();
 
-      await expect(productDetailsPage.addToCart.available).toHaveText(
-        `Available: ${expectedAvailableQuantity}`,
+      const expectedQuantityInCart = quantityPerAddition * 2;
+      const expectedAvailableQuantity = product.stock - expectedQuantityInCart;
+
+      await expect(toast.message).toHaveText(`${product.title} added to cart.`);
+      await expect(productDetailsPage.header.cartLink).toHaveAccessibleName(
+        `Cart, ${expectedQuantityInCart} items`,
       );
       await expect(productDetailsPage.addToCart.inCart).toHaveText(
         `In cart: ${expectedQuantityInCart}`,
       );
+      await expect(productDetailsPage.addToCart.available).toHaveText(
+        `Available: ${expectedAvailableQuantity}`,
+      );
       await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
-
-      await expect(header.cartLink).toHaveAccessibleName(`Cart, ${expectedQuantityInCart} items`);
-    });
-
-    await test.step("Open the cart and verify that both additions were merged", async () => {
-      await header.openCart();
-
-      await expect(page).toHaveURL("/cart");
-      await expect(cartPage.cartItems).toHaveCount(1);
-
-      const cartItem = cartPage.getCartItem(product.title);
-
-      await expect(cartItem.title).toHaveText(product.title);
-      await expect(cartItem.quantityInput).toHaveValue(String(expectedQuantityInCart));
-      await expect(cartItem.itemTotal).toHaveText(`Item total: ${formatUsd(expectedItemTotal)}`);
+      await expect(productDetailsPage.addToCart.quantityHint).toHaveText(
+        "Only 1 item can be added.",
+      );
     });
   });
 
-  test("preserves different products added from the catalog and product details", async ({
-    page,
-  }) => {
-    const productDetailsPage = new ProductDetailsPage(page);
+  test("exhausts the last available item after adding it", async ({ page }) => {
+    const product = createProduct(SINGLE_STOCK_PRODUCT);
 
-    const productA = ADD_TO_CART_PRODUCT_A;
-    const productB = ADD_TO_CART_PRODUCT_B;
+    await prepareProductDetails(page, product);
+    await productDetailsPage.open(product.id);
+
+    await expect(productDetailsPage.addToCart.available).toHaveText("Available: 1");
+    await expect(productDetailsPage.addToCart.inCart).toHaveCount(0);
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
+    await expect(productDetailsPage.addToCart.quantityHint).toHaveText("Only 1 item can be added.");
+    await expect(productDetailsPage.addToCart.addToCartButton).toBeEnabled();
+
+    await productDetailsPage.addToCart.submit();
+
+    await expect(toast.message).toHaveText(`${product.title} added to cart.`);
+    await expect(productDetailsPage.header.cartLink).toHaveAccessibleName("Cart, 1 item");
+    await expect(productDetailsPage.addToCart.inCart).toHaveText("In cart: 1");
+    await expect(productDetailsPage.addToCart.available).toHaveCount(0);
+    await expect(productDetailsPage.addToCart.productAvailability).toContainText(
+      "No more items available",
+    );
+
+    await expect(productDetailsPage.addToCart.quantityInput).toBeDisabled();
+    await expect(productDetailsPage.addToCart.decreaseButton).toBeDisabled();
+    await expect(productDetailsPage.addToCart.increaseButton).toBeDisabled();
+    await expect(productDetailsPage.addToCart.addToCartButton).toBeDisabled();
+    await expect(productDetailsPage.addToCart.addToCartButton).toHaveAccessibleName(
+      `No more items available for ${product.title}`,
+    );
+    await expect(productDetailsPage.addToCart.quantityHint).toHaveText(
+      "This product cannot be added right now.",
+    );
+  });
+
+  test("shares cart state between catalog cards and product details", async ({ page }) => {
+    const productA = createProduct(ADD_TO_CART_PRODUCT_A);
+    const productB = createProduct(ADD_TO_CART_PRODUCT_B);
 
     const productAQuantity = 2;
     const productBQuantity = 1;
-    const expectedCartQuantity = productAQuantity + productBQuantity;
+    const additionalProductAQuantity = 1;
 
-    const expectedProductATotal = productA.price * productAQuantity;
-    const expectedProductBTotal = productB.price * productBQuantity;
-    const expectedCartTotal = expectedProductATotal + expectedProductBTotal;
+    await prepareProductCatalog(page, [productA, productB]);
+    await prepareProductDetails(page, productA);
+    await catalogPage.open();
 
     const productACard = catalogPage.getProductCard(productA.title);
     const productBCard = catalogPage.getProductCard(productB.title);
 
-    await test.step(`Add ${productAQuantity} units of ${productA.title} from the catalog`, async () => {
+    await test.step(`add ${productAQuantity} units from the correct catalog card`, async () => {
+      await expect(productACard.title).toBeVisible();
+      await expect(productBCard.title).toBeVisible();
+
       await productACard.addToCart.fillQuantity(String(productAQuantity));
       await productACard.addToCart.submit();
 
-      await expect(header.cartLink).toHaveAccessibleName(`Cart, ${productAQuantity} items`);
+      await expect(toast.message).toHaveText(`${productA.title} added to cart.`);
+      await expect(productACard.addToCart.inCart).toHaveText(`In cart: ${productAQuantity}`);
+      await expect(productBCard.addToCart.inCart).toHaveCount(0);
+      await expect(catalogPage.header.cartLink).toHaveAccessibleName(
+        `Cart, ${productAQuantity} items`,
+      );
     });
 
-    await test.step(`Open the details for ${productB.title} and add ${productBQuantity} unit`, async () => {
-      await productBCard.openDetails();
+    await test.step(`add ${productBQuantity} unit from a different catalog card`, async () => {
+      await productBCard.addToCart.fillQuantity(String(productBQuantity));
+      await productBCard.addToCart.submit();
 
-      await expect(page).toHaveURL(`/products/${productB.id}`);
-      await expect(productDetailsPage.heading).toHaveText(productB.title);
+      const expectedCartQuantity = productAQuantity + productBQuantity;
 
-      await productDetailsPage.addToCart.fillQuantity(String(productBQuantity));
+      await expect(toast.message).toHaveText(`${productB.title} added to cart.`);
+      await expect(productACard.addToCart.inCart).toHaveText(`In cart: ${productAQuantity}`);
+      await expect(productBCard.addToCart.inCart).toHaveText(`In cart: ${productBQuantity}`);
+      await expect(catalogPage.header.cartLink).toHaveAccessibleName(
+        `Cart, ${expectedCartQuantity} items`,
+      );
+    });
+
+    await test.step(`open ${productA.title} and preserve its individual cart state`, async () => {
+      await productACard.openDetails();
+
+      await expect(page).toHaveURL(`/products/${productA.id}`);
+      await expect(productDetailsPage.heading).toHaveText(productA.title);
+      await expect(productDetailsPage.addToCart.inCart).toHaveText(`In cart: ${productAQuantity}`);
+      await expect(productDetailsPage.addToCart.available).toHaveText(
+        `Available: ${productA.stock - productAQuantity}`,
+      );
+      await expect(productDetailsPage.header.cartLink).toHaveAccessibleName(
+        `Cart, ${productAQuantity + productBQuantity} items`,
+      );
+    });
+
+    await test.step(`add ${additionalProductAQuantity} more unit from product details`, async () => {
+      await productDetailsPage.addToCart.fillQuantity(String(additionalProductAQuantity));
       await productDetailsPage.addToCart.submit();
 
-      await expect(header.cartLink).toHaveAccessibleName(`Cart, ${expectedCartQuantity} items`);
-    });
+      const expectedProductAQuantity = productAQuantity + additionalProductAQuantity;
+      const expectedCartQuantity = expectedProductAQuantity + productBQuantity;
 
-    await test.step("Open the cart and verify that both products are preserved", async () => {
-      await header.openCart();
-
-      await expect(page).toHaveURL("/cart");
-      await expect(cartPage.cartItems).toHaveCount(2);
-
-      const productACartItem = cartPage.getCartItem(productA.title);
-      const productBCartItem = cartPage.getCartItem(productB.title);
-
-      await expect(productACartItem.title).toHaveText(productA.title);
-      await expect(productACartItem.quantityInput).toHaveValue(String(productAQuantity));
-      await expect(productACartItem.itemTotal).toHaveText(
-        `Item total: ${formatUsd(expectedProductATotal)}`,
+      await expect(toast.message).toHaveText(`${productA.title} added to cart.`);
+      await expect(productDetailsPage.addToCart.inCart).toHaveText(
+        `In cart: ${expectedProductAQuantity}`,
       );
-
-      await expect(productBCartItem.title).toHaveText(productB.title);
-      await expect(productBCartItem.quantityInput).toHaveValue(String(productBQuantity));
-      await expect(productBCartItem.itemTotal).toHaveText(
-        `Item total: ${formatUsd(expectedProductBTotal)}`,
+      await expect(productDetailsPage.addToCart.available).toHaveText(
+        `Available: ${productA.stock - expectedProductAQuantity}`,
       );
-    });
-
-    await test.step("Verify the combined cart quantity and total", async () => {
-      await expect(cartPage.summaryQuantity).toHaveText(`${expectedCartQuantity} items in cart`);
-      await expect(cartPage.summaryTotal).toHaveText(`Total: ${formatUsd(expectedCartTotal)}`);
+      await expect(productDetailsPage.header.cartLink).toHaveAccessibleName(
+        `Cart, ${expectedCartQuantity} items`,
+      );
     });
   });
 });
