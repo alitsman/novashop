@@ -1,162 +1,211 @@
 import { expect, test } from "../../src/fixtures";
-import { prepareMockedAuthenticatedSession, prepareProductCatalog } from "../../src/helpers";
-import { ProductCatalogPage } from "../../src/pages";
+import {
+  prepareCart,
+  prepareMockedAuthenticatedSession,
+  prepareProductDetails,
+} from "../../src/helpers";
+import { ProductDetailsPage } from "../../src/pages";
 import {
   OUT_OF_STOCK_PRODUCT,
   QUANTITY_PRODUCT,
-  QUANTITY_PRODUCTS,
   REGULAR_USER,
+  STALE_CART_PRODUCT,
+  createCartItem,
   createProduct,
 } from "../../src/test-data";
 
 test.describe("add to cart control", () => {
-  let catalogPage: ProductCatalogPage;
+  let productDetailsPage: ProductDetailsPage;
 
   test.beforeEach(async ({ page }) => {
     await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
 
-    const products = QUANTITY_PRODUCTS.map((product) => createProduct(product));
-    await prepareProductCatalog(page, products);
-
-    catalogPage = new ProductCatalogPage(page);
-    await catalogPage.open();
-
-    await expect(
-      catalogPage.header.currentUserName,
-      "Regular user session should be restored",
-    ).toHaveText(REGULAR_USER.user.name);
+    productDetailsPage = new ProductDetailsPage(page);
   });
 
-  test("changes quantity with increment and decrement buttons", async () => {
-    const productCard = catalogPage.getProductCard(QUANTITY_PRODUCT.title);
+  test("changes quantity with increment and decrement buttons", async ({ page }) => {
+    const product = createProduct(QUANTITY_PRODUCT);
 
-    await expect(productCard.title).toBeVisible();
-    await expect(productCard.addToCart.quantityInput).toHaveValue("1");
-    await expect(productCard.addToCart.decreaseButton).toBeDisabled();
+    await prepareProductDetails(page, product);
+    await productDetailsPage.open(product.id);
 
-    await productCard.addToCart.increaseQuantity();
-    await expect(productCard.addToCart.quantityInput).toHaveValue("2");
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
+    await expect(productDetailsPage.addToCart.decreaseButton).toBeDisabled();
 
-    await productCard.addToCart.decreaseQuantity();
-    await expect(productCard.addToCart.quantityInput).toHaveValue("1");
+    await productDetailsPage.addToCart.increaseQuantity();
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("2");
 
-    await productCard.addToCart.increaseQuantity(QUANTITY_PRODUCT.stock - 1);
-    await expect(productCard.addToCart.quantityInput).toHaveValue(String(QUANTITY_PRODUCT.stock));
-    await expect(productCard.addToCart.increaseButton).toBeDisabled();
+    await productDetailsPage.addToCart.decreaseQuantity();
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
+
+    await productDetailsPage.addToCart.increaseQuantity(product.stock - 1);
+
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue(String(product.stock));
+    await expect(productDetailsPage.addToCart.increaseButton).toBeDisabled();
   });
 
-  test("changes quantity with ArrowUp and ArrowDown keys", async () => {
-    const productCard = catalogPage.getProductCard(QUANTITY_PRODUCT.title);
+  test("changes quantity with ArrowUp and ArrowDown keys", async ({ page }) => {
+    const product = createProduct(QUANTITY_PRODUCT);
 
-    await expect(productCard.addToCart.quantityInput).toHaveValue("1");
+    await prepareProductDetails(page, product);
+    await productDetailsPage.open(product.id);
 
-    await productCard.addToCart.pressQuantityKey("ArrowDown");
-    await expect(productCard.addToCart.quantityInput).toHaveValue("1");
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
 
-    await productCard.addToCart.pressQuantityKey("ArrowUp");
-    await expect(productCard.addToCart.quantityInput).toHaveValue("2");
+    await productDetailsPage.addToCart.pressQuantityKey("ArrowDown");
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
 
-    await productCard.addToCart.pressQuantityKey("ArrowDown");
-    await expect(productCard.addToCart.quantityInput).toHaveValue("1");
+    await productDetailsPage.addToCart.pressQuantityKey("ArrowUp");
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("2");
 
-    await productCard.addToCart.pressQuantityKey("ArrowUp", QUANTITY_PRODUCT.stock - 1);
-    await expect(productCard.addToCart.quantityInput).toHaveValue(String(QUANTITY_PRODUCT.stock));
+    await productDetailsPage.addToCart.pressQuantityKey("ArrowDown");
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
 
-    await productCard.addToCart.pressQuantityKey("ArrowUp");
-    await expect(productCard.addToCart.quantityInput).toHaveValue(String(QUANTITY_PRODUCT.stock));
+    await productDetailsPage.addToCart.pressQuantityKey("ArrowUp", product.stock - 1);
+
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue(String(product.stock));
+
+    await productDetailsPage.addToCart.pressQuantityKey("ArrowUp");
+
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue(String(product.stock));
   });
 
-  test("accepts a valid manually entered quantity", async () => {
-    const productCard = catalogPage.getProductCard(QUANTITY_PRODUCT.title);
+  test("accepts valid manually entered quantities", async ({ page }) => {
+    const product = createProduct(QUANTITY_PRODUCT);
 
-    await expect(productCard.addToCart.quantityInput).toHaveValue("1");
+    await prepareProductDetails(page, product);
+    await productDetailsPage.open(product.id);
 
-    await productCard.addToCart.fillQuantity(String(QUANTITY_PRODUCT.stock - 1));
-    await expect(productCard.addToCart.quantityInput).toHaveValue(
-      String(QUANTITY_PRODUCT.stock - 1),
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
+
+    await productDetailsPage.addToCart.fillQuantity(String(product.stock - 1));
+
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue(String(product.stock - 1));
+    await expect(productDetailsPage.addToCart.quantityError).toHaveCount(0);
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveAttribute(
+      "aria-invalid",
+      "false",
     );
-    await expect(productCard.addToCart.quantityError).toBeHidden();
-    await expect(productCard.addToCart.addToCartButton).toBeEnabled();
+    await expect(productDetailsPage.addToCart.addToCartButton).toBeEnabled();
 
-    await productCard.addToCart.fillQuantity(String(QUANTITY_PRODUCT.stock));
-    await expect(productCard.addToCart.quantityInput).toHaveValue(String(QUANTITY_PRODUCT.stock));
-    await expect(productCard.addToCart.quantityError).toBeHidden();
-    await expect(productCard.addToCart.addToCartButton).toBeEnabled();
+    await productDetailsPage.addToCart.fillQuantity(String(product.stock));
+
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue(String(product.stock));
+    await expect(productDetailsPage.addToCart.quantityError).toHaveCount(0);
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveAttribute(
+      "aria-invalid",
+      "false",
+    );
+    await expect(productDetailsPage.addToCart.addToCartButton).toBeEnabled();
   });
 
-  test("validates and recovers out-of-range manual quantities", async () => {
-    const productCard = catalogPage.getProductCard(QUANTITY_PRODUCT.title);
-    const excessiveQuantity = QUANTITY_PRODUCT.stock + 10;
+  test("validates invalid manual quantities and recovers", async ({ page }) => {
+    const product = createProduct(QUANTITY_PRODUCT);
+    const excessiveQuantity = product.stock + 10;
 
-    await expect(productCard.addToCart.quantityInput).toHaveValue("1");
+    await prepareProductDetails(page, product);
+    await productDetailsPage.open(product.id);
+
+    await test.step("recover from an empty quantity", async () => {
+      await productDetailsPage.addToCart.fillQuantity("");
+
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("");
+      await expect(productDetailsPage.addToCart.quantityError).toHaveText("Enter a quantity.");
+      await expect(productDetailsPage.addToCart.quantityError).toHaveRole("alert");
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAccessibleDescription(
+        `Choose a quantity from 1 to ${product.stock}. Enter a quantity.`,
+      );
+      await expect(productDetailsPage.addToCart.decreaseButton).toBeDisabled();
+      await expect(productDetailsPage.addToCart.increaseButton).toBeDisabled();
+      await expect(productDetailsPage.addToCart.addToCartButton).toBeDisabled();
+
+      await productDetailsPage.addToCart.fillQuantity("1");
+
+      await expect(productDetailsPage.addToCart.quantityError).toHaveCount(0);
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAttribute(
+        "aria-invalid",
+        "false",
+      );
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAccessibleDescription(
+        `Choose a quantity from 1 to ${product.stock}.`,
+      );
+      await expect(productDetailsPage.addToCart.addToCartButton).toBeEnabled();
+    });
 
     await test.step("recover from a quantity below the minimum", async () => {
-      await productCard.addToCart.fillQuantity("0");
+      await productDetailsPage.addToCart.fillQuantity("0");
 
-      await expect(productCard.addToCart.quantityInput).toHaveValue("0");
-      await expect(productCard.addToCart.quantityError).toBeVisible();
-      await expect(productCard.addToCart.quantityError).toHaveText("Quantity must be at least 1.");
-      await expect(productCard.addToCart.quantityError).toHaveRole("alert");
-      await expect(productCard.addToCart.quantityInput).toHaveAttribute("aria-invalid", "true");
-      await expect(productCard.addToCart.decreaseButton).toBeDisabled();
-      await expect(productCard.addToCart.increaseButton).toBeEnabled();
-      await expect(productCard.addToCart.addToCartButton).toBeDisabled();
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("0");
+      await expect(productDetailsPage.addToCart.quantityError).toHaveText(
+        "Quantity must be at least 1.",
+      );
+      await expect(productDetailsPage.addToCart.quantityError).toHaveRole("alert");
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAccessibleDescription(
+        `Choose a quantity from 1 to ${product.stock}. Quantity must be at least 1.`,
+      );
+      await expect(productDetailsPage.addToCart.decreaseButton).toBeDisabled();
+      await expect(productDetailsPage.addToCart.increaseButton).toBeEnabled();
+      await expect(productDetailsPage.addToCart.addToCartButton).toBeDisabled();
 
-      await productCard.addToCart.increaseQuantity();
+      await productDetailsPage.addToCart.increaseQuantity();
 
-      await expect(productCard.addToCart.quantityInput).toHaveValue("1");
-      await expect(productCard.addToCart.quantityError).toBeHidden();
-      await expect(productCard.addToCart.quantityInput).toHaveAttribute("aria-invalid", "false");
-      await expect(productCard.addToCart.decreaseButton).toBeDisabled();
-      await expect(productCard.addToCart.increaseButton).toBeEnabled();
-      await expect(productCard.addToCart.addToCartButton).toBeEnabled();
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
+      await expect(productDetailsPage.addToCart.quantityError).toHaveCount(0);
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAttribute(
+        "aria-invalid",
+        "false",
+      );
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAccessibleDescription(
+        `Choose a quantity from 1 to ${product.stock}.`,
+      );
+      await expect(productDetailsPage.addToCart.addToCartButton).toBeEnabled();
     });
 
     await test.step("recover from a quantity above available stock", async () => {
-      await productCard.addToCart.fillQuantity(String(excessiveQuantity));
+      await productDetailsPage.addToCart.fillQuantity(String(excessiveQuantity));
 
-      await expect(productCard.addToCart.quantityInput).toHaveValue(String(excessiveQuantity));
-      await expect(productCard.addToCart.quantityError).toBeVisible();
-      await expect(productCard.addToCart.quantityError).toHaveText(
-        `Only ${QUANTITY_PRODUCT.stock} items are available to add.`,
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveValue(
+        String(excessiveQuantity),
       );
-      await expect(productCard.addToCart.quantityError).toHaveRole("alert");
-      await expect(productCard.addToCart.quantityInput).toHaveAttribute("aria-invalid", "true");
-      await expect(productCard.addToCart.decreaseButton).toBeEnabled();
-      await expect(productCard.addToCart.increaseButton).toBeDisabled();
-      await expect(productCard.addToCart.addToCartButton).toBeDisabled();
+      await expect(productDetailsPage.addToCart.quantityError).toHaveText(
+        `Only ${product.stock} items are available to add.`,
+      );
+      await expect(productDetailsPage.addToCart.quantityError).toHaveRole("alert");
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAccessibleDescription(
+        `Choose a quantity from 1 to ${product.stock}. Only ${product.stock} items are available to add.`,
+      );
+      await expect(productDetailsPage.addToCart.decreaseButton).toBeEnabled();
+      await expect(productDetailsPage.addToCart.increaseButton).toBeDisabled();
+      await expect(productDetailsPage.addToCart.addToCartButton).toBeDisabled();
 
-      await productCard.addToCart.decreaseQuantity();
+      await productDetailsPage.addToCart.decreaseQuantity();
 
-      await expect(productCard.addToCart.quantityInput).toHaveValue(String(QUANTITY_PRODUCT.stock));
-      await expect(productCard.addToCart.quantityError).toBeHidden();
-      await expect(productCard.addToCart.quantityInput).toHaveAttribute("aria-invalid", "false");
-      await expect(productCard.addToCart.decreaseButton).toBeEnabled();
-      await expect(productCard.addToCart.increaseButton).toBeDisabled();
-      await expect(productCard.addToCart.addToCartButton).toBeEnabled();
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveValue(String(product.stock));
+      await expect(productDetailsPage.addToCart.quantityError).toHaveCount(0);
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAttribute(
+        "aria-invalid",
+        "false",
+      );
+      await expect(productDetailsPage.addToCart.quantityInput).toHaveAccessibleDescription(
+        `Choose a quantity from 1 to ${product.stock}.`,
+      );
+      await expect(productDetailsPage.addToCart.addToCartButton).toBeEnabled();
     });
   });
 
-  test("prevents purchasing an out-of-stock product", async () => {
-    const productCard = catalogPage.getProductCard(OUT_OF_STOCK_PRODUCT.title);
-
-    await expect(productCard.addToCart.quantityInput).toBeDisabled();
-    await expect(productCard.addToCart.decreaseButton).toBeDisabled();
-    await expect(productCard.addToCart.increaseButton).toBeDisabled();
-    await expect(productCard.addToCart.addToCartButton).toBeDisabled();
-
-    await expect(productCard.addToCart.productAvailability).toContainText(
-      "No more items available",
-    );
-    await expect(productCard.addToCart.quantityHint).toHaveText(
-      "This product cannot be added right now.",
-    );
-
-    await expect(productCard.addToCart.quantityInput).toHaveAttribute("aria-invalid", "false");
-    await expect(productCard.addToCart.quantityError).toBeHidden();
-  });
-
-  test("handles pasted quantity values", async ({ browserName, context }) => {
+  test("handles pasted quantity values", async ({ browserName, context, page }) => {
     // Chromium-only: this scenario requires browser clipboard permissions.
     test.skip(
       browserName !== "chromium",
@@ -165,15 +214,86 @@ test.describe("add to cart control", () => {
 
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
 
-    const productCard = catalogPage.getProductCard(QUANTITY_PRODUCT.title);
+    const product = createProduct(QUANTITY_PRODUCT);
 
-    await productCard.addToCart.pasteQuantity("3");
-    await expect(productCard.addToCart.quantityInput).toHaveValue("3");
+    await prepareProductDetails(page, product);
+    await productDetailsPage.open(product.id);
 
-    await productCard.addToCart.pasteQuantity("-4");
-    await expect(productCard.addToCart.quantityInput).toHaveValue("3");
+    await productDetailsPage.addToCart.pasteQuantity("3");
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("3");
 
-    await productCard.addToCart.pasteQuantity("1.5");
-    await expect(productCard.addToCart.quantityInput).toHaveValue("3");
+    await productDetailsPage.addToCart.pasteQuantity("-4");
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("3");
+
+    await productDetailsPage.addToCart.pasteQuantity("1.5");
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("3");
+
+    await productDetailsPage.addToCart.pasteQuantity("1e2");
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("3");
+  });
+
+  test("prevents purchasing an out-of-stock product", async ({ page }) => {
+    const product = createProduct(OUT_OF_STOCK_PRODUCT);
+
+    await prepareProductDetails(page, product);
+    await productDetailsPage.open(product.id);
+
+    await expect(productDetailsPage.addToCart.inCart).toHaveCount(0);
+    await expect(productDetailsPage.addToCart.available).toHaveCount(0);
+    await expect(productDetailsPage.addToCart.productAvailability).toContainText(
+      "No more items available",
+    );
+
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveValue("1");
+    await expect(productDetailsPage.addToCart.quantityInput).toBeDisabled();
+    await expect(productDetailsPage.addToCart.decreaseButton).toBeDisabled();
+    await expect(productDetailsPage.addToCart.increaseButton).toBeDisabled();
+    await expect(productDetailsPage.addToCart.addToCartButton).toBeDisabled();
+    await expect(productDetailsPage.addToCart.addToCartButton).toHaveAccessibleName(
+      `No more items available for ${product.title}`,
+    );
+
+    await expect(productDetailsPage.addToCart.quantityHint).toHaveText(
+      "This product cannot be added right now.",
+    );
+    await expect(productDetailsPage.addToCart.quantityInput).toHaveAttribute(
+      "aria-invalid",
+      "false",
+    );
+    await expect(productDetailsPage.addToCart.quantityError).toHaveCount(0);
+  });
+
+  test("handles a cart quantity above the current stock", async ({ page }) => {
+    const product = createProduct(STALE_CART_PRODUCT);
+    const quantityInCart = product.stock + 2;
+
+    await prepareCart(page, REGULAR_USER.user.id, [
+      createCartItem(product, {
+        quantity: quantityInCart,
+      }),
+    ]);
+    await prepareProductDetails(page, product);
+    await productDetailsPage.open(product.id);
+
+    await expect(productDetailsPage.header.cartLink).toHaveAccessibleName(
+      `Cart, ${quantityInCart} items`,
+    );
+    await expect(productDetailsPage.addToCart.inCart).toHaveText(`In cart: ${quantityInCart}`);
+    await expect(productDetailsPage.addToCart.available).toHaveCount(0);
+    await expect(productDetailsPage.addToCart.productAvailability).toContainText(
+      "No more items available",
+    );
+
+    await expect(productDetailsPage.addToCart.quantityInput).toBeDisabled();
+    await expect(productDetailsPage.addToCart.decreaseButton).toBeDisabled();
+    await expect(productDetailsPage.addToCart.increaseButton).toBeDisabled();
+    await expect(productDetailsPage.addToCart.addToCartButton).toBeDisabled();
+    await expect(productDetailsPage.addToCart.addToCartButton).toHaveAccessibleName(
+      `No more items available for ${product.title}`,
+    );
+    await expect(productDetailsPage.addToCart.quantityHint).toHaveText(
+      "This product cannot be added right now.",
+    );
+    await expect(productDetailsPage.addToCart.quantityError).toHaveCount(0);
   });
 });
