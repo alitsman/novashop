@@ -18,6 +18,8 @@ export class CartPage {
   readonly orderSummaryBlock: Locator;
   readonly summaryQuantity: Locator;
   readonly summaryTotal: Locator;
+  readonly syncStatus: Locator;
+  readonly retrySyncButton: Locator;
   readonly goToCheckoutButton: Locator;
   readonly checkoutError: Locator;
 
@@ -65,7 +67,18 @@ export class CartPage {
 
     this.summaryQuantity = this.orderSummaryBlock.getByTestId("cart-summary-quantity");
 
-    this.summaryTotal = this.orderSummaryBlock.getByRole("status");
+    this.summaryTotal = this.orderSummaryBlock.getByRole("status").filter({
+      hasText: /^Total: \$/,
+    });
+
+    this.syncStatus = this.orderSummaryBlock.getByRole("status").filter({
+      hasText: /^Checking prices and availability\.\.\.$/,
+    });
+
+    this.retrySyncButton = this.orderSummaryBlock.getByRole("button", {
+      name: "Check cart again",
+      exact: true,
+    });
 
     this.goToCheckoutButton = this.orderSummaryBlock.getByRole("button", {
       name: "Go to checkout",

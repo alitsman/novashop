@@ -2,16 +2,14 @@ import type { Page, Route } from "@playwright/test";
 
 const DEFAULT_REQUEST_DEADLINE_MS = 10_000;
 
-type HeldRequestFulfillment = {
-  status: number;
-  json: unknown;
-};
-
 type HoldRequestOptions = {
   url: string;
   method: string;
   deadlineMs?: number;
-  fulfillWith?: HeldRequestFulfillment;
+  fulfillWith?: {
+    status: number;
+    json: unknown;
+  };
 };
 
 export type HeldRequestController = {
@@ -20,54 +18,53 @@ export type HeldRequestController = {
   dispose: () => Promise<void>;
 };
 
-type DeferredSignal = {
-  promise: Promise<void>;
-  resolve: () => void;
-  reject: (reason: Error) => void;
-};
-
-const createDeferredSignal = (): DeferredSignal => {
-  let resolveSignal: (() => void) | undefined;
-  let rejectSignal: ((reason: Error) => void) | undefined;
+const createDeferredSignal = () => {
+  let resolveSignal: () => void;
+  let rejectSignal: (reason: Error) => void;
 
   const promise = new Promise<void>((resolve, reject) => {
-    resolveSignal = () => resolve();
-    rejectSignal = (reason) => reject(reason);
+    resolveSignal = resolve;
+    rejectSignal = reject;
   });
 
   return {
     promise,
-    resolve: () => resolveSignal?.(),
-    reject: (reason) => rejectSignal?.(reason),
+    resolve: () => resolveSignal(),
+    reject: (reason: Error) => rejectSignal(reason),
   };
-};
-
-const normalizeError = (error: unknown, fallbackMessage: string): Error => {
-  return error instanceof Error ? error : new Error(fallbackMessage);
 };
 
 export async function holdRequestUntilReleased(
   page: Page,
-  { url, method, deadlineMs = DEFAULT_REQUEST_DEADLINE_MS, fulfillWith }: HoldRequestOptions,
+  options: HoldRequestOptions,
 ): Promise<HeldRequestController> {
+  const { url, method, deadlineMs = DEFAULT_REQUEST_DEADLINE_MS, fulfillWith } = options;
+
   const requestObservedSignal = createDeferredSignal();
   const releaseSignal = createDeferredSignal();
   const expectedMethod = method.toUpperCase();
 
-  const activeHandlerCompletions = new Set<Promise<void>>();
-  const handlerErrors: Error[] = [];
+  const activeRequests = new Set<Promise<void>>();
 
-  let isReleased = false;
   let deadlineError: Error | null = null;
+  let handlerError: Error | null = null;
   let disposePromise: Promise<void> | null = null;
 
-  const release = (): void => {
-    if (isReleased) {
-      return;
-    }
+  const completeRequest = async (route: Route): Promise<void> => {
+    try {
+      await releaseSignal.promise;
 
-    isReleased = true;
-    releaseSignal.resolve();
+      if (fulfillWith) {
+        await route.fulfill(fulfillWith);
+      } else {
+        await route.continue();
+      }
+    } catch (error) {
+      if (handlerError === null) {
+        handlerError =
+          error instanceof Error ? error : new Error("Failed to complete the held request.");
+      }
+    }
   };
 
   const routeHandler = async (route: Route): Promise<void> => {
@@ -79,29 +76,14 @@ export async function holdRequestUntilReleased(
 
     requestObservedSignal.resolve();
 
-    const handlerCompletion = (async () => {
-      try {
-        await releaseSignal.promise;
+    const requestCompletion = completeRequest(route);
 
-        if (fulfillWith) {
-          await route.fulfill({
-            status: fulfillWith.status,
-            json: fulfillWith.json,
-          });
-        } else {
-          await route.continue();
-        }
-      } catch (error) {
-        handlerErrors.push(normalizeError(error, "Failed to complete the held request."));
-      }
-    })();
-
-    activeHandlerCompletions.add(handlerCompletion);
+    activeRequests.add(requestCompletion);
 
     try {
-      await handlerCompletion;
+      await requestCompletion;
     } finally {
-      activeHandlerCompletions.delete(handlerCompletion);
+      activeRequests.delete(requestCompletion);
     }
   };
 
@@ -113,43 +95,45 @@ export async function holdRequestUntilReleased(
     );
 
     requestObservedSignal.reject(deadlineError);
-    release();
+    releaseSignal.resolve();
   }, deadlineMs);
 
-  const dispose = (): Promise<void> => {
-    if (disposePromise) {
-      return disposePromise;
+  const release = (): void => {
+    clearTimeout(deadlineTimer);
+    releaseSignal.resolve();
+  };
+
+  const performDispose = async (): Promise<void> => {
+    release();
+
+    await Promise.all(activeRequests);
+
+    let unrouteError: Error | null = null;
+
+    try {
+      await page.unroute(url, routeHandler);
+    } catch (error) {
+      unrouteError =
+        error instanceof Error ? error : new Error("Failed to remove the held request route.");
     }
 
-    disposePromise = (async () => {
-      release();
-      clearTimeout(deadlineTimer);
+    if (deadlineError) {
+      throw deadlineError;
+    }
 
-      await Promise.all([...activeHandlerCompletions]);
+    if (handlerError) {
+      throw handlerError;
+    }
 
-      let unrouteError: Error | null = null;
+    if (unrouteError) {
+      throw unrouteError;
+    }
+  };
 
-      try {
-        await page.unroute(url, routeHandler);
-      } catch (error) {
-        unrouteError = normalizeError(error, "Failed to remove the held request route.");
-      }
-
-      if (deadlineError) {
-        throw deadlineError;
-      }
-
-      // Multiple handlers may fail during the same release; the first failure is the root signal.
-      const handlerError = handlerErrors[0];
-
-      if (handlerError) {
-        throw handlerError;
-      }
-
-      if (unrouteError) {
-        throw unrouteError;
-      }
-    })();
+  const dispose = (): Promise<void> => {
+    if (disposePromise === null) {
+      disposePromise = performDispose();
+    }
 
     return disposePromise;
   };

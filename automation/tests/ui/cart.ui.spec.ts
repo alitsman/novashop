@@ -1,8 +1,10 @@
 import { expect, test } from "../../src/fixtures";
 import {
+  holdProductCatalogUntilReleased,
   prepareCart,
   prepareMockedAuthenticatedSession,
   prepareProductCatalog,
+  prepareProductCatalogNetworkFailure,
 } from "../../src/helpers";
 import { CartPage } from "../../src/pages";
 import {
@@ -38,6 +40,281 @@ test.describe("cart", () => {
     await cartPage.goToProductsLink.click();
 
     await expect(page).toHaveURL("/products");
+  });
+
+  test("blocks checkout while checking cart prices and availability", async ({ page }) => {
+    const seedCartItem = createCartItem(CART_PRODUCT_A, {
+      quantity: 2,
+    });
+
+    const heldProductCatalogRequest = await holdProductCatalogUntilReleased(page, [CART_PRODUCT_A]);
+
+    await prepareCart(page, REGULAR_USER.user.id, [seedCartItem]);
+
+    const cartItem = cartPage.getCartItem(seedCartItem.title);
+
+    try {
+      await Promise.all([cartPage.open(), heldProductCatalogRequest.requestObserved]);
+
+      await expect(cartItem.quantityInput).toHaveValue(String(seedCartItem.quantity));
+      await expect(cartPage.syncStatus).toBeVisible();
+      await expect(cartPage.goToCheckoutButton).toBeDisabled();
+
+      heldProductCatalogRequest.release();
+
+      await expect(cartPage.syncStatus).toBeHidden();
+      await expect(cartPage.goToCheckoutButton).toBeEnabled();
+    } finally {
+      await heldProductCatalogRequest.dispose();
+    }
+  });
+
+  test("uses current catalog prices when the cart is reopened", async ({ page }) => {
+    const seedCartItem = createCartItem(CART_PRODUCT_A, {
+      quantity: 2,
+    });
+    const firstCatalogProduct = {
+      ...CART_PRODUCT_A,
+      price: 39.99,
+    };
+    const reopenedCatalogProduct = {
+      ...CART_PRODUCT_A,
+      price: 59.99,
+    };
+
+    await prepareProductCatalog(page, [firstCatalogProduct]);
+    await prepareCart(page, REGULAR_USER.user.id, [seedCartItem]);
+
+    const cartItem = cartPage.getCartItem(seedCartItem.title);
+
+    await cartPage.open();
+
+    await expect(cartItem.price).toHaveText(`Price: ${formatUsd(firstCatalogProduct.price)}`);
+    await expect(cartItem.itemTotal).toHaveText(
+      `Item total: ${formatUsd(firstCatalogProduct.price * seedCartItem.quantity)}`,
+    );
+    await expect(cartPage.summaryTotal).toHaveText(
+      `Total: ${formatUsd(firstCatalogProduct.price * seedCartItem.quantity)}`,
+    );
+    await expect(cartItem.quantityInput).toHaveValue(String(seedCartItem.quantity));
+    await expect(cartPage.header.cartLink).toHaveAccessibleName(
+      `Cart, ${seedCartItem.quantity} items`,
+    );
+    await expect(cartPage.goToCheckoutButton).toBeEnabled();
+
+    // The catalog price changes before the cart is reopened.
+    // The newer route wins, so the reopened cart must show the new price.
+    await prepareProductCatalog(page, [reopenedCatalogProduct]);
+    await page.reload();
+
+    await expect(cartItem.price).toHaveText(`Price: ${formatUsd(reopenedCatalogProduct.price)}`);
+    await expect(cartItem.itemTotal).toHaveText(
+      `Item total: ${formatUsd(reopenedCatalogProduct.price * seedCartItem.quantity)}`,
+    );
+    await expect(cartPage.summaryTotal).toHaveText(
+      `Total: ${formatUsd(reopenedCatalogProduct.price * seedCartItem.quantity)}`,
+    );
+    await expect(cartItem.quantityInput).toHaveValue(String(seedCartItem.quantity));
+    await expect(cartPage.header.cartLink).toHaveAccessibleName(
+      `Cart, ${seedCartItem.quantity} items`,
+    );
+    await expect(cartPage.goToCheckoutButton).toBeEnabled();
+  });
+
+  test("keeps the cart blocked after a catalog failure and recovers on retry", async ({ page }) => {
+    const seedCartItem = createCartItem(CART_PRODUCT_A, {
+      quantity: 2,
+    });
+    const currentCatalogProduct = {
+      ...CART_PRODUCT_A,
+      price: 44.99,
+    };
+
+    await prepareProductCatalogNetworkFailure(page);
+    await prepareCart(page, REGULAR_USER.user.id, [seedCartItem]);
+
+    const cartItem = cartPage.getCartItem(seedCartItem.title);
+
+    await cartPage.open();
+
+    await expect(cartItem.quantityInput).toHaveValue(String(seedCartItem.quantity));
+    await expect(cartItem.itemTotal).toHaveText(
+      `Item total: ${formatUsd(seedCartItem.price * seedCartItem.quantity)}`,
+    );
+    await expect(cartPage.checkoutError).toHaveText("Unable to connect to the server.");
+    await expect(cartPage.retrySyncButton).toBeVisible();
+    await expect(cartPage.goToCheckoutButton).toBeDisabled();
+
+    // The network recovers before the user retries.
+    // The newer route wins, so this retry succeeds instead of failing again.
+    await prepareProductCatalog(page, [currentCatalogProduct]);
+    await cartPage.retrySyncButton.click();
+
+    await expect(cartPage.checkoutError).toHaveCount(0);
+    await expect(cartPage.retrySyncButton).toHaveCount(0);
+    await expect(cartItem.price).toHaveText(`Price: ${formatUsd(currentCatalogProduct.price)}`);
+    await expect(cartItem.itemTotal).toHaveText(
+      `Item total: ${formatUsd(currentCatalogProduct.price * seedCartItem.quantity)}`,
+    );
+    await expect(cartPage.goToCheckoutButton).toBeEnabled();
+  });
+
+  test("replaces stale cart details with current catalog data", async ({ page }) => {
+    const staleCartItem = {
+      ...createCartItem(CART_PRODUCT_A, { quantity: 2 }),
+      title: "Old Cart Product",
+      price: 9.99,
+      imageUrl: "https://example.com/old-cart-product.jpg",
+      stock: 10,
+    };
+    const currentCatalogProduct = {
+      ...CART_PRODUCT_A,
+      title: "Current Cart Product",
+      price: 24.99,
+      imageUrl: "https://example.com/current-cart-product.jpg",
+      stock: 4,
+    };
+
+    await prepareProductCatalog(page, [currentCatalogProduct]);
+    await prepareCart(page, REGULAR_USER.user.id, [staleCartItem]);
+
+    const oldCartItem = cartPage.getCartItem(staleCartItem.title);
+    const currentCartItem = cartPage.getCartItem(currentCatalogProduct.title);
+
+    await cartPage.open();
+
+    await expect(oldCartItem.title).toHaveCount(0);
+    await expect(currentCartItem.title).toHaveText(currentCatalogProduct.title);
+    await expect(currentCartItem.price).toHaveText(
+      `Price: ${formatUsd(currentCatalogProduct.price)}`,
+    );
+    await expect(currentCartItem.image).toHaveAttribute("src", currentCatalogProduct.imageUrl);
+    await expect(currentCartItem.quantityInput).toHaveValue(String(staleCartItem.quantity));
+    await expect(currentCartItem.quantityInput).toHaveAttribute(
+      "max",
+      String(currentCatalogProduct.stock),
+    );
+    await expect(currentCartItem.quantityHint).toHaveText(
+      `Choose a quantity from 1 to ${currentCatalogProduct.stock}.`,
+    );
+    await expect(currentCartItem.itemTotal).toHaveText(
+      `Item total: ${formatUsd(currentCatalogProduct.price * staleCartItem.quantity)}`,
+    );
+    await expect(cartPage.summaryTotal).toHaveText(
+      `Total: ${formatUsd(currentCatalogProduct.price * staleCartItem.quantity)}`,
+    );
+    await expect(cartPage.header.cartLink).toHaveAccessibleName(
+      `Cart, ${staleCartItem.quantity} items`,
+    );
+    await expect(cartPage.goToCheckoutButton).toBeEnabled();
+  });
+
+  test("blocks checkout when current stock is below the saved quantity and recovers after correction", async ({
+    page,
+  }) => {
+    const seedCartItem = createCartItem(CART_PRODUCT_A, {
+      quantity: 4,
+    });
+    const currentCatalogProduct = {
+      ...CART_PRODUCT_A,
+      stock: 2,
+    };
+
+    await prepareProductCatalog(page, [currentCatalogProduct]);
+    await prepareCart(page, REGULAR_USER.user.id, [seedCartItem]);
+
+    const cartItem = cartPage.getCartItem(seedCartItem.title);
+
+    await cartPage.open();
+
+    await expect(cartItem.quantityInput).toHaveValue(String(seedCartItem.quantity));
+    await expect(cartItem.quantityHint).toHaveText(
+      `Choose a quantity from 1 to ${currentCatalogProduct.stock}.`,
+    );
+    await expect(cartItem.quantityError).toHaveText(
+      `Only ${currentCatalogProduct.stock} items are available in total.`,
+    );
+    await expect(cartPage.checkoutError).toHaveText(
+      `Only ${currentCatalogProduct.stock} items of ${currentCatalogProduct.title} are available. Update the quantity in your cart.`,
+    );
+    await expect(cartItem.itemTotal).toHaveText(
+      `Item total: ${formatUsd(currentCatalogProduct.price * seedCartItem.quantity)}`,
+    );
+    await expect(cartPage.summaryTotal).toHaveText(
+      `Total: ${formatUsd(currentCatalogProduct.price * seedCartItem.quantity)}`,
+    );
+    await expect(cartPage.header.cartLink).toHaveAccessibleName(
+      `Cart, ${seedCartItem.quantity} items`,
+    );
+    await expect(cartPage.goToCheckoutButton).toBeDisabled();
+
+    await cartItem.fillQuantity(String(currentCatalogProduct.stock));
+
+    await expect(cartItem.quantityError).toHaveCount(0);
+    await expect(cartPage.checkoutError).toHaveCount(0);
+    await expect(cartItem.itemTotal).toHaveText(
+      `Item total: ${formatUsd(currentCatalogProduct.price * currentCatalogProduct.stock)}`,
+    );
+    await expect(cartPage.summaryTotal).toHaveText(
+      `Total: ${formatUsd(currentCatalogProduct.price * currentCatalogProduct.stock)}`,
+    );
+    await expect(cartPage.header.cartLink).toHaveAccessibleName(
+      `Cart, ${currentCatalogProduct.stock} items`,
+    );
+    await expect(cartPage.goToCheckoutButton).toBeEnabled();
+  });
+
+  test("keeps a missing product visible and restores checkout after it is removed", async ({
+    page,
+  }) => {
+    const seedCartItems = [
+      createCartItem(CART_PRODUCT_A, { quantity: 2 }),
+      createCartItem(CART_PRODUCT_B),
+    ];
+    const [availableCartItem, missingCartItem] = seedCartItems;
+
+    await prepareProductCatalog(page, [CART_PRODUCT_A]);
+    await prepareCart(page, REGULAR_USER.user.id, seedCartItems);
+
+    const availableItem = cartPage.getCartItem(availableCartItem.title);
+    const missingItem = cartPage.getCartItem(missingCartItem.title);
+
+    await cartPage.open();
+
+    await expect(cartPage.cartItemTitles).toHaveText([
+      availableCartItem.title,
+      missingCartItem.title,
+    ]);
+    await expect(missingItem.unavailableMessage).toHaveText(
+      `This product is unavailable. Quantity in cart: ${missingCartItem.quantity}. Remove it to continue.`,
+    );
+    await expect(missingItem.quantityInput).toHaveCount(0);
+    await expect(missingItem.removeButton).toBeEnabled();
+    await expect(cartPage.checkoutError).toHaveText(
+      `${missingCartItem.title} is unavailable. Remove it from your cart before checkout.`,
+    );
+    await expect(cartPage.goToCheckoutButton).toBeDisabled();
+
+    await missingItem.removeButton.click();
+    await cartPage.removeItemDialog.confirm();
+
+    await expect(cartPage.cartItemTitles).toHaveText([availableCartItem.title]);
+    await expect(missingItem.title).toHaveCount(0);
+    await expect(availableItem.quantityInput).toHaveValue(String(availableCartItem.quantity));
+    await expect(availableItem.itemTotal).toHaveText(
+      `Item total: ${formatUsd(availableCartItem.price * availableCartItem.quantity)}`,
+    );
+    await expect(cartPage.summaryQuantity).toHaveText(
+      `${availableCartItem.quantity} items in cart`,
+    );
+    await expect(cartPage.summaryTotal).toHaveText(
+      `Total: ${formatUsd(availableCartItem.price * availableCartItem.quantity)}`,
+    );
+    await expect(cartPage.header.cartLink).toHaveAccessibleName(
+      `Cart, ${availableCartItem.quantity} items`,
+    );
+    await expect(cartPage.checkoutError).toHaveCount(0);
+    await expect(cartPage.goToCheckoutButton).toBeEnabled();
   });
 
   test.describe("with a single item", () => {
@@ -259,6 +536,10 @@ test.describe("cart", () => {
       await expect(cartItem.quantityInput).toHaveValue(String(pastedQuantity));
 
       await cartItem.pasteQuantity("1.5");
+
+      await expect(cartItem.quantityInput).toHaveValue(String(pastedQuantity));
+
+      await cartItem.pasteQuantity("1e2");
 
       await expect(cartItem.quantityInput).toHaveValue(String(pastedQuantity));
       await expect(cartItem.quantityError).toHaveCount(0);
