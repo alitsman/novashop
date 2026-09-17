@@ -7,6 +7,7 @@ export class CartItemComponent {
   private readonly root: Locator;
 
   readonly title: Locator;
+  readonly image: Locator;
   readonly price: Locator;
 
   readonly quantityInput: Locator;
@@ -16,12 +17,14 @@ export class CartItemComponent {
   readonly quantityError: Locator;
 
   readonly itemTotal: Locator;
+  readonly unavailableMessage: Locator;
   readonly removeButton: Locator;
 
   constructor(root: Locator) {
     this.root = root;
 
     this.title = this.root.getByRole("heading", { level: 2 });
+    this.image = this.root.locator("img");
     this.price = this.root.getByText(/^Price: \$/);
 
     this.quantityInput = this.root.getByRole("spinbutton", {
@@ -37,6 +40,7 @@ export class CartItemComponent {
     this.quantityError = this.root.getByRole("alert");
 
     this.itemTotal = this.root.getByTestId("item-total");
+    this.unavailableMessage = this.root.getByText(/^This product is unavailable\./);
     this.removeButton = this.root.getByRole("button", {
       name: /^Remove /,
     });
