@@ -1,25 +1,11 @@
 import type { Page } from "@playwright/test";
 
-import { z } from "zod";
-
 import { apiUrl } from "../config/playwright.shared";
-import { productSchema } from "../schemas";
+import { apiErrorResponseSchema, productSchema } from "../schemas";
 import { holdRequestUntilReleased } from "./held-request.helper";
 
-import type { ApiErrorResponse, Product } from "../types";
+import type { Product } from "../types";
 import type { HeldRequestController } from "./held-request.helper";
-
-const apiErrorResponseSchema: z.ZodType<ApiErrorResponse> = z
-  .object({
-    error: z
-      .object({
-        code: z.string().min(1),
-        message: z.string().min(1),
-        details: z.unknown().optional(),
-      })
-      .strict(),
-  })
-  .strict();
 
 const PRODUCT_NOT_FOUND_RESPONSE = apiErrorResponseSchema.parse({
   error: {
