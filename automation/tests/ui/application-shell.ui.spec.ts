@@ -24,6 +24,9 @@ test.describe("application shell", () => {
 
     await page.goto(UNKNOWN_ROUTE);
 
+    // Wait for the skip link before pressing Tab because keyboard actions are not retried.
+    await expect(notFoundPage.layout.skipLink).toBeAttached();
+
     await page.keyboard.press("Tab");
     await expect(notFoundPage.layout.skipLink).toBeFocused();
 
