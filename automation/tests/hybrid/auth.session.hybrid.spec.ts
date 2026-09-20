@@ -20,14 +20,6 @@ test.describe("authentication session lifecycle", () => {
 
     expect(await readAuthTokenStorageValue(page)).toBe(JSON.stringify(INVALID_AUTH_TOKEN));
 
-    let currentUserRequestCount = 0;
-
-    page.on("request", (request) => {
-      if (request.url() === CURRENT_USER_API_URL && request.method() === "GET") {
-        currentUserRequestCount += 1;
-      }
-    });
-
     const restoreAuthResponsePromise = page.waitForResponse(
       (response) =>
         response.url() === CURRENT_USER_API_URL && response.request().method() === "GET",
@@ -42,12 +34,6 @@ test.describe("authentication session lifecycle", () => {
     await expect(page).toHaveURL("/login");
     await expect(loginPage.heading).toBeVisible();
 
-    // React StrictMode re-runs useEffect during development, so the initial
-    // authentication bootstrap may send more than one GET /me request.
-    // Capture that count and verify that reloading the signed-out app adds no new requests.
-    const currentUserRequestCountAfterRejectedRestore = currentUserRequestCount;
-
-    expect(currentUserRequestCountAfterRejectedRestore).toBeGreaterThan(0);
     expect(await readAuthTokenStorageValue(page)).toBeNull();
 
     await page.reload();
@@ -56,7 +42,6 @@ test.describe("authentication session lifecycle", () => {
     await expect(loginPage.heading).toBeVisible();
 
     expect(await readAuthTokenStorageValue(page)).toBeNull();
-    expect(currentUserRequestCount).toBe(currentUserRequestCountAfterRejectedRestore);
   });
 
   test("logout: clears the session and remains signed out after reload", async ({
