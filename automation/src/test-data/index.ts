@@ -11,6 +11,7 @@ export {
 export { createCartItem } from "./cart-item.factory";
 export { CART_PRODUCT_A, CART_PRODUCT_B, CART_PRODUCTS } from "./cart.data";
 export { createOrderInput, createOrderItemInput } from "./order.factory";
+export { ORDERS_OLDER_ORDER, ORDERS_REFERENCE_ORDER } from "./orders.data";
 export {
   SEEDED_ACTIVE_PRODUCTS,
   SEEDED_REFERENCE_PRODUCT,
