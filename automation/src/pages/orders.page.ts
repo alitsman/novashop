@@ -9,7 +9,12 @@ export class OrdersPage {
   readonly header: HeaderComponent;
 
   readonly heading: Locator;
+  readonly loadingStatus: Locator;
+  readonly emptyStateTitle: Locator;
+  readonly goToProductsLink: Locator;
+  readonly errorAlert: Locator;
   readonly ordersList: Locator;
+  readonly continueShoppingLink: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -27,10 +32,45 @@ export class OrdersPage {
       exact: true,
     });
 
+    // The Loader has no accessible name, so identify it by its visible message.
+    this.loadingStatus = this.root.getByRole("status").filter({
+      hasText: /^Loading orders\.\.\.$/,
+    });
+
+    this.emptyStateTitle = this.root.getByRole("heading", {
+      name: "No orders yet",
+      level: 2,
+      exact: true,
+    });
+
+    this.goToProductsLink = this.root.getByRole("link", {
+      name: "Go to products",
+      exact: true,
+    });
+
+    const errorTitle = this.page.getByRole("heading", {
+      name: "Failed to load orders.",
+      level: 2,
+      exact: true,
+    });
+
+    this.errorAlert = this.root.getByRole("alert").filter({
+      has: errorTitle,
+    });
+
     this.ordersList = this.root.getByRole("list", {
       name: "Orders",
       exact: true,
     });
+
+    this.continueShoppingLink = this.root.getByRole("link", {
+      name: "Continue shopping",
+      exact: true,
+    });
+  }
+
+  async open(): Promise<void> {
+    await this.page.goto("/orders");
   }
 
   getOrder(orderNumber: number): Locator {

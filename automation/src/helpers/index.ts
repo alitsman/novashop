@@ -11,6 +11,7 @@ export { pasteText } from "./clipboard.helper";
 export { holdRequestUntilReleased } from "./held-request.helper";
 export type { HeldRequestController } from "./held-request.helper";
 export { createTestAuthToken } from "./jwt.helper";
+export { prepareOrders, prepareOrdersServerFailure } from "./orders.helper";
 export { createProductViaApi } from "./product-api-setup.helper";
 export {
   holdProductCatalogUntilReleased,
