@@ -8,6 +8,11 @@ export {
   SINGLE_STOCK_PRODUCT,
   STALE_CART_PRODUCT,
 } from "./add-to-cart.data";
+export {
+  ADMIN_LIST_MIDDLE_PRODUCT,
+  ADMIN_LIST_NEWEST_PRODUCT,
+  ADMIN_LIST_OLDEST_PRODUCT,
+} from "./admin-products.data";
 export { createCartItem } from "./cart-item.factory";
 export { CART_PRODUCT_A, CART_PRODUCT_B, CART_PRODUCTS } from "./cart.data";
 export { createOrderInput, createOrderItemInput } from "./order.factory";
