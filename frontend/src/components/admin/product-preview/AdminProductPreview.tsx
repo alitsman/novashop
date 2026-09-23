@@ -21,6 +21,10 @@ const formatPreviewPrice = (price: string) => {
 };
 
 const formatPreviewStock = (stock: string) => {
+  if (!stock.trim()) {
+    return "Stock quantity";
+  }
+
   const numericStock = Number(stock);
 
   if (!Number.isInteger(numericStock) || numericStock < 0) {
