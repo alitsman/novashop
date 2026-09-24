@@ -81,13 +81,13 @@ export function useAdminProductForm({
       return;
     }
 
-    if (validationErrors.category) {
-      categoryInputRef.current?.focus();
+    if (validationErrors.stock) {
+      stockInputRef.current?.focus();
       return;
     }
 
-    if (validationErrors.stock) {
-      stockInputRef.current?.focus();
+    if (validationErrors.category) {
+      categoryInputRef.current?.focus();
       return;
     }
 
