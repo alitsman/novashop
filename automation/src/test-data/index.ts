@@ -12,6 +12,8 @@ export {
   ADMIN_LIST_MIDDLE_PRODUCT,
   ADMIN_LIST_NEWEST_PRODUCT,
   ADMIN_LIST_OLDEST_PRODUCT,
+  ADMIN_PRODUCT_CREATE_FAILURE_RESPONSE,
+  ADMIN_PRODUCT_VALID_INPUT,
 } from "./admin-products.data";
 export { createCartItem } from "./cart-item.factory";
 export { CART_PRODUCT_A, CART_PRODUCT_B, CART_PRODUCTS } from "./cart.data";

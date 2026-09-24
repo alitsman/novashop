@@ -1,4 +1,6 @@
-import type { Product } from "../types";
+import { apiErrorResponseSchema } from "../schemas";
+
+import type { Product, ProductInput } from "../types";
 
 type AdminListProductOverrides = Pick<Product, "id" | "title" | "createdAt"> & Partial<Product>;
 
@@ -26,3 +28,19 @@ export const ADMIN_LIST_NEWEST_PRODUCT: AdminListProductOverrides = {
   stock: 7,
   createdAt: "2026-09-20T10:00:00.000Z",
 };
+
+export const ADMIN_PRODUCT_VALID_INPUT: ProductInput = {
+  title: "Admin Monitor Stand",
+  price: 84.75,
+  category: "Workspace",
+  imageUrl: "https://example.com/admin-monitor-stand.svg",
+  description: "An adjustable stand used for admin product form coverage.",
+  stock: 7,
+};
+
+export const ADMIN_PRODUCT_CREATE_FAILURE_RESPONSE = apiErrorResponseSchema.parse({
+  error: {
+    code: "INTERNAL_SERVER_ERROR",
+    message: "Controlled product creation failure.",
+  },
+});

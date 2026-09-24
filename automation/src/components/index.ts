@@ -1,4 +1,6 @@
 export { AddToCartControlComponent } from "./add-to-cart-control.component";
+export { AdminProductFormComponent } from "./admin-product-form.component";
+export { AdminProductPreviewComponent } from "./admin-product-preview.component";
 export { AppBootstrapScreenComponent } from "./app-bootstrap-screen.component";
 export { CartItemComponent } from "./cart-item.component";
 export { ConfirmDialogComponent } from "./confirm-dialog.component";
