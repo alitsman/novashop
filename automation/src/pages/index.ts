@@ -1,3 +1,4 @@
+export { AdminProductCreatePage } from "./admin-product-create.page";
 export { AdminProductsPage } from "./admin-products.page";
 export { CartPage } from "./cart.page";
 export { CheckoutPage } from "./checkout.page";
