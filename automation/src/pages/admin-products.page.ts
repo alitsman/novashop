@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
-import { HeaderComponent } from "../components";
+import { ConfirmDialogComponent, HeaderComponent } from "../components";
 
 export class AdminProductsPage {
   private readonly page: Page;
@@ -22,6 +22,9 @@ export class AdminProductsPage {
   readonly table: Locator;
   readonly columnHeaders: Locator;
   readonly editLinks: Locator;
+
+  readonly deleteError: Locator;
+  readonly deleteDialog: ConfirmDialogComponent;
 
   constructor(page: Page) {
     this.page = page;
@@ -96,6 +99,18 @@ export class AdminProductsPage {
     this.editLinks = this.table.getByRole("link", {
       name: /^Edit /,
     });
+
+    this.deleteError = this.root.locator(".admin-products-page__delete-error");
+
+    const deleteDialogRoot = this.page.getByRole("dialog", {
+      name: "Delete product?",
+      exact: true,
+    });
+
+    this.deleteDialog = new ConfirmDialogComponent(deleteDialogRoot, {
+      confirmLabel: "Delete product",
+      cancelLabel: "Cancel",
+    });
   }
 
   async open(): Promise<void> {
@@ -137,6 +152,13 @@ export class AdminProductsPage {
   getEditProductLink(productTitle: string): Locator {
     return this.getProductRow(productTitle).getByRole("link", {
       name: `Edit ${productTitle}`,
+      exact: true,
+    });
+  }
+
+  getDeleteProductButton(productTitle: string): Locator {
+    return this.getProductRow(productTitle).getByRole("button", {
+      name: `Delete ${productTitle}`,
       exact: true,
     });
   }
