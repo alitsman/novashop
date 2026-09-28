@@ -8,7 +8,7 @@ import {
   loginViaApi,
   registerUserViaApi,
 } from "../../src/helpers";
-import { orderListSchema, orderSchema } from "../../src/schemas";
+import { orderListSchema, orderSchema, productSchema } from "../../src/schemas";
 import { ADMIN_USER, createOrderInput, createOrderItemInput } from "../../src/test-data";
 import type { ApiErrorResponse, AuthResponse } from "../../src/types";
 
@@ -374,6 +374,89 @@ test.describe("GET /orders/:id", () => {
       });
 
       await expectSingleValidationError(response, ["id"]);
+    });
+
+    test("product update after ordering: order list and details keep the original snapshot", async ({
+      request,
+    }) => {
+      const adminToken = await loginViaApi(request, ADMIN_USER);
+
+      const originalProductData = {
+        title: "Original Order Snapshot Product",
+        price: 49.99,
+      };
+
+      const updatedProductData = {
+        title: "Updated Order Snapshot Product",
+        price: 59.49,
+      };
+
+      const testProduct = await createProductViaApi(request, adminToken, {
+        ...originalProductData,
+        stock: 10,
+      });
+
+      const userHeaders = {
+        Authorization: `Bearer ${regularUserAuth.token}`,
+      };
+
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, 1)]);
+
+      const orderResponse = await request.post("/orders", {
+        headers: userHeaders,
+        data: orderInput,
+      });
+
+      expect(orderResponse.status()).toBe(201);
+
+      const createdOrder = orderSchema.parse(await orderResponse.json());
+
+      expect(createdOrder.items).toEqual([
+        {
+          productId: testProduct.id,
+          ...originalProductData,
+          quantity: 1,
+        },
+      ]);
+
+      const updateResponse = await request.patch(`/products/${testProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+        },
+        data: updatedProductData,
+      });
+
+      expect(updateResponse.status()).toBe(200);
+
+      const productResponse = await request.get(`/products/${testProduct.id}`, {
+        headers: userHeaders,
+      });
+
+      expect(productResponse.status()).toBe(200);
+
+      const updatedProduct = productSchema.parse(await productResponse.json());
+
+      expect(updatedProduct).toMatchObject(updatedProductData);
+
+      const listResponse = await request.get("/orders", {
+        headers: userHeaders,
+      });
+
+      expect(listResponse.status()).toBe(200);
+
+      const userOrders = orderListSchema.parse(await listResponse.json());
+
+      expect(userOrders).toEqual([createdOrder]);
+
+      const detailsResponse = await request.get(`/orders/${createdOrder.id}`, {
+        headers: userHeaders,
+      });
+
+      expect(detailsResponse.status()).toBe(200);
+
+      const returnedOrder = orderSchema.parse(await detailsResponse.json());
+
+      expect(returnedOrder).toEqual(createdOrder);
     });
 
     test("deleted product: remains in the order with its saved title and price", async ({
