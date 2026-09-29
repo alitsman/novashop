@@ -99,6 +99,10 @@ const invalidTitleCases = [
     value: "a",
   },
   {
+    name: "shorter than minimum after trimming",
+    value: " a ",
+  },
+  {
     name: "longer than maximum",
     value: "a".repeat(81),
   },
@@ -243,6 +247,30 @@ test.describe("POST /products", () => {
       });
     });
 
+    test("title with surrounding whitespace: stores and returns the trimmed value", async ({
+      request,
+    }) => {
+      const titleWithSurroundingWhitespace = "  Trimmed Product  ";
+      const expectedTitle = "Trimmed Product";
+
+      const newProductInput = createProductInput({
+        title: titleWithSurroundingWhitespace,
+      });
+
+      const response = await request.post("/products", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: newProductInput,
+      });
+
+      expect(response.status()).toBe(201);
+
+      const createdProduct = productSchema.parse(await response.json());
+
+      expect(createdProduct.title).toBe(expectedTitle);
+    });
+
     for (const validTextBoundaryCase of validTextBoundaryCases) {
       test(`${validTextBoundaryCase.name}: creates product`, async ({ request }) => {
         const requestBody = {
@@ -258,6 +286,12 @@ test.describe("POST /products", () => {
         });
 
         expect(response.status()).toBe(201);
+
+        const createdProduct = productSchema.parse(await response.json());
+
+        expect(createdProduct).toMatchObject({
+          [validTextBoundaryCase.field]: validTextBoundaryCase.value,
+        });
       });
     }
 
@@ -276,6 +310,12 @@ test.describe("POST /products", () => {
         });
 
         expect(response.status()).toBe(201);
+
+        const createdProduct = productSchema.parse(await response.json());
+
+        expect(createdProduct).toMatchObject({
+          [validNumericBoundaryCase.field]: validNumericBoundaryCase.value,
+        });
       });
     }
 

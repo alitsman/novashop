@@ -224,6 +224,36 @@ test.describe("POST /orders", () => {
       ]);
     });
 
+    test("fullName with surrounding whitespace: stores and returns the trimmed value", async ({
+      request,
+    }) => {
+      const fullNameWithSurroundingWhitespace = "  Test User  ";
+      const expectedFullName = "Test User";
+
+      const adminToken = await loginViaApi(request, ADMIN_USER);
+
+      const testProduct = await createProductViaApi(request, adminToken, {
+        title: "Normalized Full Name Order Product",
+      });
+
+      const orderInput = createOrderInput([createOrderItemInput(testProduct.id, 1)], {
+        fullName: fullNameWithSurroundingWhitespace,
+      });
+
+      const response = await request.post("/orders", {
+        headers: {
+          Authorization: `Bearer ${regularUserAuth.token}`,
+        },
+        data: orderInput,
+      });
+
+      expect(response.status()).toBe(201);
+
+      const createdOrder = orderSchema.parse(await response.json());
+
+      expect(createdOrder.fullName).toBe(expectedFullName);
+    });
+
     test("ordered quantity: decreases product stock by the exact amount", async ({ request }) => {
       const initialStock = 10;
       const orderedQuantity = 3;
