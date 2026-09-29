@@ -6,6 +6,11 @@ type HoldRequestOptions = {
   url: string;
   method: string;
   deadlineMs?: number;
+  /**
+   * Omit only when the real request must reach the backend (Hybrid/E2E).
+   * Without it the request is continued to the network, bypassing all other
+   * route handlers, including the isolated UI API guard.
+   */
   fulfillWith?: {
     status: number;
     json: unknown;

@@ -48,7 +48,7 @@ export async function prepareMockedAuthenticatedSession(page: Page, user: AuthUs
 
   await page.route(CURRENT_USER_API_URL, async (route) => {
     if (route.request().method() !== "GET") {
-      await route.abort();
+      await route.fallback();
 
       return;
     }

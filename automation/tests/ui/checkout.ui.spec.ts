@@ -4,6 +4,8 @@ import { expect, test } from "../../src/fixtures";
 import {
   holdProductCatalogUntilReleased,
   prepareCart,
+  prepareCreateOrderError,
+  prepareCreateOrderNetworkFailure,
   prepareMockedAuthenticatedSession,
   prepareProductCatalog,
   prepareProductCatalogNetworkFailure,
@@ -51,6 +53,7 @@ test.describe("checkout", () => {
   });
 
   test("shows the empty-checkout state and lets the user return to products", async ({ page }) => {
+    await prepareProductCatalog(page, []);
     await checkoutPage.open();
 
     await expect(page).toHaveURL("/checkout");
@@ -283,6 +286,7 @@ test.describe("checkout", () => {
     const updatedCatalogProduct = { ...CART_PRODUCT_A, price: 59.99 };
 
     await prepareProductCatalog(page, [CART_PRODUCT_A]);
+    await prepareCreateOrderNetworkFailure(page);
     await prepareCart(page, REGULAR_USER.user.id, [seedCartItem]);
 
     await checkoutPage.open();
@@ -318,13 +322,9 @@ test.describe("checkout", () => {
 
     expect(createOrderRequestCount).toBe(0);
 
-    // The order request has no mock on purpose: only the fact that the second
-    // submission reaches the API matters here.
-    const createOrderRequestPromise = page.waitForRequest(
-      (request) => request.url() === ORDERS_API_URL && request.method() === "POST",
-    );
+    await checkoutPage.submitButton.click();
 
-    await Promise.all([checkoutPage.submitButton.click(), createOrderRequestPromise]);
+    await expect(checkoutPage.formError).toHaveText("Unable to connect to the server.");
   });
 
   test("blocks ordering when current stock is below the saved quantity", async ({ page }) => {
@@ -402,6 +402,7 @@ test.describe("checkout", () => {
     const seedCartItem = createCartItem(CART_PRODUCT_A, { quantity: 2 });
 
     await prepareProductCatalog(page, [CART_PRODUCT_A]);
+    await prepareCreateOrderNetworkFailure(page);
     await prepareCart(page, REGULAR_USER.user.id, [seedCartItem]);
 
     await checkoutPage.open();
@@ -442,16 +443,11 @@ test.describe("checkout", () => {
 
       await expect(checkoutPage.submitButton).toBeDisabled();
       await expect(checkoutPage.submitButton).toHaveAttribute("aria-busy", "true");
-
-      // The order request has no mock on purpose: only the fact that the retry
-      // reaches the API matters here.
-      const createOrderRequestPromise = page.waitForRequest(
-        (request) => request.url() === ORDERS_API_URL && request.method() === "POST",
-      );
+      await expect(checkoutPage.formError).toBeHidden();
 
       heldRetryCatalogRequest.release();
 
-      await createOrderRequestPromise;
+      await expect(checkoutPage.formError).toHaveText("Unable to connect to the server.");
     } finally {
       await heldRetryCatalogRequest.dispose();
     }
@@ -465,20 +461,9 @@ test.describe("checkout", () => {
     await prepareProductCatalog(page, [CART_PRODUCT_A]);
     await prepareCart(page, REGULAR_USER.user.id, [seedCartItem]);
 
-    // The only mocked mutation in the suite: a real failure would need a second
-    // buyer to exhaust the stock between the pre-submit check and the request.
-    await page.route(ORDERS_API_URL, async (route) => {
-      if (route.request().method() !== "POST") {
-        await route.fallback();
-
-        return;
-      }
-
-      await route.fulfill({
-        status: 409,
-        json: CREATE_ORDER_ERROR_RESPONSE,
-      });
-    });
+    // A real 409 would need another buyer to exhaust the stock
+    // between the pre-submit check and the request, so the response is mocked.
+    await prepareCreateOrderError(page, 409, CREATE_ORDER_ERROR_RESPONSE);
 
     await checkoutPage.open();
     await expect(checkoutPage.submitButton).toBeEnabled();

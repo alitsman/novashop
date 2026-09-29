@@ -54,5 +54,25 @@ export default defineConfig([
     },
   },
 
+  {
+    files: ["tests/ui/**/*.ts"],
+    rules: {
+      // Isolated UI tests must use project fixtures so the API network guard is always enabled.
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@playwright/test",
+              importNames: ["test", "expect"],
+              allowTypeImports: true,
+              message: "Import test and expect from the project fixtures in isolated UI tests.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   eslintConfigPrettier,
 ]);

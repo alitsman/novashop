@@ -14,7 +14,7 @@ export async function prepareProductCatalog(page: Page, products: Product[]): Pr
 
   await page.route(PRODUCTS_API_URL, async (route) => {
     if (route.request().method() !== "GET") {
-      await route.abort();
+      await route.fallback();
 
       return;
     }
@@ -44,6 +44,12 @@ export async function holdProductCatalogUntilReleased(
 
 export async function prepareProductCatalogNetworkFailure(page: Page): Promise<void> {
   await page.route(PRODUCTS_API_URL, async (route) => {
+    if (route.request().method() !== "GET") {
+      await route.fallback();
+
+      return;
+    }
+
     await route.abort("connectionfailed");
   });
 }
