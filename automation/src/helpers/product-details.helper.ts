@@ -81,6 +81,20 @@ export async function prepareProductDetails(page: Page, product: Product): Promi
   });
 }
 
+export async function prepareProductDeleteSuccess(page: Page, productId: string): Promise<void> {
+  await page.route(buildProductDetailsApiUrl(productId), async (route) => {
+    if (route.request().method() !== "DELETE") {
+      await route.fallback();
+
+      return;
+    }
+
+    await route.fulfill({
+      status: 204,
+    });
+  });
+}
+
 export async function prepareProductDetailsNotFound(page: Page, productId: string): Promise<void> {
   await prepareProductDetailsResponse(page, productId, {
     status: 404,
