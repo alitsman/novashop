@@ -5,6 +5,7 @@ import {
   prepareMockedAuthenticatedSession,
   prepareOrders,
   prepareOrdersServerFailure,
+  prepareProductCatalog,
 } from "../../src/helpers";
 import { OrdersPage } from "../../src/pages";
 import { orderListSchema } from "../../src/schemas";
@@ -134,6 +135,7 @@ test.describe("my orders", () => {
   });
 
   test("shows empty state for successful empty history", async ({ page }) => {
+    await prepareProductCatalog(page, []);
     await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
     await prepareOrders(page, []);
 
@@ -180,6 +182,7 @@ test.describe("my orders", () => {
   test("shows multiple orders newest first with delivery and payment mappings", async ({
     page,
   }) => {
+    await prepareProductCatalog(page, []);
     await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
     await prepareOrders(page, [ORDERS_REFERENCE_ORDER, ORDERS_OLDER_ORDER]);
 

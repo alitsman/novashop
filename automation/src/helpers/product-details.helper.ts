@@ -44,7 +44,7 @@ async function prepareProductDetailsResponse(
 ): Promise<void> {
   await page.route(buildProductDetailsApiUrl(productId), async (route) => {
     if (route.request().method() !== "GET") {
-      await route.abort();
+      await route.fallback();
 
       return;
     }

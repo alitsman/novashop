@@ -28,6 +28,7 @@ test.describe("cart", () => {
   });
 
   test("shows the empty-cart state and lets the user return to products", async ({ page }) => {
+    await prepareProductCatalog(page, []);
     await cartPage.open();
 
     await expect(page).toHaveURL("/cart");
