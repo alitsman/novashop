@@ -25,6 +25,7 @@ export {
 } from "./product-catalog.helper";
 export {
   holdProductDetailsUntilReleased,
+  prepareProductDeleteSuccess,
   prepareProductDetails,
   prepareProductDetailsNotFound,
   prepareProductDetailsServerFailure,

@@ -6,12 +6,13 @@ import {
   holdRequestUntilReleased,
   prepareMockedAuthenticatedSession,
   prepareProductCatalog,
+  prepareProductDeleteSuccess,
   prepareProductDetails,
   prepareProductDetailsNotFound,
   prepareProductDetailsServerFailure,
   prepareProductDetailsValidationFailure,
 } from "../../src/helpers";
-import { AdminProductEditPage, AdminProductsPage } from "../../src/pages";
+import { AdminProductEditPage, AdminProductsPage, ProductCatalogPage } from "../../src/pages";
 import { apiErrorResponseSchema } from "../../src/schemas";
 import { ADMIN_LIST_NEWEST_PRODUCT, ADMIN_USER, createProduct } from "../../src/test-data";
 
@@ -90,6 +91,34 @@ test.describe("admin product edit", () => {
     await adminProductEditPage.deleteDialog.cancel();
 
     await expect(adminProductEditPage.deleteDialog.root).toHaveCount(0);
+  });
+
+  test("shows delete success and replaces the edit page in browser history", async ({ page }) => {
+    const catalogPage = new ProductCatalogPage(page);
+    const toast = new ToastComponent(page);
+
+    await prepareProductCatalog(page, [EDIT_PRODUCT]);
+    await prepareProductDetails(page, EDIT_PRODUCT);
+    await prepareProductDeleteSuccess(page, EDIT_PRODUCT.id);
+
+    await catalogPage.open();
+
+    await expect(page).toHaveURL("/products");
+    await expect(catalogPage.heading).toBeVisible();
+
+    await adminProductEditPage.open(EDIT_PRODUCT.id);
+
+    await expect(adminProductEditPage.form.titleInput).toHaveValue(EDIT_PRODUCT.title);
+
+    await adminProductEditPage.deleteButton.click();
+    await adminProductEditPage.deleteDialog.confirm();
+
+    await expect(toast.message).toHaveText("Product deleted successfully.");
+    await expect(page).toHaveURL("/admin/products");
+
+    await page.goBack();
+
+    await expect(page).toHaveURL("/products");
   });
 
   test.describe("product not found", () => {
