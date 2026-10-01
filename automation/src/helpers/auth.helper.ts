@@ -43,7 +43,7 @@ export async function readAuthTokenStorageValue(page: Page): Promise<string | nu
   );
 }
 
-export async function prepareMockedAuthenticatedSession(page: Page, user: AuthUser): Promise<void> {
+export async function prepareCurrentUser(page: Page, user: AuthUser): Promise<void> {
   const validatedUser = userSchema.parse(user);
 
   await page.route(CURRENT_USER_API_URL, async (route) => {
@@ -58,6 +58,9 @@ export async function prepareMockedAuthenticatedSession(page: Page, user: AuthUs
       json: validatedUser,
     });
   });
+}
 
+export async function prepareMockedAuthenticatedSession(page: Page, user: AuthUser): Promise<void> {
+  await prepareCurrentUser(page, user);
   await seedAuthTokenForEachPageLoad(page, SYNTHETIC_AUTH_TOKEN);
 }

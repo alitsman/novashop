@@ -1,6 +1,7 @@
 export { expectSingleValidationError } from "./api-validation.helper";
 export { loginViaApi, registerUserViaApi } from "./auth-api.helper";
 export {
+  prepareCurrentUser,
   prepareMockedAuthenticatedSession,
   readAuthTokenStorageValue,
   seedAuthTokenForEachPageLoad,
