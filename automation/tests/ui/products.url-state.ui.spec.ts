@@ -3,7 +3,16 @@ import { prepareMockedAuthenticatedSession, prepareProductCatalog } from "../../
 import { ProductCatalogPage } from "../../src/pages";
 import { CATALOG_PRODUCTS, REGULAR_USER, createProduct } from "../../src/test-data";
 
+const DEFAULT_CATALOG_PRODUCT_TITLES = CATALOG_PRODUCTS.map((product) => product.title);
+
+const ELECTRONICS_PRICE_ASC = ["Wireless Mouse", "Mechanical Keyboard", "Gaming Mouse"];
+
+const MOUSE_CATEGORY_ELECTRONICS_PRICE_DEFAULT = ["Wireless Mouse", "Gaming Mouse"];
+const MOUSE_CATEGORY_ELECTRONICS_PRICE_ASC = ["Wireless Mouse", "Gaming Mouse"];
 const MOUSE_CATEGORY_ELECTRONICS_PRICE_DESC = ["Gaming Mouse", "Wireless Mouse"];
+
+const MOUSE_NO_CATEGORY_PRICE_ASC = ["Computer Mouse Handbook", "Wireless Mouse", "Gaming Mouse"];
+
 const MOUSE_NO_CATEGORY_PRICE_DEFAULT = [
   "Wireless Mouse",
   "Gaming Mouse",
@@ -26,18 +35,27 @@ test.describe("product catalog URL state", () => {
     await catalogPage.open();
 
     await catalogPage.searchFor("mouse");
-    await expect(page).toHaveURL("/products?q=mouse");
 
-    await catalogPage.filterByCategory("Electronics");
-    await expect(page).toHaveURL("/products?q=mouse&category=Electronics");
+    await expect(page).toHaveURL("/products?q=mouse");
+    await expect(catalogPage.productTitles).toHaveText(MOUSE_NO_CATEGORY_PRICE_DEFAULT);
 
     await catalogPage.sortByPrice("price-asc");
+
+    await expect(page).toHaveURL("/products?q=mouse&sort=price-asc");
+    await expect(catalogPage.productTitles).toHaveText(MOUSE_NO_CATEGORY_PRICE_ASC);
+
+    await catalogPage.filterByCategory("Electronics");
+
     await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-asc");
+    await expect(catalogPage.productTitles).toHaveText(MOUSE_CATEGORY_ELECTRONICS_PRICE_ASC);
 
     await catalogPage.clearSearchButton.click();
+
     await expect(page).toHaveURL("/products?category=Electronics&sort=price-asc");
+    await expect(catalogPage.productTitles).toHaveText(ELECTRONICS_PRICE_ASC);
 
     await catalogPage.clearFiltersButton.click();
+
     await expect(page).toHaveURL("/products");
   });
 
@@ -57,12 +75,17 @@ test.describe("product catalog URL state", () => {
     await catalogPage.open();
 
     await catalogPage.searchFor("mouse");
+
     await expect(page).toHaveURL("/products?q=mouse");
+    await expect(catalogPage.productTitles).toHaveText(MOUSE_NO_CATEGORY_PRICE_DEFAULT);
 
     await catalogPage.filterByCategory("Electronics");
+
     await expect(page).toHaveURL("/products?q=mouse&category=Electronics");
+    await expect(catalogPage.productTitles).toHaveText(MOUSE_CATEGORY_ELECTRONICS_PRICE_DEFAULT);
 
     await catalogPage.sortByPrice("price-desc");
+
     await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-desc");
 
     await page.reload();
@@ -79,16 +102,23 @@ test.describe("product catalog URL state", () => {
       await catalogPage.open();
 
       await catalogPage.searchFor("mouse");
+
       await expect(page).toHaveURL("/products?q=mouse");
+      await expect(catalogPage.productTitles).toHaveText(MOUSE_NO_CATEGORY_PRICE_DEFAULT);
 
       await catalogPage.filterByCategory("Electronics");
+
       await expect(page).toHaveURL("/products?q=mouse&category=Electronics");
+      await expect(catalogPage.productTitles).toHaveText(MOUSE_CATEGORY_ELECTRONICS_PRICE_DEFAULT);
 
       await catalogPage.sortByPrice("price-desc");
+
       await expect(page).toHaveURL("/products?q=mouse&category=Electronics&sort=price-desc");
 
       await catalogPage.clearFiltersButton.click();
+
       await expect(page).toHaveURL("/products");
+      await expect(catalogPage.productTitles).toHaveText(DEFAULT_CATALOG_PRODUCT_TITLES);
     });
 
     await test.step("Back restores the sorted state", async () => {
