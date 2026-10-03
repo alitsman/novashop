@@ -1,7 +1,21 @@
 import { defineConfig } from "@playwright/test";
 
-import { createSharedConfig, frontendPort, frontendUrl } from "./src/config/playwright.shared";
+import {
+  createSharedConfig,
+  frontendPort,
+  frontendUrl,
+  getSelectedBrowsers,
+} from "./src/config/playwright.shared";
 import type { IsolatedApiGuardOptions } from "./src/fixtures/ui.fixture";
+
+const uiProjects = getSelectedBrowsers().map((browserName) => ({
+  name: `ui-${browserName}`,
+  testMatch: "ui/**/*.spec.ts",
+  use: {
+    browserName,
+    isolatedApiGuard: true,
+  },
+}));
 
 export default defineConfig<IsolatedApiGuardOptions>({
   ...createSharedConfig({
@@ -9,16 +23,7 @@ export default defineConfig<IsolatedApiGuardOptions>({
     htmlOutputFolder: "playwright-report/isolated-ui",
   }),
 
-  projects: [
-    {
-      name: "ui-chromium",
-      testMatch: "ui/**/*.spec.ts",
-      use: {
-        browserName: "chromium",
-        isolatedApiGuard: true,
-      },
-    },
-  ],
+  projects: uiProjects,
 
   webServer: {
     command: `npm --prefix ../frontend run dev -- --port ${frontendPort}`,
