@@ -1,5 +1,5 @@
 import { AppBootstrapScreenComponent, HeaderComponent } from "../../src/components";
-import { apiUrl } from "../../src/config/playwright.shared";
+import { Browser, apiUrl } from "../../src/config/playwright.shared";
 import { expect, test } from "../../src/fixtures";
 import {
   holdRequestUntilReleased,
@@ -28,20 +28,27 @@ test.describe("application shell", () => {
     await expect(notFoundPage.goToProductsLink).toHaveAttribute("href", "/products");
   });
 
-  test("skip link: moves keyboard focus to the main content", async ({ page }) => {
-    const notFoundPage = new NotFoundPage(page);
+  test.describe("skip link", () => {
+    test.skip(
+      ({ browserName }) => browserName === Browser.Webkit,
+      "Tab and Alt+Tab do not move focus to links in Playwright WebKit in this environment",
+    );
 
-    await page.goto(UNKNOWN_ROUTE);
+    test("moves keyboard focus to the main content", async ({ page }) => {
+      const notFoundPage = new NotFoundPage(page);
 
-    // Wait for the skip link before pressing Tab because keyboard actions are not retried.
-    await expect(notFoundPage.layout.skipLink).toBeAttached();
+      await page.goto(UNKNOWN_ROUTE);
 
-    await page.keyboard.press("Tab");
-    await expect(notFoundPage.layout.skipLink).toBeFocused();
+      // Wait for the skip link before pressing Tab because keyboard actions are not retried.
+      await expect(notFoundPage.layout.skipLink).toBeAttached();
 
-    await page.keyboard.press("Enter");
-    await expect(page).toHaveURL(`${UNKNOWN_ROUTE}#main-content`);
-    await expect(notFoundPage.layout.mainContent).toBeFocused();
+      await page.keyboard.press("Tab");
+      await expect(notFoundPage.layout.skipLink).toBeFocused();
+
+      await page.keyboard.press("Enter");
+      await expect(page).toHaveURL(`${UNKNOWN_ROUTE}#main-content`);
+      await expect(notFoundPage.layout.mainContent).toBeFocused();
+    });
   });
 });
 
