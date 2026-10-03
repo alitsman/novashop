@@ -730,7 +730,10 @@ test.describe("cart", () => {
     test("dismisses the removal dialog with Escape, targets the right item, and restores focus", async () => {
       const cartItemB = cartPage.getCartItem(seedCartItemB.title);
 
-      await cartItemB.removeButton.click();
+      await cartItemB.removeButton.focus();
+      await expect(cartItemB.removeButton).toBeFocused();
+
+      await cartItemB.removeButton.press("Enter");
 
       await expect(cartPage.removeItemDialog.root).toBeVisible();
       await expect(cartPage.removeItemDialog.cancelButton).toBeFocused();
