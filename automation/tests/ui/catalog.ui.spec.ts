@@ -188,7 +188,15 @@ test.describe("product catalog", () => {
     const expectedFilteredProductTitles = ["Gaming Mouse", "Wireless Mouse"];
 
     await catalogPage.searchFor("mouse");
+    await expect(catalogPage.productTitles).toHaveText([
+      "Wireless Mouse",
+      "Gaming Mouse",
+      "Computer Mouse Handbook",
+    ]);
+
     await catalogPage.filterByCategory("Electronics");
+    await expect(catalogPage.productTitles).toHaveText(["Wireless Mouse", "Gaming Mouse"]);
+
     await catalogPage.sortByPrice("price-desc");
 
     await expect(catalogPage.searchInput).toHaveValue("mouse");
