@@ -3,6 +3,57 @@ import { loadEnvFile } from "node:process";
 
 import type { PlaywrightTestConfig } from "@playwright/test";
 
+export const Browser = {
+  Chromium: "chromium",
+  Firefox: "firefox",
+  Webkit: "webkit",
+} as const;
+
+export type Browser = (typeof Browser)[keyof typeof Browser];
+
+const DEFAULT_BROWSER = Browser.Chromium;
+const SUPPORTED_BROWSERS: Browser[] = Object.values(Browser);
+
+// Reads the BROWSERS variable, e.g. BROWSERS="firefox,webkit".
+// Without BROWSERS the tests run in Chromium only.
+export const getSelectedBrowsers = (): Browser[] => {
+  const browsersValue = process.env.BROWSERS;
+
+  if (browsersValue === undefined) {
+    return [DEFAULT_BROWSER];
+  }
+
+  const selectedBrowsers: Browser[] = [];
+
+  for (const rawName of browsersValue.split(",")) {
+    const name = rawName.trim();
+
+    if (name === "") {
+      continue;
+    }
+
+    const browser = SUPPORTED_BROWSERS.find((supportedBrowser) => supportedBrowser === name);
+
+    if (browser === undefined) {
+      throw new Error(
+        `Unsupported browser in BROWSERS: "${name}". Supported: ${SUPPORTED_BROWSERS.join(", ")}`,
+      );
+    }
+
+    if (!selectedBrowsers.includes(browser)) {
+      selectedBrowsers.push(browser);
+    }
+  }
+
+  if (selectedBrowsers.length === 0) {
+    throw new Error(
+      `BROWSERS is set but lists no browsers. Supported: ${SUPPORTED_BROWSERS.join(", ")}`,
+    );
+  }
+
+  return selectedBrowsers;
+};
+
 const testEnvPath = new URL("../../../.env.test", import.meta.url);
 
 // Local runs use the file; CI supplies the same variables through process.env.

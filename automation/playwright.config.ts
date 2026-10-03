@@ -7,6 +7,7 @@ import {
   frontendPort,
   frontendUrl,
   getRequiredEnv,
+  getSelectedBrowsers,
 } from "./src/config/playwright.shared";
 
 const backendPort = getRequiredEnv("PORT");
@@ -19,6 +20,26 @@ if (apiPort !== backendPort) {
 }
 
 const backendHealthUrl = new URL("/health", apiUrl).toString();
+
+const selectedBrowsers = getSelectedBrowsers();
+
+const hybridProjects = selectedBrowsers.map((browserName) => ({
+  name: `hybrid-${browserName}`,
+  testMatch: "hybrid/**/*.spec.ts",
+  dependencies: ["database-setup"],
+  use: {
+    browserName,
+  },
+}));
+
+const e2eProjects = selectedBrowsers.map((browserName) => ({
+  name: `e2e-${browserName}`,
+  testMatch: "e2e/**/*.spec.ts",
+  dependencies: ["database-setup"],
+  use: {
+    browserName,
+  },
+}));
 
 export default defineConfig({
   ...createSharedConfig({
@@ -47,22 +68,8 @@ export default defineConfig({
         baseURL: apiUrl,
       },
     },
-    {
-      name: "hybrid-chromium",
-      testMatch: "hybrid/**/*.spec.ts",
-      dependencies: ["database-setup"],
-      use: {
-        browserName: "chromium",
-      },
-    },
-    {
-      name: "e2e-chromium",
-      testMatch: "e2e/**/*.spec.ts",
-      dependencies: ["database-setup"],
-      use: {
-        browserName: "chromium",
-      },
-    },
+    ...hybridProjects,
+    ...e2eProjects,
   ],
 
   webServer: [
