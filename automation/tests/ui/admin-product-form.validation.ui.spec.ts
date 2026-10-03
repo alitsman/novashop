@@ -1,4 +1,4 @@
-import { apiUrl } from "../../src/config/playwright.shared";
+import { Browser, apiUrl } from "../../src/config/playwright.shared";
 import { expect, test } from "../../src/fixtures";
 import { prepareMockedAuthenticatedSession } from "../../src/helpers";
 import { AdminProductCreatePage } from "../../src/pages";
@@ -24,12 +24,6 @@ const VALID_FORM_VALUES = {
 };
 
 const invalidTitleCases = [
-  {
-    name: "with hidden control characters",
-    // U+0001 is a disallowed control character.
-    value: "A\u0001",
-    error: "Remove hidden control characters from product title.",
-  },
   {
     name: "with angle brackets",
     value: "A>",
@@ -123,12 +117,6 @@ const validStockCases = [
 
 const invalidCategoryCases = [
   {
-    name: "with hidden control characters",
-    // U+0001 is a disallowed control character.
-    value: "A\u0001",
-    error: "Remove hidden control characters from category.",
-  },
-  {
     name: "with angle brackets",
     value: "A>",
     error: "Remove angle brackets (< >) from category.",
@@ -187,12 +175,6 @@ const validImageUrlCases = [
 ];
 
 const invalidDescriptionCases = [
-  {
-    name: "with hidden control characters",
-    // U+0001 is a disallowed control character.
-    value: "Valid text\u0001",
-    error: "Remove hidden control characters from description.",
-  },
   {
     name: "with angle brackets",
     value: "Valid text>",
@@ -383,6 +365,67 @@ test.describe("admin product form validation", () => {
       stock: ADMIN_PRODUCT_VALID_INPUT.stock,
       imageUrl: VALID_FORM_VALUES.imageUrl,
       description: VALID_FORM_VALUES.description,
+    });
+  });
+
+  test.describe("hidden control character validation", () => {
+    test.skip(
+      ({ browserName }) => browserName === Browser.Firefox,
+      "Firefox strips control characters during text input, so this validation is unreachable through the UI",
+    );
+
+    test("rejects a product title with hidden control characters", async () => {
+      await fillProductForm({
+        ...VALID_FORM_VALUES,
+        title: "A\u0001",
+      });
+
+      await adminProductCreatePage.form.submitButton.click();
+
+      await expect(adminProductCreatePage.form.titleInput).toHaveAccessibleDescription(
+        "Remove hidden control characters from product title.",
+      );
+      await expect(adminProductCreatePage.form.titleInput).toHaveAttribute("aria-invalid", "true");
+
+      expect(createProductRequestCount).toBe(0);
+    });
+
+    test("rejects a category with hidden control characters", async () => {
+      await fillProductForm({
+        ...VALID_FORM_VALUES,
+        category: "A\u0001",
+      });
+
+      await adminProductCreatePage.form.submitButton.click();
+
+      await expect(adminProductCreatePage.form.categoryInput).toHaveAccessibleDescription(
+        "Remove hidden control characters from category.",
+      );
+      await expect(adminProductCreatePage.form.categoryInput).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+
+      expect(createProductRequestCount).toBe(0);
+    });
+
+    test("rejects a description with hidden control characters", async () => {
+      await fillProductForm({
+        ...VALID_FORM_VALUES,
+        description: "Valid text\u0001",
+      });
+
+      await adminProductCreatePage.form.submitButton.click();
+
+      await expect(adminProductCreatePage.form.descriptionInput).toHaveAccessibleDescription(
+        "Remove hidden control characters from description.",
+      );
+      await expect(adminProductCreatePage.form.descriptionInput).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+
+      expect(createProductRequestCount).toBe(0);
     });
   });
 

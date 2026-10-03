@@ -1,4 +1,4 @@
-import { apiUrl } from "../../src/config/playwright.shared";
+import { Browser, apiUrl } from "../../src/config/playwright.shared";
 import { expect, test } from "../../src/fixtures";
 import {
   prepareCart,
@@ -15,12 +15,6 @@ const VALID_PHONE = "1234567";
 const VALID_ADDRESS = "12 Test Street";
 
 const invalidFullNameCases = [
-  {
-    name: "with hidden control characters",
-    // U+0001 is a disallowed control character.
-    value: "Test\u0001Customer",
-    error: "Remove hidden control characters from full name.",
-  },
   {
     name: "with angle brackets",
     value: "Test <Customer>",
@@ -62,12 +56,6 @@ const validFullNameCases = [
 
 const invalidPhoneCases = [
   {
-    name: "with hidden control characters",
-    // U+0001 is a disallowed control character.
-    value: "123\u00014567",
-    error: "Remove hidden control characters from phone number.",
-  },
-  {
     name: "with unsupported characters",
     value: "123.4567",
     error: "Use only digits, spaces, +, hyphens, or parentheses in phone number.",
@@ -106,12 +94,6 @@ const validPhoneCases = [
 ];
 
 const invalidAddressCases = [
-  {
-    name: "with hidden control characters",
-    // U+0001 is a disallowed control character.
-    value: "12 Test\u0001 Street",
-    error: "Remove hidden control characters from delivery address.",
-  },
   {
     name: "with angle brackets",
     value: "12 <Test> Street",
@@ -166,6 +148,58 @@ test.describe("checkout form validation", () => {
 
     await checkoutPage.open();
     await expect(checkoutPage.submitButton).toBeEnabled();
+  });
+
+  test.describe("hidden control character validation", () => {
+    test.skip(
+      ({ browserName }) => browserName === Browser.Firefox,
+      "Firefox strips control characters during text input, so this validation is unreachable through the UI",
+    );
+
+    test("rejects a full name with hidden control characters", async () => {
+      await checkoutPage.fullNameInput.fill("Test\u0001Customer");
+      await checkoutPage.phoneInput.fill(VALID_PHONE);
+      await checkoutPage.addressInput.fill(VALID_ADDRESS);
+
+      await checkoutPage.submitButton.click();
+
+      await expect(checkoutPage.fullNameInput).toHaveAccessibleDescription(
+        "Remove hidden control characters from full name.",
+      );
+      await expect(checkoutPage.fullNameInput).toHaveAttribute("aria-invalid", "true");
+
+      expect(createOrderRequestCount).toBe(0);
+    });
+
+    test("rejects a phone number with hidden control characters", async () => {
+      await checkoutPage.fullNameInput.fill(VALID_FULL_NAME);
+      await checkoutPage.phoneInput.fill("123\u00014567");
+      await checkoutPage.addressInput.fill(VALID_ADDRESS);
+
+      await checkoutPage.submitButton.click();
+
+      await expect(checkoutPage.phoneInput).toHaveAccessibleDescription(
+        "Remove hidden control characters from phone number.",
+      );
+      await expect(checkoutPage.phoneInput).toHaveAttribute("aria-invalid", "true");
+
+      expect(createOrderRequestCount).toBe(0);
+    });
+
+    test("rejects a delivery address with hidden control characters", async () => {
+      await checkoutPage.fullNameInput.fill(VALID_FULL_NAME);
+      await checkoutPage.phoneInput.fill(VALID_PHONE);
+      await checkoutPage.addressInput.fill("12 Test\u0001 Street");
+
+      await checkoutPage.submitButton.click();
+
+      await expect(checkoutPage.addressInput).toHaveAccessibleDescription(
+        "Remove hidden control characters from delivery address.",
+      );
+      await expect(checkoutPage.addressInput).toHaveAttribute("aria-invalid", "true");
+
+      expect(createOrderRequestCount).toBe(0);
+    });
   });
 
   test.describe("full name validation", () => {
