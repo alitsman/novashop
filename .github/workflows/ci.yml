@@ -1,5 +1,3 @@
-# Job names are required status-check contracts for main.
-# Keep the Protect main ruleset in sync when renaming them.
 name: CI
 
 on:
@@ -9,149 +7,18 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  quality:
-    name: Code quality
-    runs-on: ubuntu-latest
-    env:
-      # Validation-only URL; this job does not start application servers.
-      VITE_API_URL: http://localhost:4000
-    timeout-minutes: 10
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: |
-            frontend/package-lock.json
-            backend/package-lock.json
-            automation/package-lock.json
-
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm ci
-
-      - name: Install automation dependencies
-        working-directory: automation
-        run: npm ci
-
-      - name: Check frontend
-        working-directory: frontend
-        run: npm run check
-
-      - name: Check backend
-        working-directory: backend
-        run: npm run check
-
-      - name: Check automation
-        working-directory: automation
-        run: npm run check
-
-  tests:
-    name: Playwright tests
-    needs: quality
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    env:
-      CI: "true"
-      PORT: "4001"
-      FRONTEND_URL: http://localhost:5173
-      API_URL: http://localhost:4001
-      VITE_API_URL: http://localhost:4001
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/novashop_test
-      JWT_SECRET: novashop-ci-only-jwt-secret-not-for-production
-
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: novashop_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d novashop_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: |
-            frontend/package-lock.json
-            backend/package-lock.json
-            automation/package-lock.json
-
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm ci
-
-      - name: Install automation dependencies
-        working-directory: automation
-        run: npm ci
-
-      - name: Install Chromium
-        working-directory: automation
-        run: npx playwright install --with-deps chromium
-
-      - name: Run API and DB regression
-        working-directory: automation
-        env:
-          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/api-db
-        run: npm run test:integrated -- --project=api --project=db --output=test-results/api-db
-
-      - name: Run integrated browser regression
-        if: ${{ !cancelled() }}
-        working-directory: automation
-        env:
-          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/integrated-browser
-        run: npm run test:integrated -- --project=hybrid-chromium --project=e2e-chromium --output=test-results/integrated-browser
-
-      - name: Run isolated UI regression
-        if: ${{ !cancelled() }}
-        working-directory: automation
-        env:
-          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/isolated-ui
-        run: npm run test:ui -- --project=ui-chromium --output=test-results/isolated-ui
-
-      - name: Upload Playwright artifacts
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-artifacts
-          path: |
-            automation/playwright-report/
-            automation/test-results/
-          if-no-files-found: ignore
-          retention-days: 14
+  regression:
+    name: Regression
+    uses: ./.github/workflows/regression.yml
+    with:
+      browsers: '["chromium"]'
+      merge_gate: ${{ github.event_name == 'pull_request' }}
