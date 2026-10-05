@@ -34,7 +34,7 @@ env:
 jobs:
   quality:
     name: Quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     steps:
@@ -78,7 +78,7 @@ jobs:
   api-db:
     name: API + DB
     needs: quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     services:
@@ -148,7 +148,7 @@ jobs:
   isolated-ui:
     name: Isolated UI (${{ matrix.browser }})
     needs: quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     strategy:
@@ -211,7 +211,7 @@ jobs:
   integrated:
     name: Integrated (${{ matrix.browser }})
     needs: quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     strategy:
@@ -307,7 +307,7 @@ jobs:
           needs.integrated.result != 'skipped'
         )
       }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     steps:
@@ -357,7 +357,7 @@ jobs:
       - isolated-ui
       - integrated
     if: ${{ always() && inputs.merge_gate }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
