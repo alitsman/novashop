@@ -72,6 +72,7 @@ jobs:
 
   api-db:
     name: API + DB
+    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -140,6 +141,7 @@ jobs:
 
   isolated-ui:
     name: Isolated UI (${{ matrix.browser }})
+    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -201,6 +203,7 @@ jobs:
 
   integrated:
     name: Integrated (${{ matrix.browser }})
+    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -287,7 +290,15 @@ jobs:
       - api-db
       - isolated-ui
       - integrated
-    if: ${{ !cancelled() }}
+    if: >-
+      ${{
+        !cancelled() &&
+        (
+          needs.api-db.result != 'skipped' ||
+          needs.isolated-ui.result != 'skipped' ||
+          needs.integrated.result != 'skipped'
+        )
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
