@@ -1,4 +1,4 @@
-name: Regression
+name: Regression engine (used by CI, Nightly, Manual)
 
 on:
   workflow_call:
