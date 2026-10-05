@@ -8,6 +8,11 @@ on:
         required: false
         type: string
         default: '["chromium"]'
+      full_regression:
+        description: Whether to enable full-regression retry and flaky-test policy
+        required: false
+        type: boolean
+        default: false
       merge_gate:
         description: Whether to produce the blocking regression gate
         required: false
@@ -126,6 +131,7 @@ jobs:
           npm run test:integrated -- \
             --project=api \
             --project=db \
+            ${{ inputs.full_regression && '--retries=1 --fail-on-flaky-tests' || '--retries=0' }} \
             --output=test-results/api-db \
             --reporter=list,github,blob
 
@@ -143,7 +149,7 @@ jobs:
     name: Isolated UI (${{ matrix.browser }})
     needs: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -188,6 +194,7 @@ jobs:
           mkdir -p blob-reports
           npm run test:ui -- \
             --project=ui-${BROWSERS} \
+            ${{ inputs.full_regression && '--retries=1 --fail-on-flaky-tests' || '--retries=0' }} \
             --output=test-results/ui-${BROWSERS} \
             --reporter=${{ contains(inputs.browsers, ',') && 'list,blob' || 'list,github,blob' }}
 
@@ -205,7 +212,7 @@ jobs:
     name: Integrated (${{ matrix.browser }})
     needs: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -271,6 +278,7 @@ jobs:
           npm run test:integrated -- \
             --project=hybrid-${BROWSERS} \
             --project=e2e-${BROWSERS} \
+            ${{ inputs.full_regression && '--retries=1 --fail-on-flaky-tests' || '--retries=0' }} \
             --output=test-results/integrated-${BROWSERS} \
             --reporter=${{ contains(inputs.browsers, ',') && 'list,blob' || 'list,github,blob' }}
 
