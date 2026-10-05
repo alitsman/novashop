@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../src/fixtures";
 
-test("temporary negative proof: quality failure blocks regression execution", () => {
-  expect(true).toBe(true);
+test("temporary negative proof: regression gate blocks a failing UI job", () => {
+  expect(true).toBe(false);
 });
