@@ -1,0 +1,16 @@
+name: Manual Full Regression
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    name: Full regression
+    uses: ./.github/workflows/regression.yml
+    with:
+      browsers: '["chromium","firefox","webkit"]'
+      full_regression: true
+      merge_gate: false
