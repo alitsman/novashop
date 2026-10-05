@@ -11,7 +11,7 @@ import {
   registerUserViaApi,
   seedAuthTokenForEachPageLoad,
 } from "../../src/helpers";
-import { CheckoutPage, OrdersPage, ProductCatalogPage } from "../../src/pages";
+import { CartPage, CheckoutPage, OrdersPage, ProductCatalogPage } from "../../src/pages";
 import { orderSchema } from "../../src/schemas";
 import { ADMIN_USER, createCartItem } from "../../src/test-data";
 import { DeliveryMethod, PaymentMethod } from "../../src/types";
@@ -28,6 +28,97 @@ const PRODUCT_STOCK = 5;
 const ORDER_QUANTITY = 2;
 
 test.describe("checkout", () => {
+  test("customer purchase journey: adds a product from the catalog and completes checkout", async ({
+    page,
+    backendRequest,
+  }) => {
+    const customerAuth = await registerUserViaApi(backendRequest);
+    const adminToken = await loginViaApi(backendRequest, ADMIN_USER);
+
+    const product = await createProductViaApi(backendRequest, adminToken, {
+      title: `E2E Purchase Journey Product ${randomUUID()}`,
+      price: PRODUCT_PRICE,
+      stock: PRODUCT_STOCK,
+    });
+
+    await seedAuthTokenForEachPageLoad(page, customerAuth.token);
+
+    const catalogPage = new ProductCatalogPage(page);
+    const cartPage = new CartPage(page);
+    const checkoutPage = new CheckoutPage(page);
+    const ordersPage = new OrdersPage(page);
+    const toast = new ToastComponent(page);
+
+    const expectedOrderTotal = product.price * ORDER_QUANTITY;
+
+    await catalogPage.open();
+
+    await expect(page).toHaveURL("/products");
+    await expect(catalogPage.heading).toBeVisible();
+
+    const productCard = catalogPage.getProductCard(product.title);
+
+    await expect(productCard.title).toHaveText(product.title);
+
+    await productCard.addToCart.fillQuantity(String(ORDER_QUANTITY));
+    await productCard.addToCart.submit();
+
+    await expect(productCard.addToCart.inCart).toHaveText(`In cart: ${ORDER_QUANTITY}`);
+    await expect(catalogPage.header.cartLink).toHaveAccessibleName(`Cart, ${ORDER_QUANTITY} items`);
+
+    await catalogPage.header.openCart();
+
+    await expect(page).toHaveURL("/cart");
+    await expect(cartPage.heading).toBeVisible();
+
+    const cartItem = cartPage.getCartItem(product.title);
+
+    await expect(cartItem.title).toHaveText(product.title);
+    await expect(cartItem.quantityInput).toHaveValue(String(ORDER_QUANTITY));
+    await expect(cartPage.summaryQuantity).toHaveText(`${ORDER_QUANTITY} items in cart`);
+    await expect(cartPage.summaryTotal).toHaveText(`Total: ${formatUsd(expectedOrderTotal)}`);
+    await expect(cartPage.goToCheckoutButton).toBeEnabled();
+
+    await cartPage.goToCheckoutButton.click();
+
+    await expect(page).toHaveURL("/checkout");
+    await expect(checkoutPage.heading).toBeVisible();
+
+    const checkoutItem = checkoutPage.getOrderItem(product.title);
+
+    await expect(checkoutItem).toBeVisible();
+    await expect(checkoutPage.summaryQuantity).toHaveText(`${ORDER_QUANTITY} items in cart`);
+    await expect(checkoutPage.getOrderItemTotal(product.title)).toHaveText(
+      formatUsd(expectedOrderTotal),
+    );
+    await expect(checkoutPage.summaryTotal).toHaveText(`Total: ${formatUsd(expectedOrderTotal)}`);
+    await expect(checkoutPage.submitButton).toBeEnabled();
+
+    await checkoutPage.fullNameInput.fill(ORDER_FULL_NAME);
+    await checkoutPage.phoneInput.fill(ORDER_PHONE);
+    await checkoutPage.addressInput.fill(ORDER_ADDRESS);
+    await checkoutPage.deliveryMethodSelect.selectOption(DeliveryMethod.Express);
+    await checkoutPage.paymentMethodSelect.selectOption(PaymentMethod.Card);
+
+    await checkoutPage.submitButton.click();
+
+    await expect(page).toHaveURL("/orders");
+    await expect(ordersPage.heading).toBeVisible();
+    await expect(toast.message).toHaveText("Order created successfully.");
+
+    await expect(
+      ordersPage.ordersList.getByText(product.title, {
+        exact: true,
+      }),
+    ).toBeVisible();
+
+    await expect(
+      ordersPage.ordersList.getByText(ORDER_FULL_NAME, {
+        exact: true,
+      }),
+    ).toBeVisible();
+  });
+
   test("creates one order, blocks duplicate submission, and refreshes cart and stock", async ({
     page,
     backendRequest,
@@ -93,6 +184,7 @@ test.describe("checkout", () => {
     const createOrderRequestPromise = page.waitForRequest(
       (request) => request.url() === ORDERS_API_URL && request.method() === "POST",
     );
+
     const createOrderResponsePromise = page.waitForResponse(
       (response) => response.url() === ORDERS_API_URL && response.request().method() === "POST",
     );
