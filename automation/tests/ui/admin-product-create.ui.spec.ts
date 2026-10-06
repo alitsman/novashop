@@ -1,5 +1,6 @@
 import { ToastComponent } from "../../src/components";
 import { apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   holdRequestUntilReleased,
@@ -15,7 +16,7 @@ import {
 
 const PRODUCTS_API_URL = new URL("/products", apiUrl).toString();
 
-test.describe("admin product create", () => {
+test.describe("admin product create", { tag: FeatureTag.AdminProducts }, () => {
   test("shows the create form and returns to admin products on cancel", async ({ page }) => {
     let createProductRequestCount = 0;
 

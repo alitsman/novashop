@@ -1,5 +1,6 @@
 import { ToastComponent } from "../../src/components";
 import { apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   holdRequestUntilReleased,
@@ -31,7 +32,7 @@ const buildProductApiUrl = (productId: string): string => {
   return new URL(`/products/${encodeURIComponent(productId)}`, apiUrl).toString();
 };
 
-test.describe("admin product delete", () => {
+test.describe("admin product delete", { tag: FeatureTag.AdminProducts }, () => {
   let adminProductsPage: AdminProductsPage;
   let toast: ToastComponent;
 

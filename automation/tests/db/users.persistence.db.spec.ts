@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import type { APIRequestContext } from "@playwright/test";
 
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import type { AuthResponse } from "../../src/types";
 
@@ -43,7 +44,7 @@ async function registerUserWithPasswordViaApi(
   return (await response.json()) as AuthResponse;
 }
 
-test.describe("User persistence", () => {
+test.describe("User persistence", { tag: FeatureTag.Auth }, () => {
   // The API cannot show how passwords are stored.
   // SELECT * is intentional: it catches extra columns,
   // including a plaintext password column.

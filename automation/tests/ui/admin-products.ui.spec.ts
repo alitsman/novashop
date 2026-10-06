@@ -1,4 +1,5 @@
 import { apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   holdProductCatalogUntilReleased,
@@ -18,7 +19,7 @@ import {
 
 const PRODUCTS_API_URL = new URL("/products", apiUrl).toString();
 
-test.describe("admin products", () => {
+test.describe("admin products", { tag: FeatureTag.AdminProducts }, () => {
   test("admin can open product management from the header", async ({ page }) => {
     await prepareMockedAuthenticatedSession(page, ADMIN_USER.user);
     await prepareProductCatalog(page, []);

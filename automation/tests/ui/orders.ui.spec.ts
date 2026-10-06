@@ -1,4 +1,5 @@
 import { apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   holdRequestUntilReleased,
@@ -16,7 +17,7 @@ const ORDERS_API_URL = new URL("/orders", apiUrl).toString();
 // Fix the browser timezone so the exact order date is deterministic locally and in CI.
 test.use({ timezoneId: "UTC" });
 
-test.describe("my orders", () => {
+test.describe("my orders", { tag: FeatureTag.Orders }, () => {
   test("shows loading state until orders are loaded", async ({ page }) => {
     await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
 

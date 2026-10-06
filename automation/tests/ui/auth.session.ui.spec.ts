@@ -1,3 +1,4 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   prepareCurrentUser,
@@ -10,7 +11,7 @@ import { REGULAR_USER } from "../../src/test-data";
 
 const AUTH_TOKEN = "synthetic-auth-token";
 
-test.describe("authentication session lifecycle", () => {
+test.describe("authentication session lifecycle", { tag: FeatureTag.Auth }, () => {
   test("logout: clears the session and remains signed out after reload", async ({ page }) => {
     const loginPage = new LoginPage(page);
     const catalogPage = new ProductCatalogPage(page);

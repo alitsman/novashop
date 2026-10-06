@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+import { FeatureTag } from "../../src/config/test-tags";
 import { createProductViaApi, expectSingleValidationError, loginViaApi } from "../../src/helpers";
 import { productListSchema, productSchema } from "../../src/schemas";
 import { ADMIN_USER, REGULAR_USER } from "../../src/test-data";
@@ -9,7 +10,7 @@ const NONEXISTENT_PRODUCT_ID = "00000000-0000-4000-8000-000000000000";
 
 const INVALID_PRODUCT_ID = "not-a-uuid";
 
-test.describe("DELETE /products/:id", () => {
+test.describe("DELETE /products/:id", { tag: FeatureTag.AdminProducts }, () => {
   test.describe("admin", () => {
     let token: string;
 

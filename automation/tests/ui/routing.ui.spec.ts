@@ -1,3 +1,4 @@
+import { FeatureTag, SuiteTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { prepareMockedAuthenticatedSession, prepareProductCatalog } from "../../src/helpers";
 import { LoginPage, ProductCatalogPage } from "../../src/pages";
@@ -22,7 +23,7 @@ const adminRoutes = [
 
 const guestOnlyRoutes = ["/login", "/register"];
 
-test.describe("routes requiring authentication", () => {
+test.describe("routes requiring authentication", { tag: [FeatureTag.Auth, SuiteTag.Smoke] }, () => {
   for (const route of routesRequiringAuthentication) {
     test(`redirects unauthenticated user from ${route} to sign in`, async ({ page }) => {
       await page.goto(route);
@@ -36,7 +37,7 @@ test.describe("routes requiring authentication", () => {
   }
 });
 
-test.describe("authenticated route guards", () => {
+test.describe("authenticated route guards", { tag: [FeatureTag.Auth, SuiteTag.Smoke] }, () => {
   test.beforeEach(async ({ page }) => {
     await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
     await prepareProductCatalog(page, []);

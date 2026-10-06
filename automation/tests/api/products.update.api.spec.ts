@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+import { FeatureTag } from "../../src/config/test-tags";
 import { createProductViaApi, expectSingleValidationError, loginViaApi } from "../../src/helpers";
 import { productSchema } from "../../src/schemas";
 import { ADMIN_USER, REGULAR_USER } from "../../src/test-data";
@@ -14,7 +15,7 @@ const CLIENT_REQUESTED_TIMESTAMP = "2020-01-01T00:00:00.000Z";
 
 const INVALID_PRODUCT_ID = "not-a-uuid";
 
-test.describe("PATCH /products/:id", () => {
+test.describe("PATCH /products/:id", { tag: FeatureTag.AdminProducts }, () => {
   test.describe("admin", () => {
     let token: string;
 

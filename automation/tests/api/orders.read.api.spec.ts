@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 import { expect, test } from "@playwright/test";
 
+import { FeatureTag } from "../../src/config/test-tags";
 import {
   createProductViaApi,
   expectSingleValidationError,
@@ -16,7 +17,7 @@ const NONEXISTENT_ORDER_ID = "00000000-0000-4000-8000-000000000000";
 
 const INVALID_ORDER_ID = "not-a-uuid";
 
-test.describe("GET /orders", () => {
+test.describe("GET /orders", { tag: FeatureTag.Orders }, () => {
   test.describe("authenticated user", () => {
     let regularUserAuth: AuthResponse;
 
@@ -225,7 +226,7 @@ test.describe("GET /orders", () => {
   });
 });
 
-test.describe("GET /orders/:id", () => {
+test.describe("GET /orders/:id", { tag: FeatureTag.Orders }, () => {
   test.describe("authenticated user", () => {
     let regularUserAuth: AuthResponse;
 
@@ -543,7 +544,7 @@ test.describe("GET /orders/:id", () => {
   });
 });
 
-test.describe("Orders API access", () => {
+test.describe("Orders API access", { tag: FeatureTag.Orders }, () => {
   test.describe("admin", () => {
     test("creates, lists, and retrieves an order", async ({ request }) => {
       const adminToken = await loginViaApi(request, ADMIN_USER);

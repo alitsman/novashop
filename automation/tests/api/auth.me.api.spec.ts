@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+import { FeatureTag, SuiteTag } from "../../src/config/test-tags";
 import { createTestAuthToken, loginViaApi } from "../../src/helpers";
 import { userSchema } from "../../src/schemas";
 import { ADMIN_USER, REGULAR_USER } from "../../src/test-data";
@@ -42,7 +43,7 @@ const invalidTokenCases = [
   },
 ];
 
-test.describe("GET /me", () => {
+test.describe("GET /me", { tag: FeatureTag.Auth }, () => {
   test("regular user login token: returns the regular user", async ({ request }) => {
     const token = await loginViaApi(request, REGULAR_USER);
 
@@ -75,20 +76,24 @@ test.describe("GET /me", () => {
     expect(responseBody).toEqual(ADMIN_USER.user);
   });
 
-  test("missing authorization header: returns AUTHENTICATION_REQUIRED", async ({ request }) => {
-    const meResponse = await request.get("/me");
+  test(
+    "missing authorization header: returns AUTHENTICATION_REQUIRED",
+    { tag: SuiteTag.Smoke },
+    async ({ request }) => {
+      const meResponse = await request.get("/me");
 
-    expect(meResponse.status()).toBe(401);
+      expect(meResponse.status()).toBe(401);
 
-    const responseBody = (await meResponse.json()) as ApiErrorResponse;
+      const responseBody = (await meResponse.json()) as ApiErrorResponse;
 
-    expect(responseBody).toEqual({
-      error: {
-        code: "AUTHENTICATION_REQUIRED",
-        message: "Authentication is required",
-      },
-    });
-  });
+      expect(responseBody).toEqual({
+        error: {
+          code: "AUTHENTICATION_REQUIRED",
+          message: "Authentication is required",
+        },
+      });
+    },
+  );
 
   test("non-Bearer authorization scheme: returns AUTHENTICATION_REQUIRED", async ({ request }) => {
     const meResponse = await request.get("/me", {

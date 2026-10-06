@@ -1,7 +1,7 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
-import { CartPage, LoginPage, ProductCatalogPage } from "../../src/pages";
 import { prepareProductCatalog } from "../../src/helpers";
-import { formatUsd } from "../../src/utils";
+import { CartPage, LoginPage, ProductCatalogPage } from "../../src/pages";
 import {
   ADD_TO_CART_PRODUCT_A,
   ADD_TO_CART_PRODUCT_B,
@@ -10,8 +10,9 @@ import {
   REGULAR_USER,
   createProduct,
 } from "../../src/test-data";
+import { formatUsd } from "../../src/utils";
 
-test.describe("cart isolation between users", () => {
+test.describe("cart isolation between users", { tag: FeatureTag.Cart }, () => {
   const seedProducts = ADD_TO_CART_PRODUCTS.map((product) => createProduct(product));
 
   const regularUserProduct = ADD_TO_CART_PRODUCT_A;

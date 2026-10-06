@@ -1,4 +1,5 @@
 import { ToastComponent } from "../../src/components";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { prepareMockedAuthenticatedSession, prepareProductCatalog } from "../../src/helpers";
 import { ProductCatalogPage } from "../../src/pages";
@@ -9,7 +10,7 @@ const TOAST_AUTO_DISMISS_TIMEOUT_MS = 8_000;
 
 // The live region remains in the DOM so screen readers can announce future messages.
 // Lifecycle assertions therefore check its content and the separate close button.
-test.describe("toast", () => {
+test.describe("toast", { tag: FeatureTag.Shell }, () => {
   let catalogPage: ProductCatalogPage;
   let toast: ToastComponent;
 

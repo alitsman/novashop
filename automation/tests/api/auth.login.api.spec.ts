@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { expect, test } from "@playwright/test";
 import jsonwebtoken from "jsonwebtoken";
 
+import { FeatureTag } from "../../src/config/test-tags";
 import { expectSingleValidationError } from "../../src/helpers";
 import { REGULAR_USER } from "../../src/test-data";
 import type { ApiErrorResponse, AuthResponse } from "../../src/types";
@@ -15,7 +16,7 @@ const EXPECTED_TOKEN_LIFETIME_SECONDS = 7 * 24 * 60 * 60;
 const WRONG_PASSWORD = "wrongPassword";
 const UNREGISTERED_EMAIL = "unregistered@email.novashop";
 
-test.describe("POST /auth/login", () => {
+test.describe("POST /auth/login", { tag: FeatureTag.Auth }, () => {
   test("valid credentials: returns a token and the safe user", async ({ request }) => {
     const response = await request.post("/auth/login", {
       data: {
