@@ -51,6 +51,30 @@ export default defineConfig([
           allowConditional: true,
         },
       ],
+
+      // Tags come from the typed FeatureTag/SuiteTag registry in src/config/test-tags.ts.
+      // This rule only accepts string literals, so it cannot validate registry constants.
+      // The tag guard (npm run check:tags) validates every test tag against the registry instead.
+      "playwright/valid-test-tags": "off",
+    },
+  },
+
+  {
+    files: ["tests/setup/**/*.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "CallExpression[callee.name='test'] > ObjectExpression > Property[key.name='tag']",
+          message: "Infrastructure setup tests must not have tags.",
+        },
+        {
+          selector:
+            "CallExpression[callee.object.name='test'][callee.property.name='describe'] > ObjectExpression > Property[key.name='tag']",
+          message: "Infrastructure setup tests must not have tags.",
+        },
+      ],
     },
   },
 

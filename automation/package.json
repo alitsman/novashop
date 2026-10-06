@@ -18,7 +18,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write . --config ../.prettierrc.json --ignore-path ../.prettierignore",
     "format:check": "prettier --check . --config ../.prettierrc.json --ignore-path ../.prettierignore",
-    "check": "npm run typecheck && npm run lint && npm run format:check"
+    "check:tags": "tsx scripts/check-test-tags.ts",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:tags"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -33,6 +34,7 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.23.0",
     "prettier": "^3.9.6",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.68.0",
     "zod": "^4.4.3"

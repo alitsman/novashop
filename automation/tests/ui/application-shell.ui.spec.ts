@@ -1,5 +1,6 @@
 import { AppBootstrapScreenComponent, HeaderComponent } from "../../src/components";
 import { Browser, apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   holdRequestUntilReleased,
@@ -12,7 +13,7 @@ import { REGULAR_USER } from "../../src/test-data";
 const UNKNOWN_ROUTE = "/application-shell/not-found-check";
 const CURRENT_USER_API_URL = new URL("/me", apiUrl).toString();
 
-test.describe("application shell", () => {
+test.describe("application shell", { tag: FeatureTag.Shell }, () => {
   test("unknown route: shows the not found page inside the common layout", async ({ page }) => {
     const notFoundPage = new NotFoundPage(page);
 
@@ -52,7 +53,7 @@ test.describe("application shell", () => {
   });
 });
 
-test.describe("authenticated application shell", () => {
+test.describe("authenticated application shell", { tag: FeatureTag.Shell }, () => {
   test.beforeEach(async ({ page }) => {
     await prepareMockedAuthenticatedSession(page, REGULAR_USER.user);
     await prepareProductCatalog(page, []);

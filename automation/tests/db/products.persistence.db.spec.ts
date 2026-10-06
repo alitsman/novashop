@@ -1,3 +1,4 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { createProductViaApi, loginViaApi } from "../../src/helpers";
 import { ADMIN_USER } from "../../src/test-data";
@@ -7,7 +8,7 @@ type ProductPersistenceRow = {
   deletedAt: Date | null;
 };
 
-test.describe("Product persistence", () => {
+test.describe("Product persistence", { tag: FeatureTag.Catalog }, () => {
   // The API returns 404 for both soft-deleted and physically deleted products.
   // This DB check proves that the row still exists and only deleted_at was set.
   test("soft delete: keeps the product row and sets deleted_at", async ({ request, dbPool }) => {

@@ -1,9 +1,10 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { prepareMockedAuthenticatedSession } from "../../src/helpers";
 import { AdminProductCreatePage } from "../../src/pages";
 import { ADMIN_PRODUCT_VALID_INPUT, ADMIN_USER } from "../../src/test-data";
 
-test.describe("admin product form", () => {
+test.describe("admin product form", { tag: FeatureTag.AdminProducts }, () => {
   let adminProductCreatePage: AdminProductCreatePage;
 
   test.beforeEach(async ({ page }) => {

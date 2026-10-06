@@ -1,4 +1,5 @@
 import { Browser, apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { prepareMockedAuthenticatedSession } from "../../src/helpers";
 import { AdminProductCreatePage } from "../../src/pages";
@@ -208,7 +209,7 @@ const validDescriptionCases = [
   },
 ];
 
-test.describe("admin product form validation", () => {
+test.describe("admin product form validation", { tag: FeatureTag.AdminProducts }, () => {
   let adminProductCreatePage: AdminProductCreatePage;
   let createProductRequestCount: number;
 

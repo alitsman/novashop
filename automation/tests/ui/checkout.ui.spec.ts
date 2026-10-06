@@ -1,5 +1,6 @@
-import { apiUrl } from "../../src/config/playwright.shared";
 import { ToastComponent } from "../../src/components";
+import { apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   holdProductCatalogUntilReleased,
@@ -35,7 +36,7 @@ const CREATE_ORDER_ERROR_RESPONSE = apiErrorResponseSchema.parse({
   },
 });
 
-test.describe("checkout", () => {
+test.describe("checkout", { tag: FeatureTag.Checkout }, () => {
   let checkoutPage: CheckoutPage;
   let createOrderRequestCount: number;
 

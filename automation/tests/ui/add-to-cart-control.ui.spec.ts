@@ -1,3 +1,4 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   prepareCart,
@@ -14,7 +15,7 @@ import {
   createProduct,
 } from "../../src/test-data";
 
-test.describe("add to cart control", () => {
+test.describe("add to cart control", { tag: FeatureTag.AddToCart }, () => {
   let productDetailsPage: ProductDetailsPage;
 
   test.beforeEach(async ({ page }) => {

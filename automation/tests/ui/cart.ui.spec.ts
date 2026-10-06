@@ -1,3 +1,4 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   holdProductCatalogUntilReleased,
@@ -18,7 +19,7 @@ import { formatUsd } from "../../src/utils";
 
 const MIN_CART_QUANTITY = 1;
 
-test.describe("cart", () => {
+test.describe("cart", { tag: FeatureTag.Cart }, () => {
   let cartPage: CartPage;
 
   test.beforeEach(async ({ page }) => {

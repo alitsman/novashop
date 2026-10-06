@@ -1,3 +1,4 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { prepareMockedAuthenticatedSession, prepareProductCatalog } from "../../src/helpers";
 import { ProductCatalogPage } from "../../src/pages";
@@ -19,7 +20,7 @@ const MOUSE_NO_CATEGORY_PRICE_DEFAULT = [
   "Computer Mouse Handbook",
 ];
 
-test.describe("product catalog URL state", () => {
+test.describe("product catalog URL state", { tag: FeatureTag.Catalog }, () => {
   let catalogPage: ProductCatalogPage;
 
   test.beforeEach(async ({ page }) => {

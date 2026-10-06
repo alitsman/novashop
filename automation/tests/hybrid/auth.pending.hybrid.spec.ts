@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { holdRequestUntilReleased } from "../../src/helpers";
 import { LoginPage, ProductCatalogPage, RegisterPage } from "../../src/pages";
@@ -12,7 +13,7 @@ const REGISTER_API_URL = new URL("/auth/register", apiUrl).toString();
 const REGISTRATION_NAME = "Pending Registration User";
 const REGISTRATION_PASSWORD = "PendingPassword1!";
 
-test.describe("authentication pending state", () => {
+test.describe("authentication pending state", { tag: FeatureTag.Auth }, () => {
   test("login: shows pending state and prevents duplicate submission", async ({ page }) => {
     const loginPage = new LoginPage(page);
     const catalogPage = new ProductCatalogPage(page);

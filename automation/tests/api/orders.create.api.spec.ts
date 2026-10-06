@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { expect, test } from "@playwright/test";
 
+import { FeatureTag } from "../../src/config/test-tags";
 import {
   createProductViaApi,
   expectSingleValidationError,
@@ -170,7 +171,7 @@ const validOrderTextBoundaryCases = [
   },
 ];
 
-test.describe("POST /orders", () => {
+test.describe("POST /orders", { tag: FeatureTag.Checkout }, () => {
   test.describe("authenticated user", () => {
     let regularUserAuth: AuthResponse;
 

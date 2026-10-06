@@ -1,4 +1,5 @@
 import { apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { readAuthTokenStorageValue, seedAuthTokenOnce } from "../../src/helpers";
 import { LoginPage } from "../../src/pages";
@@ -6,7 +7,7 @@ import { LoginPage } from "../../src/pages";
 const INVALID_AUTH_TOKEN = "invalid-auth-token";
 const CURRENT_USER_API_URL = new URL("/me", apiUrl).toString();
 
-test.describe("authentication session lifecycle", () => {
+test.describe("authentication session lifecycle", { tag: FeatureTag.Auth }, () => {
   test("invalid stored token: clears the session and remains signed out after reload", async ({
     page,
   }) => {

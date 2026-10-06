@@ -1,4 +1,5 @@
 import { ToastComponent } from "../../src/components";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   prepareMockedAuthenticatedSession,
@@ -14,7 +15,7 @@ import {
   createProduct,
 } from "../../src/test-data";
 
-test.describe("add to cart", () => {
+test.describe("add to cart", { tag: FeatureTag.AddToCart }, () => {
   let catalogPage: ProductCatalogPage;
   let productDetailsPage: ProductDetailsPage;
   let toast: ToastComponent;

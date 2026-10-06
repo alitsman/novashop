@@ -1,3 +1,4 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { trackAndAbortRequest } from "../../src/helpers";
 import { RegisterPage } from "../../src/pages";
@@ -31,7 +32,7 @@ const weakPasswordCases = [
   },
 ];
 
-test.describe("registration client validation", () => {
+test.describe("registration client validation", { tag: FeatureTag.Auth }, () => {
   let registerPage: RegisterPage;
 
   test.beforeEach(async ({ page }) => {

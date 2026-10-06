@@ -4,6 +4,7 @@ import type { APIRequestContext } from "@playwright/test";
 
 import { ToastComponent } from "../../src/components";
 import { apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag, SuiteTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { createProductViaApi, loginViaApi, seedAuthTokenForEachPageLoad } from "../../src/helpers";
 import {
@@ -44,7 +45,7 @@ async function cleanupProduct(
   ).toContain(cleanupResponse.status());
 }
 
-test.describe("admin product mutations", () => {
+test.describe("admin product mutations", { tag: FeatureTag.AdminProducts }, () => {
   let adminToken: string;
 
   test.beforeEach(async ({ page, backendRequest }) => {
@@ -53,70 +54,72 @@ test.describe("admin product mutations", () => {
     await seedAuthTokenForEachPageLoad(page, adminToken);
   });
 
-  test("creates a product and shows it in the customer catalog", async ({
-    page,
-    backendRequest,
-  }) => {
-    const productInput = {
-      ...ADMIN_PRODUCT_VALID_INPUT,
-      title: `E2E Admin Create Product ${randomUUID()}`,
-    };
+  test(
+    "creates a product and shows it in the customer catalog",
+    { tag: SuiteTag.Smoke },
+    async ({ page, backendRequest }) => {
+      const productInput = {
+        ...ADMIN_PRODUCT_VALID_INPUT,
+        title: `E2E Admin Create Product ${randomUUID()}`,
+      };
 
-    const adminProductCreatePage = new AdminProductCreatePage(page);
-    const adminProductsPage = new AdminProductsPage(page);
-    const catalogPage = new ProductCatalogPage(page);
-    const toast = new ToastComponent(page);
+      const adminProductCreatePage = new AdminProductCreatePage(page);
+      const adminProductsPage = new AdminProductsPage(page);
+      const catalogPage = new ProductCatalogPage(page);
+      const toast = new ToastComponent(page);
 
-    let createdProductId: string | undefined;
+      let createdProductId: string | undefined;
 
-    try {
-      await adminProductCreatePage.open();
+      try {
+        await adminProductCreatePage.open();
 
-      await expect(page).toHaveURL("/admin/products/new");
-      await expect(adminProductCreatePage.heading).toBeVisible();
+        await expect(page).toHaveURL("/admin/products/new");
+        await expect(adminProductCreatePage.heading).toBeVisible();
 
-      await adminProductCreatePage.form.titleInput.fill(productInput.title);
-      await adminProductCreatePage.form.priceInput.fill(String(productInput.price));
-      await adminProductCreatePage.form.stockInput.fill(String(productInput.stock));
-      await adminProductCreatePage.form.categoryInput.fill(productInput.category);
-      await adminProductCreatePage.form.imageUrlInput.fill(productInput.imageUrl);
-      await adminProductCreatePage.form.descriptionInput.fill(productInput.description);
+        await adminProductCreatePage.form.titleInput.fill(productInput.title);
+        await adminProductCreatePage.form.priceInput.fill(String(productInput.price));
+        await adminProductCreatePage.form.stockInput.fill(String(productInput.stock));
+        await adminProductCreatePage.form.categoryInput.fill(productInput.category);
+        await adminProductCreatePage.form.imageUrlInput.fill(productInput.imageUrl);
+        await adminProductCreatePage.form.descriptionInput.fill(productInput.description);
 
-      const createResponsePromise = page.waitForResponse(
-        (response) => response.url() === PRODUCTS_API_URL && response.request().method() === "POST",
-      );
+        const createResponsePromise = page.waitForResponse(
+          (response) =>
+            response.url() === PRODUCTS_API_URL && response.request().method() === "POST",
+        );
 
-      await adminProductCreatePage.form.submitButton.click();
+        await adminProductCreatePage.form.submitButton.click();
 
-      const createResponse = await createResponsePromise;
+        const createResponse = await createResponsePromise;
 
-      expect(createResponse.status()).toBe(201);
+        expect(createResponse.status()).toBe(201);
 
-      const createdProduct = productSchema.parse(await createResponse.json());
+        const createdProduct = productSchema.parse(await createResponse.json());
 
-      createdProductId = createdProduct.id;
+        createdProductId = createdProduct.id;
 
-      await expect(page).toHaveURL("/admin/products");
-      await expect(adminProductsPage.heading).toBeVisible();
-      await expect(toast.message).toHaveText("Product created successfully.");
-      await expect(adminProductsPage.getProductRow(productInput.title)).toBeVisible();
+        await expect(page).toHaveURL("/admin/products");
+        await expect(adminProductsPage.heading).toBeVisible();
+        await expect(toast.message).toHaveText("Product created successfully.");
+        await expect(adminProductsPage.getProductRow(productInput.title)).toBeVisible();
 
-      await catalogPage.open();
+        await catalogPage.open();
 
-      await expect(page).toHaveURL("/products");
-      await expect(catalogPage.heading).toBeVisible();
+        await expect(page).toHaveURL("/products");
+        await expect(catalogPage.heading).toBeVisible();
 
-      const catalogProduct = catalogPage.getProductCard(productInput.title);
+        const catalogProduct = catalogPage.getProductCard(productInput.title);
 
-      await expect(catalogProduct.title).toHaveText(productInput.title);
-      await expect(catalogProduct.price).toHaveText(formatUsd(productInput.price));
-      await expect(catalogProduct.addToCart.available).toHaveText(
-        `Available: ${productInput.stock}`,
-      );
-    } finally {
-      await cleanupProduct(backendRequest, adminToken, createdProductId, [204]);
-    }
-  });
+        await expect(catalogProduct.title).toHaveText(productInput.title);
+        await expect(catalogProduct.price).toHaveText(formatUsd(productInput.price));
+        await expect(catalogProduct.addToCart.available).toHaveText(
+          `Available: ${productInput.stock}`,
+        );
+      } finally {
+        await cleanupProduct(backendRequest, adminToken, createdProductId, [204]);
+      }
+    },
+  );
 
   test("updates a product and shows the changes in the customer catalog", async ({
     page,

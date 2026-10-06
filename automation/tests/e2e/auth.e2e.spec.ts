@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag, SuiteTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { readAuthTokenStorageValue } from "../../src/helpers";
 import { LoginPage, ProductCatalogPage, RegisterPage } from "../../src/pages";
@@ -14,7 +15,7 @@ const INVALID_PASSWORD = "wrongPassword";
 const REGISTRATION_NAME = "E2E Registration User";
 const REGISTRATION_PASSWORD = "NewUser123!";
 
-test.describe("login", () => {
+test.describe("login", { tag: FeatureTag.Auth }, () => {
   let loginPage: LoginPage;
 
   test.beforeEach(async ({ page }) => {
@@ -22,34 +23,38 @@ test.describe("login", () => {
     await loginPage.open();
   });
 
-  test("regular user: signs in and restores the session after reload", async ({ page }) => {
-    await loginPage.signIn(REGULAR_USER.user.email, REGULAR_USER.password);
+  test(
+    "regular user: signs in and restores the session after reload",
+    { tag: SuiteTag.Smoke },
+    async ({ page }) => {
+      await loginPage.signIn(REGULAR_USER.user.email, REGULAR_USER.password);
 
-    await expect(page).toHaveURL("/products");
+      await expect(page).toHaveURL("/products");
 
-    const catalogPage = new ProductCatalogPage(page);
+      const catalogPage = new ProductCatalogPage(page);
 
-    await expect(catalogPage.heading).toBeVisible();
-    await expect(catalogPage.header.currentUserName).toHaveText(REGULAR_USER.user.name);
-    await expect(catalogPage.header.logoutButton).toBeVisible();
+      await expect(catalogPage.heading).toBeVisible();
+      await expect(catalogPage.header.currentUserName).toHaveText(REGULAR_USER.user.name);
+      await expect(catalogPage.header.logoutButton).toBeVisible();
 
-    // Start waiting before reload so Playwright does not miss a fast /me response.
-    const restoreAuthResponsePromise = page.waitForResponse(
-      (response) =>
-        response.url() === CURRENT_USER_API_URL && response.request().method() === "GET",
-    );
+      // Start waiting before reload so Playwright does not miss a fast /me response.
+      const restoreAuthResponsePromise = page.waitForResponse(
+        (response) =>
+          response.url() === CURRENT_USER_API_URL && response.request().method() === "GET",
+      );
 
-    await page.reload();
+      await page.reload();
 
-    const restoreAuthResponse = await restoreAuthResponsePromise;
+      const restoreAuthResponse = await restoreAuthResponsePromise;
 
-    expect(restoreAuthResponse.status()).toBe(200);
+      expect(restoreAuthResponse.status()).toBe(200);
 
-    await expect(page).toHaveURL("/products");
-    await expect(catalogPage.heading).toBeVisible();
-    await expect(catalogPage.header.currentUserName).toHaveText(REGULAR_USER.user.name);
-    await expect(catalogPage.header.logoutButton).toBeVisible();
-  });
+      await expect(page).toHaveURL("/products");
+      await expect(catalogPage.heading).toBeVisible();
+      await expect(catalogPage.header.currentUserName).toHaveText(REGULAR_USER.user.name);
+      await expect(catalogPage.header.logoutButton).toBeVisible();
+    },
+  );
 
   test("invalid credentials: shows an error and remains signed out", async ({ page }) => {
     // Start waiting before submit so Playwright does not miss a fast login response.
@@ -76,7 +81,7 @@ test.describe("login", () => {
   });
 });
 
-test.describe("registration", () => {
+test.describe("registration", { tag: FeatureTag.Auth }, () => {
   let registerPage: RegisterPage;
 
   test.beforeEach(async ({ page }) => {
@@ -84,49 +89,51 @@ test.describe("registration", () => {
     await registerPage.open();
   });
 
-  test("new user: registers as a regular user and restores the session after reload", async ({
-    page,
-  }) => {
-    const registrationEmail = `e2e-registration-${randomUUID()}@test.com`;
+  test(
+    "new user: registers as a regular user and restores the session after reload",
+    { tag: SuiteTag.Smoke },
+    async ({ page }) => {
+      const registrationEmail = `e2e-registration-${randomUUID()}@test.com`;
 
-    // Start waiting before submit so Playwright does not miss a fast registration response.
-    const registerResponsePromise = page.waitForResponse(
-      (response) => response.url() === REGISTER_API_URL && response.request().method() === "POST",
-    );
+      // Start waiting before submit so Playwright does not miss a fast registration response.
+      const registerResponsePromise = page.waitForResponse(
+        (response) => response.url() === REGISTER_API_URL && response.request().method() === "POST",
+      );
 
-    await registerPage.register(REGISTRATION_NAME, registrationEmail, REGISTRATION_PASSWORD);
+      await registerPage.register(REGISTRATION_NAME, registrationEmail, REGISTRATION_PASSWORD);
 
-    const registerResponse = await registerResponsePromise;
+      const registerResponse = await registerResponsePromise;
 
-    expect(registerResponse.status()).toBe(201);
+      expect(registerResponse.status()).toBe(201);
 
-    await expect(page).toHaveURL("/products");
+      await expect(page).toHaveURL("/products");
 
-    const catalogPage = new ProductCatalogPage(page);
+      const catalogPage = new ProductCatalogPage(page);
 
-    await expect(catalogPage.heading).toBeVisible();
-    await expect(catalogPage.header.currentUserName).toHaveText(REGISTRATION_NAME);
-    await expect(catalogPage.header.logoutButton).toBeVisible();
-    await expect(catalogPage.header.manageProducts).toBeHidden();
+      await expect(catalogPage.heading).toBeVisible();
+      await expect(catalogPage.header.currentUserName).toHaveText(REGISTRATION_NAME);
+      await expect(catalogPage.header.logoutButton).toBeVisible();
+      await expect(catalogPage.header.manageProducts).toBeHidden();
 
-    // Start waiting before reload so Playwright does not miss a fast /me response.
-    const restoreAuthResponsePromise = page.waitForResponse(
-      (response) =>
-        response.url() === CURRENT_USER_API_URL && response.request().method() === "GET",
-    );
+      // Start waiting before reload so Playwright does not miss a fast /me response.
+      const restoreAuthResponsePromise = page.waitForResponse(
+        (response) =>
+          response.url() === CURRENT_USER_API_URL && response.request().method() === "GET",
+      );
 
-    await page.reload();
+      await page.reload();
 
-    const restoreAuthResponse = await restoreAuthResponsePromise;
+      const restoreAuthResponse = await restoreAuthResponsePromise;
 
-    expect(restoreAuthResponse.status()).toBe(200);
+      expect(restoreAuthResponse.status()).toBe(200);
 
-    await expect(page).toHaveURL("/products");
-    await expect(catalogPage.heading).toBeVisible();
-    await expect(catalogPage.header.currentUserName).toHaveText(REGISTRATION_NAME);
-    await expect(catalogPage.header.logoutButton).toBeVisible();
-    await expect(catalogPage.header.manageProducts).toBeHidden();
-  });
+      await expect(page).toHaveURL("/products");
+      await expect(catalogPage.heading).toBeVisible();
+      await expect(catalogPage.header.currentUserName).toHaveText(REGISTRATION_NAME);
+      await expect(catalogPage.header.logoutButton).toBeVisible();
+      await expect(catalogPage.header.manageProducts).toBeHidden();
+    },
+  );
 
   test("existing email: shows an error and remains signed out", async ({ page }) => {
     // Start waiting before submit so Playwright does not miss a fast registration response.

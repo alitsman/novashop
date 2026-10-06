@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { expect, test } from "@playwright/test";
 
+import { FeatureTag } from "../../src/config/test-tags";
 import { expectSingleValidationError } from "../../src/helpers";
 import { userSchema } from "../../src/schemas";
 import type { ApiErrorResponse, AuthResponse, NewAccount } from "../../src/types";
@@ -43,7 +44,7 @@ function buildNewAccount(name: string): NewAccount {
   };
 }
 
-test.describe("POST /auth/register", () => {
+test.describe("POST /auth/register", { tag: FeatureTag.Auth }, () => {
   test.describe("successful registration", () => {
     test("valid data: creates a regular user and returns an auth response", async ({ request }) => {
       const newAccount = buildNewAccount("New Registered User");

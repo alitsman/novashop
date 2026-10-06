@@ -1,3 +1,4 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { prepareMockedAuthenticatedSession, prepareProductCatalog } from "../../src/helpers";
 import { ProductCatalogPage } from "../../src/pages";
@@ -12,7 +13,7 @@ import { formatUsd } from "../../src/utils";
 
 const REPRESENTATIVE_PRODUCT = createProduct(CATALOG_REFERENCE_PRODUCT);
 
-test.describe("product catalog", () => {
+test.describe("product catalog", { tag: FeatureTag.Catalog }, () => {
   let catalogPage: ProductCatalogPage;
 
   test.beforeEach(async ({ page }) => {
@@ -223,7 +224,7 @@ test.describe("product catalog", () => {
   });
 });
 
-test.describe("empty product catalog", () => {
+test.describe("empty product catalog", { tag: FeatureTag.Catalog }, () => {
   let catalogPage: ProductCatalogPage;
 
   test.beforeEach(async ({ page }) => {

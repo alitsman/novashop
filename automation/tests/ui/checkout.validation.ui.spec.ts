@@ -1,4 +1,5 @@
 import { Browser, apiUrl } from "../../src/config/playwright.shared";
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   prepareCart,
@@ -128,7 +129,7 @@ const validAddressCases = [
   },
 ];
 
-test.describe("checkout form validation", () => {
+test.describe("checkout form validation", { tag: FeatureTag.Checkout }, () => {
   let checkoutPage: CheckoutPage;
   let createOrderRequestCount: number;
 

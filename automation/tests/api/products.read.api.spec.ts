@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 import { expect, test } from "@playwright/test";
 
+import { FeatureTag } from "../../src/config/test-tags";
 import { loginViaApi } from "../../src/helpers";
 import { productListSchema } from "../../src/schemas";
 import {
@@ -46,7 +47,7 @@ test.describe("Products read API", () => {
       token = await loginViaApi(request, REGULAR_USER);
     });
 
-    test.describe("GET /products", () => {
+    test.describe("GET /products", { tag: FeatureTag.Catalog }, () => {
       test("returns all active seeded products in deterministic order", async ({ request }) => {
         const response = await request.get("/products", {
           headers: {
@@ -111,7 +112,7 @@ test.describe("Products read API", () => {
       });
     });
 
-    test.describe("GET /products/:id", () => {
+    test.describe("GET /products/:id", { tag: FeatureTag.ProductDetails }, () => {
       test("active product id: returns the requested product", async ({ request }) => {
         const response = await request.get(`/products/${SEEDED_REFERENCE_PRODUCT.id}`, {
           headers: {
@@ -183,7 +184,7 @@ test.describe("Products read API", () => {
     });
   });
 
-  test.describe("admin", () => {
+  test.describe("admin", { tag: FeatureTag.Catalog }, () => {
     test("GET /products: can get the product list", async ({ request }) => {
       const token = await loginViaApi(request, ADMIN_USER);
 
@@ -199,37 +200,43 @@ test.describe("Products read API", () => {
   });
 
   test.describe("without authentication", () => {
-    test("GET /products: returns AUTHENTICATION_REQUIRED", async ({ request }) => {
-      const response = await request.get("/products");
+    test(
+      "GET /products: returns AUTHENTICATION_REQUIRED",
+      { tag: FeatureTag.Catalog },
+      async ({ request }) => {
+        const response = await request.get("/products");
 
-      expect(response.status()).toBe(401);
+        expect(response.status()).toBe(401);
 
-      const responseBody = (await response.json()) as ApiErrorResponse;
+        const responseBody = (await response.json()) as ApiErrorResponse;
 
-      expect(responseBody).toEqual({
-        error: {
-          code: "AUTHENTICATION_REQUIRED",
-          message: "Authentication is required",
-        },
-      });
-    });
+        expect(responseBody).toEqual({
+          error: {
+            code: "AUTHENTICATION_REQUIRED",
+            message: "Authentication is required",
+          },
+        });
+      },
+    );
 
-    test("GET /products/:id with invalid id: returns AUTHENTICATION_REQUIRED", async ({
-      request,
-    }) => {
-      // The invalid id proves that authentication runs before id validation.
-      const response = await request.get(`/products/${INVALID_PRODUCT_ID}`);
+    test(
+      "GET /products/:id with invalid id: returns AUTHENTICATION_REQUIRED",
+      { tag: FeatureTag.ProductDetails },
+      async ({ request }) => {
+        // The invalid id proves that authentication runs before id validation.
+        const response = await request.get(`/products/${INVALID_PRODUCT_ID}`);
 
-      expect(response.status()).toBe(401);
+        expect(response.status()).toBe(401);
 
-      const responseBody = (await response.json()) as ApiErrorResponse;
+        const responseBody = (await response.json()) as ApiErrorResponse;
 
-      expect(responseBody).toEqual({
-        error: {
-          code: "AUTHENTICATION_REQUIRED",
-          message: "Authentication is required",
-        },
-      });
-    });
+        expect(responseBody).toEqual({
+          error: {
+            code: "AUTHENTICATION_REQUIRED",
+            message: "Authentication is required",
+          },
+        });
+      },
+    );
   });
 });

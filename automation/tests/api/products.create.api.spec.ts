@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 import { expect, test } from "@playwright/test";
 
+import { FeatureTag, SuiteTag } from "../../src/config/test-tags";
 import { expectSingleValidationError, loginViaApi } from "../../src/helpers";
 import { productSchema } from "../../src/schemas";
 import { ADMIN_USER, REGULAR_USER, createProductInput } from "../../src/test-data";
@@ -215,7 +216,7 @@ const requiredProductFields = [
 
 const emptyStringProductFields = ["title", "category", "imageUrl", "description"];
 
-test.describe("POST /products", () => {
+test.describe("POST /products", { tag: FeatureTag.AdminProducts }, () => {
   test.describe("admin", () => {
     let token: string;
 
@@ -632,27 +633,31 @@ test.describe("POST /products", () => {
   });
 
   test.describe("regular user", () => {
-    test("returns FORBIDDEN before validating product input", async ({ request }) => {
-      const token = await loginViaApi(request, REGULAR_USER);
+    test(
+      "returns FORBIDDEN before validating product input",
+      { tag: SuiteTag.Smoke },
+      async ({ request }) => {
+        const token = await loginViaApi(request, REGULAR_USER);
 
-      const response = await request.post("/products", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        data: {},
-      });
+        const response = await request.post("/products", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          data: {},
+        });
 
-      expect(response.status()).toBe(403);
+        expect(response.status()).toBe(403);
 
-      const responseBody = (await response.json()) as ApiErrorResponse;
+        const responseBody = (await response.json()) as ApiErrorResponse;
 
-      expect(responseBody).toEqual({
-        error: {
-          code: "FORBIDDEN",
-          message: "You do not have permission to perform this action",
-        },
-      });
-    });
+        expect(responseBody).toEqual({
+          error: {
+            code: "FORBIDDEN",
+            message: "You do not have permission to perform this action",
+          },
+        });
+      },
+    );
   });
 
   test.describe("without authentication", () => {

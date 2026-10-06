@@ -1,3 +1,4 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   holdProductDetailsUntilReleased,
@@ -14,7 +15,7 @@ import { formatUsd } from "../../src/utils";
 const MISSING_PRODUCT_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 const INVALID_PRODUCT_ID = "not-a-uuid";
 
-test.describe("product details", () => {
+test.describe("product details", { tag: FeatureTag.ProductDetails }, () => {
   let productDetailsPage: ProductDetailsPage;
 
   test.beforeEach(async ({ page }) => {

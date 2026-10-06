@@ -1,8 +1,9 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { trackAndAbortRequest } from "../../src/helpers";
 import { LoginPage } from "../../src/pages";
 
-test.describe("login client validation", () => {
+test.describe("login client validation", { tag: FeatureTag.Auth }, () => {
   let loginPage: LoginPage;
 
   test.beforeEach(async ({ page }) => {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 import type { PoolClient } from "pg";
 
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import { createProductViaApi, loginViaApi, registerUserViaApi } from "../../src/helpers";
 import { apiErrorResponseSchema } from "../../src/schemas";
@@ -24,7 +25,7 @@ async function rollbackTransactionIfOpen(
   }
 }
 
-test.describe("Order concurrency", () => {
+test.describe("Order concurrency", { tag: FeatureTag.Checkout }, () => {
   test("concurrent sale of the last item: the order sees the committed stock and returns INSUFFICIENT_STOCK", async ({
     request,
     dbPool,

@@ -1,3 +1,4 @@
+import { FeatureTag } from "../../src/config/test-tags";
 import { expect, test } from "../../src/fixtures";
 import {
   holdProductCatalogUntilReleased,
@@ -7,7 +8,7 @@ import {
 import { ProductCatalogPage } from "../../src/pages";
 import { CATALOG_PRODUCTS, REGULAR_USER, createProduct } from "../../src/test-data";
 
-test.describe("product catalog states", () => {
+test.describe("product catalog states", { tag: FeatureTag.Catalog }, () => {
   test("preserves a valid direct-link category through initial loading", async ({ page }) => {
     const catalogProducts = CATALOG_PRODUCTS.map((product) => createProduct(product));
     const expectedProductTitles = catalogProducts

@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+import { FeatureTag } from "../../src/config/test-tags";
 import type { ApiErrorResponse } from "../../src/types";
 
-test.describe("API routing", () => {
+test.describe("API routing", { tag: FeatureTag.Platform }, () => {
   test("unknown route: returns ROUTE_NOT_FOUND", async ({ request }) => {
     const response = await request.get("/does-not-exist");
 
