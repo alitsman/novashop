@@ -19,6 +19,7 @@
     "format": "prettier --write . --config ../.prettierrc.json --ignore-path ../.prettierignore",
     "format:check": "prettier --check . --config ../.prettierrc.json --ignore-path ../.prettierignore",
     "check:tags": "tsx scripts/check-test-tags.ts",
+    "resolve:selection": "tsx scripts/resolve-test-selection.ts",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:tags"
   },
   "devDependencies": {

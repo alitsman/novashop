@@ -1,8 +1,23 @@
-name: Regression engine (used by CI, Nightly, Manual)
+name: Regression engine
 
 on:
   workflow_call:
     inputs:
+      scope:
+        description: Execution boundary to run
+        required: false
+        type: string
+        default: all
+      feature:
+        description: Functional feature to run
+        required: false
+        type: string
+        default: all
+      smoke_only:
+        description: Whether to run only smoke tests
+        required: false
+        type: boolean
+        default: false
       browsers:
         description: JSON array of browser engines for browser-based regression jobs
         required: false
@@ -30,6 +45,8 @@ env:
   VITE_API_URL: http://localhost:4001
   DATABASE_URL: postgres://postgres:postgres@localhost:5432/novashop_test
   JWT_SECRET: novashop-ci-only-jwt-secret-not-for-production
+  FEATURE: ${{ inputs.feature }}
+  SMOKE_ONLY: ${{ inputs.smoke_only }}
 
 jobs:
   quality:
@@ -75,9 +92,45 @@ jobs:
         working-directory: automation
         run: npm run check
 
+  selection:
+    name: Resolve selection
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    outputs:
+      run_api_db: ${{ steps.resolve.outputs.run_api_db }}
+      run_ui: ${{ steps.resolve.outputs.run_ui }}
+      run_integrated: ${{ steps.resolve.outputs.run_integrated }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: automation/package-lock.json
+
+      - name: Install automation dependencies
+        working-directory: automation
+        run: npm ci
+
+      - name: Resolve test selection
+        id: resolve
+        working-directory: automation
+        env:
+          SCOPE: ${{ inputs.scope }}
+          BROWSERS: ${{ join(fromJSON(inputs.browsers), ',') }}
+        run: npm run resolve:selection
+
   api-db:
     name: API + DB
-    needs: quality
+    needs:
+      - quality
+      - selection
+    if: ${{ needs.selection.outputs.run_api_db == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
@@ -147,7 +200,10 @@ jobs:
 
   isolated-ui:
     name: Isolated UI (${{ matrix.browser }})
-    needs: quality
+    needs:
+      - quality
+      - selection
+    if: ${{ needs.selection.outputs.run_ui == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
@@ -210,7 +266,10 @@ jobs:
 
   integrated:
     name: Integrated (${{ matrix.browser }})
-    needs: quality
+    needs:
+      - quality
+      - selection
+    if: ${{ needs.selection.outputs.run_integrated == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 

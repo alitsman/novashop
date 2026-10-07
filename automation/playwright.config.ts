@@ -8,6 +8,7 @@ import {
   frontendUrl,
   getRequiredEnv,
   getSelectedBrowsers,
+  getTestSelectionGrep,
 } from "./src/config/playwright.shared";
 
 const backendPort = getRequiredEnv("PORT");
@@ -22,10 +23,12 @@ if (apiPort !== backendPort) {
 const backendHealthUrl = new URL("/health", apiUrl).toString();
 
 const selectedBrowsers = getSelectedBrowsers();
+const testSelectionGrep = getTestSelectionGrep();
 
 const hybridProjects = selectedBrowsers.map((browserName) => ({
   name: `hybrid-${browserName}`,
   testMatch: "hybrid/**/*.spec.ts",
+  grep: testSelectionGrep,
   dependencies: ["database-setup"],
   use: {
     browserName,
@@ -35,6 +38,7 @@ const hybridProjects = selectedBrowsers.map((browserName) => ({
 const e2eProjects = selectedBrowsers.map((browserName) => ({
   name: `e2e-${browserName}`,
   testMatch: "e2e/**/*.spec.ts",
+  grep: testSelectionGrep,
   dependencies: ["database-setup"],
   use: {
     browserName,
@@ -55,6 +59,7 @@ export default defineConfig({
     {
       name: "api",
       testMatch: "api/**/*.spec.ts",
+      grep: testSelectionGrep,
       dependencies: ["database-setup"],
       use: {
         baseURL: apiUrl,
@@ -63,6 +68,7 @@ export default defineConfig({
     {
       name: "db",
       testMatch: "db/**/*.spec.ts",
+      grep: testSelectionGrep,
       dependencies: ["database-setup"],
       use: {
         baseURL: apiUrl,

@@ -5,12 +5,16 @@ import {
   frontendPort,
   frontendUrl,
   getSelectedBrowsers,
+  getTestSelectionGrep,
 } from "./src/config/playwright.shared";
 import type { IsolatedApiGuardOptions } from "./src/fixtures/ui.fixture";
+
+const testSelectionGrep = getTestSelectionGrep();
 
 const uiProjects = getSelectedBrowsers().map((browserName) => ({
   name: `ui-${browserName}`,
   testMatch: "ui/**/*.spec.ts",
+  grep: testSelectionGrep,
   use: {
     browserName,
     isolatedApiGuard: true,

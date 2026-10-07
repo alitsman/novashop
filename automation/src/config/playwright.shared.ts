@@ -3,6 +3,8 @@ import { loadEnvFile } from "node:process";
 
 import type { PlaywrightTestConfig } from "@playwright/test";
 
+import { FeatureTag, SuiteTag } from "./test-tags";
+
 export const Browser = {
   Chromium: "chromium",
   Firefox: "firefox",
@@ -52,6 +54,78 @@ export const getSelectedBrowsers = (): Browser[] => {
   }
 
   return selectedBrowsers;
+};
+
+const FEATURE_TAG_PREFIX = "@feature-";
+
+// A tag must end here, so "@feature-product" never matches "@feature-product-details".
+const TAG_END_PATTERN = "(?![A-Za-z0-9_-])";
+
+const SUPPORTED_FEATURES = Object.values(FeatureTag).map((tag) =>
+  tag.replace(FEATURE_TAG_PREFIX, ""),
+);
+
+// Reads the FEATURE variable, e.g. FEATURE="checkout".
+// Without FEATURE, or with FEATURE="all", tests of every feature are selected.
+const getSelectedFeatureTag = (): string | undefined => {
+  const featureValue = process.env.FEATURE;
+
+  if (featureValue === undefined || featureValue === "all") {
+    return undefined;
+  }
+
+  const featureTag = Object.values(FeatureTag).find(
+    (tag) => tag === `${FEATURE_TAG_PREFIX}${featureValue}`,
+  );
+
+  if (featureTag === undefined) {
+    throw new Error(
+      `Unsupported FEATURE: "${featureValue}". Supported: all, ${SUPPORTED_FEATURES.join(", ")}`,
+    );
+  }
+
+  return featureTag;
+};
+
+// Reads the SMOKE_ONLY variable. GitHub Actions passes booleans as "true" or "false",
+// so both forms are accepted.
+const isSmokeOnly = (): boolean => {
+  const smokeOnlyValue = process.env.SMOKE_ONLY;
+
+  if (smokeOnlyValue === undefined || smokeOnlyValue === "0" || smokeOnlyValue === "false") {
+    return false;
+  }
+
+  if (smokeOnlyValue === "1" || smokeOnlyValue === "true") {
+    return true;
+  }
+
+  throw new Error(`Unsupported SMOKE_ONLY: "${smokeOnlyValue}". Supported: 0, 1, false, true`);
+};
+
+// Builds the Playwright grep for FEATURE and SMOKE_ONLY.
+// Each required tag becomes a lookahead, so a test must have all of them.
+// Configs apply this grep to product test projects only, never to database-setup.
+export const getTestSelectionGrep = (): RegExp | undefined => {
+  const requiredTags: string[] = [];
+
+  const selectedFeatureTag = getSelectedFeatureTag();
+
+  if (selectedFeatureTag !== undefined) {
+    requiredTags.push(selectedFeatureTag);
+  }
+
+  if (isSmokeOnly()) {
+    requiredTags.push(SuiteTag.Smoke);
+  }
+
+  if (requiredTags.length === 0) {
+    return undefined;
+  }
+
+  const lookaheads = requiredTags.map((tag) => `(?=.*${tag}${TAG_END_PATTERN})`);
+
+  return new RegExp(`^${lookaheads.join("")}`);
 };
 
 const testEnvPath = new URL("../../../.env.test", import.meta.url);
