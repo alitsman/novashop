@@ -1,7 +1,7 @@
 // Resolves a requested regression selection into the jobs that actually need to start.
 //
 // FEATURE and SMOKE_ONLY are already applied by the Playwright configs, so this script
-// only counts what Playwright lists for each execution group (api-db, ui, integrated).
+// only counts what Playwright lists for each selected execution group (api-db, ui, integrated).
 // database-setup is excluded from the counts: it is listed whenever an integrated
 // project is selected, even when no product test matches.
 // Counting uses one browser, because the browser choice does not change which tests
@@ -14,7 +14,6 @@ import { getSelectedBrowsers } from "../src/config/playwright.shared";
 import { isInfrastructureSpec, listSpecs } from "./playwright-inventory";
 
 const Scope = {
-  All: "all",
   ApiDb: "api-db",
   Ui: "ui",
   Integrated: "integrated",
@@ -22,20 +21,52 @@ const Scope = {
 
 type Scope = (typeof Scope)[keyof typeof Scope];
 
+const ALL_SCOPE_VALUE = "all";
 const SUPPORTED_SCOPES: Scope[] = Object.values(Scope);
 
-const getSelectedScope = (): Scope => {
-  const scopeValue = process.env.SCOPE ?? Scope.All;
+const getSelectedScopes = (): Scope[] => {
+  const scopeValue = process.env.SCOPE ?? ALL_SCOPE_VALUE;
 
-  const scope = SUPPORTED_SCOPES.find((supportedScope) => supportedScope === scopeValue);
+  if (scopeValue === ALL_SCOPE_VALUE) {
+    return [...SUPPORTED_SCOPES];
+  }
 
-  if (scope === undefined) {
+  const rawScopes = scopeValue
+    .split(",")
+    .map((scope) => scope.trim())
+    .filter((scope) => scope !== "");
+
+  if (rawScopes.length === 0) {
     throw new Error(
-      `Unsupported SCOPE: "${scopeValue}". Supported: ${SUPPORTED_SCOPES.join(", ")}`,
+      `SCOPE is set but lists no execution scopes. Supported: ${ALL_SCOPE_VALUE}, ${SUPPORTED_SCOPES.join(", ")}`,
     );
   }
 
-  return scope;
+  if (rawScopes.includes(ALL_SCOPE_VALUE)) {
+    throw new Error(
+      `SCOPE cannot combine "${ALL_SCOPE_VALUE}" with specific scopes. ` +
+        `Supported: ${ALL_SCOPE_VALUE}, ${SUPPORTED_SCOPES.join(", ")}`,
+    );
+  }
+
+  const selectedScopes: Scope[] = [];
+
+  for (const rawScope of rawScopes) {
+    const scope = SUPPORTED_SCOPES.find((supportedScope) => supportedScope === rawScope);
+
+    if (scope === undefined) {
+      throw new Error(
+        `Unsupported SCOPE value: "${rawScope}". ` +
+          `Supported: ${ALL_SCOPE_VALUE}, ${SUPPORTED_SCOPES.join(", ")}`,
+      );
+    }
+
+    if (!selectedScopes.includes(scope)) {
+      selectedScopes.push(scope);
+    }
+  }
+
+  return selectedScopes;
 };
 
 const countProductSpecs = (configFile: string, projects: string[]): number =>
@@ -54,11 +85,11 @@ const writeGitHubOutput = (name: string, value: number | boolean): void => {
   appendFileSync(githubOutput, `${name}=${value}\n`);
 };
 
-const scope = getSelectedScope();
+const selectedScopes = getSelectedScopes();
 
-const includesApiDb = scope === Scope.All || scope === Scope.ApiDb;
-const includesUi = scope === Scope.All || scope === Scope.Ui;
-const includesIntegrated = scope === Scope.All || scope === Scope.Integrated;
+const includesApiDb = selectedScopes.includes(Scope.ApiDb);
+const includesUi = selectedScopes.includes(Scope.Ui);
+const includesIntegrated = selectedScopes.includes(Scope.Integrated);
 
 const apiDbCount = includesApiDb ? countProductSpecs("playwright.config.ts", ["api", "db"]) : 0;
 
@@ -87,7 +118,7 @@ const totalCount = apiDbCount + uiCount + integratedCount;
 if (totalCount === 0) {
   console.error(
     `No product tests match selection: ` +
-      `SCOPE=${scope}, ` +
+      `SCOPE=${process.env.SCOPE ?? ALL_SCOPE_VALUE}, ` +
       `FEATURE=${process.env.FEATURE ?? "all"}, ` +
       `SMOKE_ONLY=${process.env.SMOKE_ONLY ?? "false"}`,
   );
