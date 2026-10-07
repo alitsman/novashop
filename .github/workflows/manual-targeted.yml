@@ -2,55 +2,141 @@ name: Manual Targeted Regression
 
 run-name: >-
   Targeted ·
-  ${{ inputs.scope == 'all' && 'all-layers' || inputs.scope }} ·
-  ${{ inputs.feature == 'all' && 'all-features' || inputs.feature }}${{ inputs.scope != 'api-db' && ' · ' || '' }}${{ inputs.scope != 'api-db' && inputs.chromium && 'chromium ' || '' }}${{ inputs.scope != 'api-db' && inputs.firefox && 'firefox ' || '' }}${{ inputs.scope != 'api-db' && inputs.webkit && 'webkit' || '' }}${{ inputs.scope != 'api-db' && !inputs.chromium && !inputs.firefox && !inputs.webkit && 'chromium (default)' || '' }}
+  ${{ (inputs.api_db || inputs.ui || inputs.integrated) && 'selected-scopes' || (inputs.all_scopes && 'all-scopes' || 'no-scope') }} ·
+  ${{ (inputs.auth || inputs.shell || inputs.catalog || inputs.product_details || inputs.add_to_cart || inputs.cart || inputs.checkout || inputs.orders || inputs.admin_products || inputs.platform) && 'selected-features' || (inputs.all_features && 'all-features' || 'no-feature') }}${{
+    (
+      ((inputs.api_db || inputs.ui || inputs.integrated) && (inputs.ui || inputs.integrated)) ||
+      (!(inputs.api_db || inputs.ui || inputs.integrated) && inputs.all_scopes)
+    ) && ' · ' || ''
+  }}${{
+    (
+      ((inputs.api_db || inputs.ui || inputs.integrated) && (inputs.ui || inputs.integrated)) ||
+      (!(inputs.api_db || inputs.ui || inputs.integrated) && inputs.all_scopes)
+    ) && inputs.chromium && 'chromium ' || ''
+  }}${{
+    (
+      ((inputs.api_db || inputs.ui || inputs.integrated) && (inputs.ui || inputs.integrated)) ||
+      (!(inputs.api_db || inputs.ui || inputs.integrated) && inputs.all_scopes)
+    ) && inputs.firefox && 'firefox ' || ''
+  }}${{
+    (
+      ((inputs.api_db || inputs.ui || inputs.integrated) && (inputs.ui || inputs.integrated)) ||
+      (!(inputs.api_db || inputs.ui || inputs.integrated) && inputs.all_scopes)
+    ) && inputs.webkit && 'webkit' || ''
+  }}${{
+    (
+      ((inputs.api_db || inputs.ui || inputs.integrated) && (inputs.ui || inputs.integrated)) ||
+      (!(inputs.api_db || inputs.ui || inputs.integrated) && inputs.all_scopes)
+    ) && !inputs.chromium && !inputs.firefox && !inputs.webkit && 'no-browser' || ''
+  }}
 
 on:
   workflow_dispatch:
     inputs:
-      scope:
-        description: Execution scope
-        required: true
-        type: choice
-        default: all
-        options:
-          - all
-          - api-db
-          - ui
-          - integrated
+      all_scopes:
+        description: "ALL EXECUTION SCOPES (specific scopes selected below take priority)"
+        required: false
+        type: boolean
+        default: true
 
-      feature:
-        description: Functional feature
-        required: true
-        type: choice
-        default: all
-        options:
-          - all
-          - auth
-          - shell
-          - catalog
-          - product-details
-          - add-to-cart
-          - cart
-          - checkout
-          - orders
-          - admin-products
-          - platform
+      api_db:
+        description: "Scope: API + DB"
+        required: false
+        type: boolean
+        default: false
+
+      ui:
+        description: "Scope: Isolated UI"
+        required: false
+        type: boolean
+        default: false
+
+      integrated:
+        description: "Scope: Integrated"
+        required: false
+        type: boolean
+        default: false
+
+      all_features:
+        description: "ALL FEATURES (specific features selected below take priority)"
+        required: false
+        type: boolean
+        default: true
+
+      auth:
+        description: "Feature: Auth"
+        required: false
+        type: boolean
+        default: false
+
+      shell:
+        description: "Feature: Shell"
+        required: false
+        type: boolean
+        default: false
+
+      catalog:
+        description: "Feature: Catalog"
+        required: false
+        type: boolean
+        default: false
+
+      product_details:
+        description: "Feature: Product Details"
+        required: false
+        type: boolean
+        default: false
+
+      add_to_cart:
+        description: "Feature: Add to Cart"
+        required: false
+        type: boolean
+        default: false
+
+      cart:
+        description: "Feature: Cart"
+        required: false
+        type: boolean
+        default: false
+
+      checkout:
+        description: "Feature: Checkout"
+        required: false
+        type: boolean
+        default: false
+
+      orders:
+        description: "Feature: Orders"
+        required: false
+        type: boolean
+        default: false
+
+      admin_products:
+        description: "Feature: Admin Products"
+        required: false
+        type: boolean
+        default: false
+
+      platform:
+        description: "Feature: Platform"
+        required: false
+        type: boolean
+        default: false
 
       chromium:
-        description: Run Chromium
+        description: "Browser: Chromium (default)"
         required: false
         type: boolean
         default: true
 
       firefox:
-        description: Run Firefox
+        description: "Browser: Firefox"
         required: false
         type: boolean
         default: false
 
       webkit:
-        description: Run WebKit
+        description: "Browser: WebKit"
         required: false
         type: boolean
         default: false
@@ -65,16 +151,107 @@ jobs:
     timeout-minutes: 5
 
     outputs:
-      browsers: ${{ steps.browsers.outputs.browsers }}
+      scope: ${{ steps.selection.outputs.scope }}
+      feature: ${{ steps.selection.outputs.feature }}
+      browsers: ${{ steps.selection.outputs.browsers }}
 
     steps:
-      - name: Build browser list
-        id: browsers
+      - name: Build targeted selection
+        id: selection
         env:
+          ALL_SCOPES: ${{ inputs.all_scopes }}
+          API_DB: ${{ inputs.api_db }}
+          UI: ${{ inputs.ui }}
+          INTEGRATED: ${{ inputs.integrated }}
+          ALL_FEATURES: ${{ inputs.all_features }}
+          AUTH: ${{ inputs.auth }}
+          SHELL: ${{ inputs.shell }}
+          CATALOG: ${{ inputs.catalog }}
+          PRODUCT_DETAILS: ${{ inputs.product_details }}
+          ADD_TO_CART: ${{ inputs.add_to_cart }}
+          CART: ${{ inputs.cart }}
+          CHECKOUT: ${{ inputs.checkout }}
+          ORDERS: ${{ inputs.orders }}
+          ADMIN_PRODUCTS: ${{ inputs.admin_products }}
+          PLATFORM: ${{ inputs.platform }}
           CHROMIUM: ${{ inputs.chromium }}
           FIREFOX: ${{ inputs.firefox }}
           WEBKIT: ${{ inputs.webkit }}
         run: |
+          scopes=()
+
+          if [[ "$API_DB" == "true" ]]; then
+            scopes+=("api-db")
+          fi
+
+          if [[ "$UI" == "true" ]]; then
+            scopes+=("ui")
+          fi
+
+          if [[ "$INTEGRATED" == "true" ]]; then
+            scopes+=("integrated")
+          fi
+
+          if [[ ${#scopes[@]} -gt 0 ]]; then
+            scope_value="$(IFS=,; echo "${scopes[*]}")"
+          elif [[ "$ALL_SCOPES" == "true" ]]; then
+            scope_value="all"
+          else
+            echo "ERROR: Select ALL EXECUTION SCOPES or at least one specific execution scope."
+            exit 1
+          fi
+
+          features=()
+
+          if [[ "$AUTH" == "true" ]]; then
+            features+=("auth")
+          fi
+
+          if [[ "$SHELL" == "true" ]]; then
+            features+=("shell")
+          fi
+
+          if [[ "$CATALOG" == "true" ]]; then
+            features+=("catalog")
+          fi
+
+          if [[ "$PRODUCT_DETAILS" == "true" ]]; then
+            features+=("product-details")
+          fi
+
+          if [[ "$ADD_TO_CART" == "true" ]]; then
+            features+=("add-to-cart")
+          fi
+
+          if [[ "$CART" == "true" ]]; then
+            features+=("cart")
+          fi
+
+          if [[ "$CHECKOUT" == "true" ]]; then
+            features+=("checkout")
+          fi
+
+          if [[ "$ORDERS" == "true" ]]; then
+            features+=("orders")
+          fi
+
+          if [[ "$ADMIN_PRODUCTS" == "true" ]]; then
+            features+=("admin-products")
+          fi
+
+          if [[ "$PLATFORM" == "true" ]]; then
+            features+=("platform")
+          fi
+
+          if [[ ${#features[@]} -gt 0 ]]; then
+            feature_value="$(IFS=,; echo "${features[*]}")"
+          elif [[ "$ALL_FEATURES" == "true" ]]; then
+            feature_value="all"
+          else
+            echo "ERROR: Select ALL FEATURES or at least one specific feature."
+            exit 1
+          fi
+
           browsers=()
 
           if [[ "$CHROMIUM" == "true" ]]; then
@@ -89,23 +266,46 @@ jobs:
             browsers+=('"webkit"')
           fi
 
-          # No browser selected means Chromium by default.
+          browser_required=false
+
+          if [[ "$scope_value" == "all" || "$UI" == "true" || "$INTEGRATED" == "true" ]]; then
+            browser_required=true
+          fi
+
+          if [[ "$browser_required" == "true" && ${#browsers[@]} -eq 0 ]]; then
+            echo "ERROR: Select at least one browser for Isolated UI or Integrated execution."
+            exit 1
+          fi
+
+          # API + DB does not use a browser. Keep Chromium as the harmless
+          # transport default when no browser is selected so the reusable
+          # workflow still receives a valid browser array.
           if [[ ${#browsers[@]} -eq 0 ]]; then
             browsers+=('"chromium"')
           fi
 
           browser_json="[$(IFS=,; echo "${browsers[*]}")]"
 
+          echo "scope=$scope_value" >> "$GITHUB_OUTPUT"
+          echo "feature=$feature_value" >> "$GITHUB_OUTPUT"
           echo "browsers=$browser_json" >> "$GITHUB_OUTPUT"
-          echo "Browsers: $browser_json"
+
+          echo "Execution scopes: $scope_value"
+          echo "Features: $feature_value"
+
+          if [[ "$browser_required" == "true" ]]; then
+            echo "Browsers: $browser_json"
+          else
+            echo "Browsers: not applicable for API + DB only"
+          fi
 
   regression:
     name: Targeted regression
     needs: prepare
     uses: ./.github/workflows/regression.yml
     with:
-      scope: ${{ inputs.scope }}
-      feature: ${{ inputs.feature }}
+      scope: ${{ needs.prepare.outputs.scope }}
+      feature: ${{ needs.prepare.outputs.feature }}
       smoke_only: false
       browsers: ${{ needs.prepare.outputs.browsers }}
       full_regression: false

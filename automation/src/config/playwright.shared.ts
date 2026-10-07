@@ -57,6 +57,7 @@ export const getSelectedBrowsers = (): Browser[] => {
 };
 
 const FEATURE_TAG_PREFIX = "@feature-";
+const ALL_FEATURE_VALUE = "all";
 
 // A tag must end here, so "@feature-product" never matches "@feature-product-details".
 const TAG_END_PATTERN = "(?![A-Za-z0-9_-])";
@@ -65,26 +66,54 @@ const SUPPORTED_FEATURES = Object.values(FeatureTag).map((tag) =>
   tag.replace(FEATURE_TAG_PREFIX, ""),
 );
 
-// Reads the FEATURE variable, e.g. FEATURE="checkout".
+// Reads the FEATURE variable, e.g. FEATURE="cart,checkout".
 // Without FEATURE, or with FEATURE="all", tests of every feature are selected.
-const getSelectedFeatureTag = (): string | undefined => {
+// Multiple specific features are combined with OR.
+const getSelectedFeatureTags = (): string[] => {
   const featureValue = process.env.FEATURE;
 
-  if (featureValue === undefined || featureValue === "all") {
-    return undefined;
+  if (featureValue === undefined || featureValue === ALL_FEATURE_VALUE) {
+    return [];
   }
 
-  const featureTag = Object.values(FeatureTag).find(
-    (tag) => tag === `${FEATURE_TAG_PREFIX}${featureValue}`,
-  );
+  const rawFeatures = featureValue
+    .split(",")
+    .map((feature) => feature.trim())
+    .filter((feature) => feature !== "");
 
-  if (featureTag === undefined) {
+  if (rawFeatures.length === 0) {
     throw new Error(
-      `Unsupported FEATURE: "${featureValue}". Supported: all, ${SUPPORTED_FEATURES.join(", ")}`,
+      `FEATURE is set but lists no features. Supported: ${ALL_FEATURE_VALUE}, ${SUPPORTED_FEATURES.join(", ")}`,
     );
   }
 
-  return featureTag;
+  if (rawFeatures.includes(ALL_FEATURE_VALUE)) {
+    throw new Error(
+      `FEATURE cannot combine "${ALL_FEATURE_VALUE}" with specific features. ` +
+        `Supported: ${ALL_FEATURE_VALUE}, ${SUPPORTED_FEATURES.join(", ")}`,
+    );
+  }
+
+  const selectedFeatureTags: string[] = [];
+
+  for (const rawFeature of rawFeatures) {
+    const featureTag = Object.values(FeatureTag).find(
+      (tag) => tag === `${FEATURE_TAG_PREFIX}${rawFeature}`,
+    );
+
+    if (featureTag === undefined) {
+      throw new Error(
+        `Unsupported FEATURE value: "${rawFeature}". ` +
+          `Supported: ${ALL_FEATURE_VALUE}, ${SUPPORTED_FEATURES.join(", ")}`,
+      );
+    }
+
+    if (!selectedFeatureTags.includes(featureTag)) {
+      selectedFeatureTags.push(featureTag);
+    }
+  }
+
+  return selectedFeatureTags;
 };
 
 // Reads the SMOKE_ONLY variable. GitHub Actions passes booleans as "true" or "false",
@@ -104,26 +133,27 @@ const isSmokeOnly = (): boolean => {
 };
 
 // Builds the Playwright grep for FEATURE and SMOKE_ONLY.
-// Each required tag becomes a lookahead, so a test must have all of them.
+// Specific features are ORed together; smoke remains an independent AND condition.
 // Configs apply this grep to product test projects only, never to database-setup.
 export const getTestSelectionGrep = (): RegExp | undefined => {
-  const requiredTags: string[] = [];
+  const lookaheads: string[] = [];
+  const selectedFeatureTags = getSelectedFeatureTags();
 
-  const selectedFeatureTag = getSelectedFeatureTag();
+  if (selectedFeatureTags.length > 0) {
+    const featureAlternatives = selectedFeatureTags
+      .map((tag) => `${tag}${TAG_END_PATTERN}`)
+      .join("|");
 
-  if (selectedFeatureTag !== undefined) {
-    requiredTags.push(selectedFeatureTag);
+    lookaheads.push(`(?=.*(?:${featureAlternatives}))`);
   }
 
   if (isSmokeOnly()) {
-    requiredTags.push(SuiteTag.Smoke);
+    lookaheads.push(`(?=.*${SuiteTag.Smoke}${TAG_END_PATTERN})`);
   }
 
-  if (requiredTags.length === 0) {
+  if (lookaheads.length === 0) {
     return undefined;
   }
-
-  const lookaheads = requiredTags.map((tag) => `(?=.*${tag}${TAG_END_PATTERN})`);
 
   return new RegExp(`^${lookaheads.join("")}`);
 };
