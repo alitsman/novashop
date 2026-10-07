@@ -1,0 +1,112 @@
+name: Manual Targeted Regression
+
+run-name: >-
+  Targeted ·
+  ${{ inputs.scope == 'all' && 'all-layers' || inputs.scope }} ·
+  ${{ inputs.feature == 'all' && 'all-features' || inputs.feature }}${{ inputs.scope != 'api-db' && ' · ' || '' }}${{ inputs.scope != 'api-db' && inputs.chromium && 'chromium ' || '' }}${{ inputs.scope != 'api-db' && inputs.firefox && 'firefox ' || '' }}${{ inputs.scope != 'api-db' && inputs.webkit && 'webkit' || '' }}${{ inputs.scope != 'api-db' && !inputs.chromium && !inputs.firefox && !inputs.webkit && 'chromium (default)' || '' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Execution scope
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - api-db
+          - ui
+          - integrated
+
+      feature:
+        description: Functional feature
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - auth
+          - shell
+          - catalog
+          - product-details
+          - add-to-cart
+          - cart
+          - checkout
+          - orders
+          - admin-products
+          - platform
+
+      chromium:
+        description: Run Chromium
+        required: false
+        type: boolean
+        default: true
+
+      firefox:
+        description: Run Firefox
+        required: false
+        type: boolean
+        default: false
+
+      webkit:
+        description: Run WebKit
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare manual inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    outputs:
+      browsers: ${{ steps.browsers.outputs.browsers }}
+
+    steps:
+      - name: Build browser list
+        id: browsers
+        env:
+          CHROMIUM: ${{ inputs.chromium }}
+          FIREFOX: ${{ inputs.firefox }}
+          WEBKIT: ${{ inputs.webkit }}
+        run: |
+          browsers=()
+
+          if [[ "$CHROMIUM" == "true" ]]; then
+            browsers+=('"chromium"')
+          fi
+
+          if [[ "$FIREFOX" == "true" ]]; then
+            browsers+=('"firefox"')
+          fi
+
+          if [[ "$WEBKIT" == "true" ]]; then
+            browsers+=('"webkit"')
+          fi
+
+          # No browser selected means Chromium by default.
+          if [[ ${#browsers[@]} -eq 0 ]]; then
+            browsers+=('"chromium"')
+          fi
+
+          browser_json="[$(IFS=,; echo "${browsers[*]}")]"
+
+          echo "browsers=$browser_json" >> "$GITHUB_OUTPUT"
+          echo "Browsers: $browser_json"
+
+  regression:
+    name: Targeted regression
+    needs: prepare
+    uses: ./.github/workflows/regression.yml
+    with:
+      scope: ${{ inputs.scope }}
+      feature: ${{ inputs.feature }}
+      smoke_only: false
+      browsers: ${{ needs.prepare.outputs.browsers }}
+      full_regression: false
+      merge_gate: false

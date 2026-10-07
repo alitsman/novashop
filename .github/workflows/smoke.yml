@@ -1,0 +1,82 @@
+name: Smoke
+
+run-name: >-
+  Smoke ·
+  ${{ inputs.chromium && 'chromium ' || '' }}${{ inputs.firefox && 'firefox ' || '' }}${{ inputs.webkit && 'webkit' || '' }}${{ !inputs.chromium && !inputs.firefox && !inputs.webkit && 'chromium (default)' || '' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      chromium:
+        description: Run Chromium
+        required: false
+        type: boolean
+        default: true
+
+      firefox:
+        description: Run Firefox
+        required: false
+        type: boolean
+        default: false
+
+      webkit:
+        description: Run WebKit
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare smoke inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    outputs:
+      browsers: ${{ steps.browsers.outputs.browsers }}
+
+    steps:
+      - name: Build browser list
+        id: browsers
+        env:
+          CHROMIUM: ${{ inputs.chromium }}
+          FIREFOX: ${{ inputs.firefox }}
+          WEBKIT: ${{ inputs.webkit }}
+        run: |
+          browsers=()
+
+          if [[ "$CHROMIUM" == "true" ]]; then
+            browsers+=('"chromium"')
+          fi
+
+          if [[ "$FIREFOX" == "true" ]]; then
+            browsers+=('"firefox"')
+          fi
+
+          if [[ "$WEBKIT" == "true" ]]; then
+            browsers+=('"webkit"')
+          fi
+
+          # No browser selected means Chromium by default.
+          if [[ ${#browsers[@]} -eq 0 ]]; then
+            browsers+=('"chromium"')
+          fi
+
+          browser_json="[$(IFS=,; echo "${browsers[*]}")]"
+
+          echo "browsers=$browser_json" >> "$GITHUB_OUTPUT"
+          echo "Browsers: $browser_json"
+
+  regression:
+    name: Smoke
+    needs: prepare
+    uses: ./.github/workflows/regression.yml
+    with:
+      scope: all
+      feature: all
+      smoke_only: true
+      browsers: ${{ needs.prepare.outputs.browsers }}
+      full_regression: false
+      merge_gate: false
