@@ -95,6 +95,28 @@ export async function prepareProductDeleteSuccess(page: Page, productId: string)
   });
 }
 
+export async function prepareProductDeleteError(
+  page: Page,
+  productId: string,
+  status: number,
+  response: unknown,
+): Promise<void> {
+  const validatedResponse = apiErrorResponseSchema.parse(response);
+
+  await page.route(buildProductDetailsApiUrl(productId), async (route) => {
+    if (route.request().method() !== "DELETE") {
+      await route.fallback();
+
+      return;
+    }
+
+    await route.fulfill({
+      status,
+      json: validatedResponse,
+    });
+  });
+}
+
 export async function prepareProductDetailsNotFound(page: Page, productId: string): Promise<void> {
   await prepareProductDetailsResponse(page, productId, {
     status: 404,

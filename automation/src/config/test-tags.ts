@@ -22,4 +22,5 @@ export const FeatureTag = {
 // A test can belong to one or more features and optionally to a suite such as smoke.
 export const SuiteTag = {
   Smoke: "@suite-smoke",
+  A11y: "@suite-a11y",
 } as const;

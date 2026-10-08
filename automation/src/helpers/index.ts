@@ -1,3 +1,4 @@
+export { expectNoAccessibilityViolations } from "./accessibility.helper";
 export { expectSingleValidationError } from "./api-validation.helper";
 export { loginViaApi, registerUserViaApi } from "./auth-api.helper";
 export {
@@ -27,6 +28,7 @@ export {
 export {
   holdProductDetailsUntilReleased,
   prepareProductDeleteSuccess,
+  prepareProductDeleteError,
   prepareProductDetails,
   prepareProductDetailsNotFound,
   prepareProductDetailsServerFailure,
