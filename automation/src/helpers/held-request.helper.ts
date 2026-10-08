@@ -54,6 +54,25 @@ export async function holdRequestUntilReleased(
   let deadlineError: Error | null = null;
   let handlerError: Error | null = null;
   let disposePromise: Promise<void> | null = null;
+  let deadlineTimer: NodeJS.Timeout | null = null;
+  let released = false;
+
+  // The deadline catches a test that never releases a held request, so it starts
+  // when a request is actually held, not when the route is registered.
+  const startDeadline = (): void => {
+    if (released || deadlineTimer !== null) {
+      return;
+    }
+
+    deadlineTimer = setTimeout(() => {
+      deadlineError = new Error(
+        `Held request was not released within ${deadlineMs} ms: ${expectedMethod} ${url}`,
+      );
+
+      requestObservedSignal.reject(deadlineError);
+      releaseSignal.resolve();
+    }, deadlineMs);
+  };
 
   const completeRequest = async (route: Route): Promise<void> => {
     try {
@@ -79,6 +98,7 @@ export async function holdRequestUntilReleased(
       return;
     }
 
+    startDeadline();
     requestObservedSignal.resolve();
 
     const requestCompletion = completeRequest(route);
@@ -94,17 +114,14 @@ export async function holdRequestUntilReleased(
 
   await page.route(url, routeHandler);
 
-  const deadlineTimer = setTimeout(() => {
-    deadlineError = new Error(
-      `Held request was not released within ${deadlineMs} ms: ${expectedMethod} ${url}`,
-    );
-
-    requestObservedSignal.reject(deadlineError);
-    releaseSignal.resolve();
-  }, deadlineMs);
-
   const release = (): void => {
-    clearTimeout(deadlineTimer);
+    released = true;
+
+    if (deadlineTimer !== null) {
+      clearTimeout(deadlineTimer);
+      deadlineTimer = null;
+    }
+
     releaseSignal.resolve();
   };
 
