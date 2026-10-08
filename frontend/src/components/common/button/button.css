@@ -38,7 +38,7 @@
 .button--secondary:hover:not(:disabled) {
   border-color: var(--color-primary);
   background-color: var(--color-primary-soft);
-  color: var(--color-primary);
+  color: var(--color-primary-on-soft);
 }
 
 .button--danger {
