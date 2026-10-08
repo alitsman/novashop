@@ -110,7 +110,7 @@
 .admin-products-table__edit-link:hover {
   border-color: var(--color-primary);
   background-color: var(--color-primary-soft);
-  color: var(--color-primary);
+  color: var(--color-primary-on-soft);
 }
 
 .admin-products-table__edit-link:active {
