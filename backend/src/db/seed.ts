@@ -3,15 +3,59 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { PoolClient } from "pg";
 
-import { mapSeedProductToProductInsertData } from "../modules/products/index.js";
-import type { ProductInsertData, SeedProductData } from "../modules/products/index.js";
-import { mapSeedUserToUserInsertData } from "../modules/users/index.js";
-import type { SeedUserData, UserInsertData } from "../modules/users/index.js";
+// Import mappers and types from their own files, not from module index files.
+// The module index files also export routers, which load config/env.ts and
+// validate all application variables before the seed can check its own config.
+import { mapSeedProductToProductInsertData } from "../modules/products/productMapper.js";
+import type { ProductInsertData, SeedProductData } from "../modules/products/productTypes.js";
+import { mapSeedUserToUserInsertData } from "../modules/users/userMapper.js";
+import { UserRole } from "../modules/users/userTypes.js";
+import type { SeedUserData, UserInsertData } from "../modules/users/userTypes.js";
 
-import { pool } from "./pool.js";
+import { assertTestDatabaseUrl } from "./testDatabaseGuard.js";
 
 const BCRYPT_SALT_ROUNDS = 10;
 const SEED_DATA_DIRECTORY = resolve(process.cwd(), "seed-data");
+
+// Known passwords from users.json are allowed only with this flag and only for the test database.
+const TEST_CREDENTIALS_FLAG = "--test-credentials";
+
+// bcrypt uses only the first 72 bytes of a password, so generated passwords should stay below that.
+const MIN_ADMIN_PASSWORD_LENGTH = 16;
+
+type SeedConfig =
+  { useTestCredentials: true } | { useTestCredentials: false; adminPassword: string };
+
+// Validates arguments and environment before any database connection is opened.
+const resolveSeedConfig = (): SeedConfig => {
+  const args = process.argv.slice(2);
+
+  if (args.length > 1 || (args.length === 1 && args[0] !== TEST_CREDENTIALS_FLAG)) {
+    throw new Error("Unsupported seed arguments.");
+  }
+
+  if (args[0] === TEST_CREDENTIALS_FLAG) {
+    const databaseUrl = process.env.DATABASE_URL;
+
+    if (!databaseUrl) {
+      throw new Error("DATABASE_URL is required for test seed.");
+    }
+
+    assertTestDatabaseUrl(databaseUrl);
+
+    return { useTestCredentials: true };
+  }
+
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminPassword || adminPassword.length < MIN_ADMIN_PASSWORD_LENGTH) {
+    throw new Error(
+      `ADMIN_PASSWORD must contain at least ${MIN_ADMIN_PASSWORD_LENGTH} characters.`,
+    );
+  }
+
+  return { useTestCredentials: false, adminPassword };
+};
 
 const readJsonFile = async <T>(filename: string): Promise<T> => {
   const filePath = resolve(SEED_DATA_DIRECTORY, filename);
@@ -26,6 +70,22 @@ const readSeedUsers = async (): Promise<SeedUserData[]> => {
 
 const readSeedProducts = async (): Promise<SeedProductData[]> => {
   return readJsonFile<SeedProductData[]>("products.json");
+};
+
+// Test seed keeps all users from users.json.
+// Regular seed creates only the admin, with the password from ADMIN_PASSWORD.
+const selectSeedUsers = (users: SeedUserData[], config: SeedConfig): SeedUserData[] => {
+  if (config.useTestCredentials) {
+    return users;
+  }
+
+  const admin = users.find((user) => user.role === UserRole.Admin);
+
+  if (!admin) {
+    throw new Error("Admin user is missing from seed data.");
+  }
+
+  return [{ ...admin, password: config.adminPassword }];
 };
 
 const insertUser = async (client: PoolClient, user: UserInsertData): Promise<void> => {
@@ -100,28 +160,45 @@ const seedProducts = async (client: PoolClient, products: SeedProductData[]): Pr
 };
 
 const runSeed = async (): Promise<void> => {
-  const users = await readSeedUsers();
+  const config = resolveSeedConfig();
+
+  const users = selectSeedUsers(await readSeedUsers(), config);
   const products = await readSeedProducts();
 
-  const client = await pool.connect();
+  // pool.ts loads config/env.ts, which validates all application variables on import.
+  // Importing it only after resolveSeedConfig() keeps seed configuration errors first.
+  const { pool } = await import("./pool.js");
 
+  // The outer finally closes the pool even when the connection itself fails.
   try {
-    await client.query("BEGIN");
+    const client = await pool.connect();
 
-    await seedUsers(client, users);
-    await seedProducts(client, products);
+    try {
+      await client.query("BEGIN");
 
-    await client.query("COMMIT");
+      await seedUsers(client, users);
+      await seedProducts(client, products);
 
-    console.log(`Seeded users: ${users.length}`);
-    console.log(`Seeded products: ${products.length}`);
-    console.log("Seed completed.");
-  } catch (error) {
-    await client.query("ROLLBACK");
+      await client.query("COMMIT");
 
-    throw error;
+      console.log(`Seeded users: ${users.length}`);
+      console.log(`Seeded products: ${products.length}`);
+      console.log("Seed completed.");
+    } catch (error) {
+      // A failed ROLLBACK must not hide the error that caused it.
+      try {
+        await client.query("ROLLBACK");
+      } catch (rollbackError) {
+        console.error("Seed rollback failed.");
+        console.error(rollbackError);
+      }
+
+      throw error;
+    } finally {
+      client.release();
+    }
   } finally {
-    client.release();
+    await pool.end();
   }
 };
 
@@ -132,6 +209,4 @@ try {
   console.error(error);
 
   process.exitCode = 1;
-} finally {
-  await pool.end();
 }
