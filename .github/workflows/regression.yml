@@ -101,6 +101,7 @@ jobs:
       run_api_db: ${{ steps.resolve.outputs.run_api_db }}
       run_ui: ${{ steps.resolve.outputs.run_ui }}
       run_integrated: ${{ steps.resolve.outputs.run_integrated }}
+      playwright_version: ${{ steps.playwright.outputs.version }}
 
     steps:
       - name: Check out repository
@@ -124,6 +125,14 @@ jobs:
           SCOPE: ${{ inputs.scope }}
           BROWSERS: ${{ join(fromJSON(inputs.browsers), ',') }}
         run: npm run resolve:selection
+
+      # Match the official browser container image to the installed Playwright version.
+      - name: Resolve Playwright version
+        id: playwright
+        working-directory: automation
+        run: |
+          VERSION=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
   api-db:
     name: API + DB
@@ -207,6 +216,13 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
+    # The official Playwright image includes browsers and system dependencies.
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.selection.outputs.playwright_version }}-noble
+      # Match the GitHub Actions runner UID, as recommended in Playwright's CI documentation.
+      # This also avoids Firefox startup issues when running as root.
+      options: --user 1001
+
     strategy:
       fail-fast: false
       matrix:
@@ -235,12 +251,6 @@ jobs:
       - name: Install automation dependencies
         working-directory: automation
         run: npm ci
-
-      - name: Install browser
-        working-directory: automation
-        env:
-          BROWSER: ${{ matrix.browser }}
-        run: npx playwright install --with-deps "$BROWSER"
 
       - name: Run isolated UI regression
         working-directory: automation
@@ -273,6 +283,13 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
+    # The official Playwright image includes browsers and system dependencies.
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.selection.outputs.playwright_version }}-noble
+      # Match the GitHub Actions runner UID, as recommended in Playwright's CI documentation.
+      # This also avoids Firefox startup issues when running as root.
+      options: --user 1001
+
     strategy:
       fail-fast: false
       matrix:
@@ -280,6 +297,8 @@ jobs:
 
     env:
       BROWSERS: ${{ matrix.browser }}
+      # Job containers connect to services by their service name.
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/novashop_test
 
     services:
       postgres:
@@ -288,8 +307,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: novashop_test
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U postgres -d novashop_test"
           --health-interval 10s
@@ -321,12 +338,6 @@ jobs:
       - name: Install automation dependencies
         working-directory: automation
         run: npm ci
-
-      - name: Install browser
-        working-directory: automation
-        env:
-          BROWSER: ${{ matrix.browser }}
-        run: npx playwright install --with-deps "$BROWSER"
 
       - name: Run integrated browser regression
         working-directory: automation
@@ -395,7 +406,7 @@ jobs:
         working-directory: automation
         env:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/merged
-        run: npx playwright merge-reports --reporter=html blob-reports
+        run: npx playwright merge-reports --config=playwright.merge.config.ts --reporter=html blob-reports
 
       - name: Upload merged Playwright report
         uses: actions/upload-artifact@v7
