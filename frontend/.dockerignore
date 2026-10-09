@@ -1,0 +1,27 @@
+# Local dependencies and compiled output
+node_modules
+dist
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and temporary files
+*.log
+npm-debug.log*
+coverage
+test-results
+playwright-report
+tmp
+temp
+
+# Git and editor files
+.git
+.gitignore
+.vscode
+.idea
+
+# Docker configuration
+Dockerfile
+.dockerignore
