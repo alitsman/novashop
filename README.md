@@ -27,14 +27,16 @@ The cart stays in browser storage and is not synchronized across devices. Prices
 
 Checkout creates orders through `POST /orders`, and order history loads through `GET /orders`. The backend calculates order totals and updates product stock.
 
-## Demo accounts
+## Local test accounts
 
-The backend seed creates two demo accounts:
+The test database seed (`npm run seed:test` in `backend/`) creates two accounts for automated testing:
 
 | Role  | Email            | Password    |
 | ----- | ---------------- | ----------- |
 | User  | `user@test.com`  | `User123!`  |
 | Admin | `admin@test.com` | `Admin123!` |
+
+These credentials are intended for the isolated test database only. The regular backend seed (`npm run seed`) requires `ADMIN_PASSWORD` in `backend/.env` and creates only the admin account with that password, along with the seed products.
 
 ## Documentation
 
