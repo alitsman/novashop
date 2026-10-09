@@ -2,6 +2,9 @@
   "name": "novashop-backend",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "type": "module",
   "description": "Backend API for the NovaShop full-stack diploma project.",
   "scripts": {
@@ -15,7 +18,7 @@
     "format": "prettier --write . --config ../.prettierrc.json --ignore-path ../.prettierignore",
     "format:check": "prettier --check . --config ../.prettierrc.json --ignore-path ../.prettierignore",
     "seed": "tsx --env-file=.env src/db/seed.ts",
-    "seed:test": "tsx --env-file-if-exists=../.env.test src/db/assertTestDatabase.ts && tsx --env-file-if-exists=../.env.test src/db/seed.ts",
+    "seed:test": "tsx --env-file-if-exists=../.env.test src/db/assertTestDatabase.ts && tsx --env-file-if-exists=../.env.test src/db/seed.ts --test-credentials",
     "db:reset:test": "tsx --env-file-if-exists=../.env.test src/db/recreateTestSchema.ts && npm run migrate:test && npm run seed:test",
     "check": "npm run lint && npm run format:check && npm run build"
   },
