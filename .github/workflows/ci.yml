@@ -22,3 +22,22 @@ jobs:
     with:
       browsers: '["chromium"]'
       merge_gate: ${{ github.event_name == 'pull_request' }}
+
+  docker-verification:
+    name: Docker verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Generate Docker CI secrets
+        shell: bash
+        run: |
+          echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)" >> "$GITHUB_ENV"
+          echo "JWT_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: Verify Docker environment
+        shell: bash
+        run: bash scripts/verify-docker.sh
