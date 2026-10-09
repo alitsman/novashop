@@ -18,10 +18,25 @@ const WCAG_21_AA_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 
 const DECORATIVE_PREVIEW_ACTIONS = ".admin-product-preview__actions";
 
+// CSS transitions can temporarily produce intermediate colors that fail contrast checks.
+// Wait for finite animations before scanning; infinite loading animations are excluded.
+// Cancelled animations reject their finished promise, so use allSettled.
+async function waitForFiniteAnimations(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const finiteAnimations = document
+      .getAnimations()
+      .filter((animation) => animation.effect?.getComputedTiming().endTime !== Infinity);
+
+    await Promise.allSettled(finiteAnimations.map((animation) => animation.finished));
+  });
+}
+
 export async function expectNoAccessibilityViolations(
   page: Page,
   testInfo: TestInfo,
 ): Promise<void> {
+  await waitForFiniteAnimations(page);
+
   const results = await new AxeBuilder({ page })
     .withTags(WCAG_21_AA_TAGS)
     .exclude(DECORATIVE_PREVIEW_ACTIONS)
