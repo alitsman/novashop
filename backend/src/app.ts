@@ -23,6 +23,7 @@ app.get("/health", (_request, response) => {
   response.json({
     status: "ok",
     service: "novashop-backend",
+    commit: process.env.RENDER_GIT_COMMIT || "local",
   });
 });
 
