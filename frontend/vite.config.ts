@@ -19,6 +19,10 @@ const validateApiUrl = (value: string | undefined): void => {
   }
 };
 
+// Builds without a deployment SHA (local dev, Docker, CI regression) show "local"
+// in the app-version meta tag. Vite substitutes %VITE_APP_COMMIT% in index.html.
+process.env.VITE_APP_COMMIT ||= "local";
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");

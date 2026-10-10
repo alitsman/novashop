@@ -1,0 +1,304 @@
+name: Deploy Demo
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: deploy-demo
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate deployment
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    outputs:
+      sha: ${{ steps.verify.outputs.sha }}
+      deploy: ${{ steps.verify.outputs.deploy }}
+
+    steps:
+      - name: Verify deployment event and commit
+        id: verify
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_EVENT: ${{ github.event.workflow_run.event }}
+          RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RUN_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          DISPATCH_REF: ${{ github.ref }}
+          DISPATCH_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            [[ "$RUN_CONCLUSION" == "success" ]]
+            [[ "$RUN_EVENT" == "push" ]]
+            [[ "$RUN_BRANCH" == "main" ]]
+            [[ "$RUN_REPOSITORY" == "$REPOSITORY" ]]
+
+            SHA="$RUN_SHA"
+
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            [[ "$DISPATCH_REF" == "refs/heads/main" ]]
+
+            SHA="$DISPATCH_SHA"
+
+            CI_COUNT="$(gh api \
+              "repos/$REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$SHA&branch=main&event=push&status=success&per_page=100" \
+              --jq '[.workflow_runs[] | select(.conclusion == "success")] | length')"
+
+            if [[ "$CI_COUNT" == "0" ]]; then
+              echo "No successful push CI run found for deployment SHA."
+              exit 1
+            fi
+
+          else
+            echo "Unsupported deployment event."
+            exit 1
+          fi
+
+          CURRENT_SHA="$(gh api \
+            "repos/$REPOSITORY/git/ref/heads/main" \
+            --jq '.object.sha')"
+
+          if [[ "$SHA" != "$CURRENT_SHA" ]]; then
+            echo "::notice::Skipping outdated deployment SHA."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "deploy=true" >> "$GITHUB_OUTPUT"
+          echo "Validated deployment SHA: $SHA"
+
+  deploy:
+    name: Deploy Render and Cloudflare
+    needs:
+      - validate
+    if: needs.validate.outputs.deploy == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: demo
+
+    env:
+      DEPLOY_SHA: ${{ needs.validate.outputs.sha }}
+      REPOSITORY: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      BACKEND_URL: https://novashop-api-zjj9.onrender.com
+      FRONTEND_URL: https://novashop-demo.pages.dev
+
+    steps:
+      - name: Check out validated commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.validate.outputs.sha }}
+          persist-credentials: false
+
+      - name: Verify checkout and current main
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CHECKOUT_SHA="$(git rev-parse HEAD)"
+          CURRENT_SHA="$(gh api \
+            "repos/$REPOSITORY/git/ref/heads/main" \
+            --jq '.object.sha')"
+
+          if [[ "$CHECKOUT_SHA" != "$DEPLOY_SHA" ||
+                "$CURRENT_SHA" != "$DEPLOY_SHA" ]]; then
+            echo "::notice::Deployment SHA is no longer current."
+            exit 1
+          fi
+
+          echo "Deploying commit: $DEPLOY_SHA"
+
+      - name: Verify deployment configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          [[ -n "$RENDER_DEPLOY_HOOK_URL" ]] || {
+            echo "Missing RENDER_DEPLOY_HOOK_URL."
+            exit 1
+          }
+
+          [[ -n "$CLOUDFLARE_API_TOKEN" ]] || {
+            echo "Missing CLOUDFLARE_API_TOKEN."
+            exit 1
+          }
+
+          [[ -n "$CLOUDFLARE_ACCOUNT_ID" ]] || {
+            echo "Missing CLOUDFLARE_ACCOUNT_ID."
+            exit 1
+          }
+
+          echo "Deployment configuration is present."
+
+      - name: Trigger Render deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --max-time 30 \
+            --output /dev/null \
+            "${RENDER_DEPLOY_HOOK_URL}&ref=${DEPLOY_SHA}"
+
+          echo "Render deployment requested for commit: $DEPLOY_SHA"
+
+      - name: Wait for Render deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for attempt in $(seq 1 60); do
+            RESPONSE="$(curl \
+              --silent \
+              --show-error \
+              --max-time 15 \
+              "$BACKEND_URL/health" || true)"
+
+            STATUS="$(printf '%s' "$RESPONSE" | jq -r '.status // empty' 2>/dev/null || true)"
+            COMMIT="$(printf '%s' "$RESPONSE" | jq -r '.commit // empty' 2>/dev/null || true)"
+
+            if [[ "$STATUS" == "ok" && "$COMMIT" == "$DEPLOY_SHA" ]]; then
+              echo "Render is serving the expected commit: $DEPLOY_SHA"
+              exit 0
+            fi
+
+            echo "Waiting for Render deployment ($attempt/60)..."
+            sleep 10
+          done
+
+          echo "Render did not serve the expected commit before timeout."
+          exit 1
+
+      - name: Verify Render database connection
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RESPONSE="$(curl \
+            --fail \
+            --silent \
+            --show-error \
+            --retry 3 \
+            --retry-delay 5 \
+            --max-time 30 \
+            "$BACKEND_URL/health/db")"
+
+          echo "$RESPONSE" | jq -e '
+            .status == "ok" and
+            .database == "connected"
+          ' > /dev/null
+
+          echo "Render database connection verified."
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build production frontend
+        working-directory: frontend
+        env:
+          VITE_API_URL: https://novashop-api-zjj9.onrender.com
+          VITE_APP_COMMIT: ${{ needs.validate.outputs.sha }}
+        run: npm run build
+
+      - name: Verify frontend build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          grep -Fq "content=\"$DEPLOY_SHA\"" frontend/dist/index.html
+
+          if grep -Fq '%VITE_APP_COMMIT%' frontend/dist/index.html; then
+            echo "Unresolved frontend commit placeholder."
+            exit 1
+          fi
+
+          echo "Frontend build contains the expected commit."
+
+      - name: Deploy Cloudflare Pages
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          npx --yes wrangler@4 pages deploy frontend/dist \
+            --project-name=novashop-demo \
+            --branch=main \
+            --commit-hash="$DEPLOY_SHA"
+
+      - name: Verify Cloudflare Pages deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for attempt in $(seq 1 30); do
+            HTML="$(curl \
+              --fail \
+              --silent \
+              --show-error \
+              --max-time 15 \
+              "$FRONTEND_URL/" || true)"
+
+            if printf '%s' "$HTML" | grep -Fq "content=\"$DEPLOY_SHA\""; then
+              echo "Cloudflare Pages is serving the expected commit."
+              exit 0
+            fi
+
+            echo "Waiting for Cloudflare Pages ($attempt/30)..."
+            sleep 10
+          done
+
+          echo "Cloudflare Pages did not serve the expected commit."
+          exit 1
+
+      - name: Deployment summary
+        shell: bash
+        run: |
+          {
+            echo "## NovaShop Demo Deployment"
+            echo ""
+            echo "**Commit:** \`$DEPLOY_SHA\`"
+            echo ""
+            echo "**Backend:** $BACKEND_URL"
+            echo ""
+            echo "**Frontend:** $FRONTEND_URL"
+            echo ""
+            echo "Render and Cloudflare Pages version checks passed."
+          } >> "$GITHUB_STEP_SUMMARY"
