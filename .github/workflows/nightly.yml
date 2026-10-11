@@ -3,6 +3,8 @@ name: Nightly Full Regression
 on:
   schedule:
     - cron: "23 0 * * *"
+  # Manual start runs the same regression and publishes its report.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,3 +17,50 @@ jobs:
       browsers: '["chromium","firefox","webkit"]'
       full_regression: true
       merge_gate: false
+
+  # Publishes the latest merged HTML report to GitHub Pages, also when tests fail:
+  # a red report is useful information too.
+  publish-report:
+    name: Publish report
+    needs: regression
+    # Only main may publish. The github-pages environment also allows only main.
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    # Deploys never overlap. The run that reaches this job last publishes last,
+    # which is not always the newest run.
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+
+    steps:
+      # The report is missing when regression stops before Report merge.
+      # Then nothing is published and the previous report stays online.
+      - name: Download merged Playwright report
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report
+
+      - name: Report not found
+        if: steps.download.outcome != 'success'
+        run: echo "::warning::Merged Playwright report not found. The previous report stays published."
+
+      - name: Upload Pages artifact
+        if: steps.download.outcome == 'success'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: playwright-report
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        if: steps.download.outcome == 'success'
+        uses: actions/deploy-pages@v5
