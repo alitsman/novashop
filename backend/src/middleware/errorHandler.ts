@@ -17,6 +17,9 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
     return;
   }
 
+  // Unexpected errors are logged for the server logs. The response hides their details.
+  console.error(error);
+
   response.status(500).json({
     error: {
       code: "INTERNAL_SERVER_ERROR",

@@ -3,7 +3,7 @@ import express from "express";
 
 import { env } from "./config/env.js";
 import { checkDbConnection } from "./db/index.js";
-import { errorHandler, notFoundHandler } from "./middleware/index.js";
+import { errorHandler, jsonBodyErrorHandler, notFoundHandler } from "./middleware/index.js";
 
 import { authRouter } from "./modules/auth/index.js";
 import { orderRouter } from "./modules/orders/index.js";
@@ -18,6 +18,7 @@ app.use(
   }),
 );
 app.use(express.json());
+app.use(jsonBodyErrorHandler);
 
 app.get("/health", (_request, response) => {
   response.json({
