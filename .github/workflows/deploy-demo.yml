@@ -101,6 +101,9 @@ jobs:
     timeout-minutes: 30
     environment: demo
 
+    outputs:
+      playwright_version: ${{ steps.playwright.outputs.version }}
+
     env:
       DEPLOY_SHA: ${{ needs.validate.outputs.sha }}
       REPOSITORY: ${{ github.repository }}
@@ -135,6 +138,14 @@ jobs:
           fi
 
           echo "Deploying commit: $DEPLOY_SHA"
+
+      # The smoke job uses the official Playwright container, which must match this version.
+      - name: Resolve Playwright version
+        id: playwright
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./automation/package-lock.json').packages['node_modules/@playwright/test'].version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Verify deployment configuration
         shell: bash
@@ -302,3 +313,57 @@ jobs:
             echo ""
             echo "Render and Cloudflare Pages version checks passed."
           } >> "$GITHUB_STEP_SUMMARY"
+
+  smoke:
+    name: Post-deploy smoke (Chromium)
+    needs:
+      - validate
+      - deploy
+    if: needs.deploy.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: demo
+
+    # Same approach as the regression jobs: browsers and system dependencies come with the image.
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.deploy.outputs.playwright_version }}-noble
+      # Run as the runner user, as in the official Playwright GitHub Actions example.
+      options: --user 1001
+
+    env:
+      CI: "true"
+      DEMO_FRONTEND_URL: ${{ vars.DEMO_FRONTEND_URL }}
+      DEMO_API_URL: ${{ vars.DEMO_API_URL }}
+      SMOKE_USER_EMAIL: ${{ secrets.SMOKE_USER_EMAIL }}
+      SMOKE_USER_PASSWORD: ${{ secrets.SMOKE_USER_PASSWORD }}
+
+    steps:
+      - name: Check out deployed commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.validate.outputs.sha }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: automation/package-lock.json
+
+      - name: Install automation dependencies
+        working-directory: automation
+        run: npm ci
+
+      - name: Run post-deploy smoke tests
+        working-directory: automation
+        run: npx playwright test --config=playwright.post-deploy.config.ts
+
+      - name: Upload post-deploy smoke screenshots
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: post-deploy-smoke-screenshots
+          path: automation/test-results/post-deploy/**/*.png
+          if-no-files-found: ignore
+          retention-days: 3
