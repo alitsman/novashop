@@ -23,21 +23,6 @@ To try the demo, create an account using fictional details. If you place an orde
 
 ## Test architecture
 
-```mermaid
-flowchart LR
-  API["API tests"]:::layer --> T1["Express API + PostgreSQL"]:::target
-  DB["DB tests"]:::layer --> T2["PostgreSQL, direct queries"]:::target
-  UI["Isolated UI tests"]:::layer --> T3["Frontend + mocked API responses"]:::target
-  HY["Hybrid tests"]:::layer --> T4["Frontend + real API + PostgreSQL"]:::target
-  E2E["E2E tests"]:::layer --> T4
-  SM["Post-deploy smoke"]:::layer --> T5["Live demo"]:::live
-
-  classDef layer fill:#DBEAFE,stroke:#2563EB,color:#222222
-  classDef target fill:#FFFFFF,stroke:#2563EB,color:#222222
-  classDef live fill:#FFFFFF,stroke:#166534,color:#222222
-  linkStyle default stroke:#666666
-```
-
 | Layer             | What it proves                                                                              |
 | ----------------- | ------------------------------------------------------------------------------------------- |
 | API               | HTTP contract, server validation, authentication, authorization, ownership, business errors |
