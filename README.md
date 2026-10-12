@@ -1,43 +1,91 @@
 # NovaShop
 
-NovaShop is a full-stack e-commerce portfolio project built as a realistic application and automation target.
+[![CI](https://github.com/alitsman/novashop/actions/workflows/ci.yml/badge.svg)](https://github.com/alitsman/novashop/actions/workflows/ci.yml)
+[![Nightly Full Regression](https://github.com/alitsman/novashop/actions/workflows/nightly.yml/badge.svg)](https://github.com/alitsman/novashop/actions/workflows/nightly.yml)
+[![Deploy Demo](https://github.com/alitsman/novashop/actions/workflows/deploy-demo.yml/badge.svg)](https://github.com/alitsman/novashop/actions/workflows/deploy-demo.yml)
 
-## Project components
+A test automation portfolio project. NovaShop is a full-stack web shop built as a realistic test target, and the focus of the repository is its automation: 400+ Playwright and TypeScript tests across API, database and browser layers, a risk-based test strategy, CI with a merge gate, cross-browser nightly regression, and automated deployment with post-deploy smoke tests.
 
-- **Frontend:** React, TypeScript, Redux Toolkit, React Router, and Vite.
-- **Backend:** Express, TypeScript, PostgreSQL, and JWT authentication.
-- **Automation:** Playwright tests for UI, API, and database behaviour.
-- **CI:** Automated code-quality checks and blocking API, database, and Chromium browser regression.
+**Explore:** [Live demo](https://novashop-demo.pages.dev) · [Nightly Playwright report](https://alitsman.github.io/novashop/) · [Test Automation Strategy](docs/test-strategy.md) · [Demo deployment](docs/deployment.md)
 
-## Current status
+To try the demo, create an account using fictional details. If you place an order, use fictional contact and delivery information as well. The backend runs on a free hosting plan, so the first request after inactivity may be slow.
 
-Frontend-backend integration and the Chromium browser-test migration are complete. CI runs API, database, hybrid, E2E, and isolated UI regression as a blocking pull-request gate.
+![NovaShop product catalog with search, filters and product cards](docs/images/catalog.png)
 
-Authentication already uses the real backend API:
+## Highlights
 
-- registration through `POST /auth/register`;
-- login through `POST /auth/login`;
-- session restoration through `GET /me`;
-- JWT storage in the browser;
-- backend-controlled user roles and authorization.
+- **Risk-based test layers.** API, DB, Isolated UI, Hybrid and E2E tests have separate responsibilities. Each risk has one main owner layer, so the same check is not repeated across layers without a reason.
+- **Isolated UI without a backend.** Frontend states are tested with mocked responses, and any API request without a mock fails the test. Mock helpers validate responses with the same runtime schemas that check the real API.
+- **Real integration where it matters.** Critical journeys run through the real stack. A DB test proves that two orders for the last item cannot oversell, and pending states are tested by holding real requests instead of waiting for time.
+- **Controlled test data.** Tests run only against a guarded test database, the seed data is read-only, and every test that changes data creates its own.
+- **CI/CD with quality gates.** Pull requests must pass the regression gate without retries. Nightly regression runs in Chromium, Firefox and WebKit in about 5–6 minutes (down from 14–22 minutes after moving browser jobs to the official Playwright container) and publishes its report. Each demo deployment is verified by commit SHA on both the backend and the frontend before read-only smoke tests run.
+- **Accessibility.** Automated WCAG 2.1 A/AA scans with axe-core on every page and key state, plus functional checks of focus, labels and keyboard behavior.
 
-Products also use the backend API for catalog browsing, product details, and admin product creation, editing, and deletion.
+## Test architecture
 
-The cart stays in browser storage and is not synchronized across devices. Prices and availability are checked against the backend when opening the cart or checkout and before placing an order.
+| Layer             | What it proves                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| API               | HTTP contract, server validation, authentication, authorization, ownership, business errors |
+| DB                | effects an HTTP response cannot prove: soft delete, password hashing, concurrent orders     |
+| Isolated UI       | frontend behavior: rendering, validation, focus, loading, empty and error states, routing   |
+| Hybrid            | frontend behavior with a real user and real server state, prepared through the API          |
+| E2E               | a few critical journeys through the full stack                                              |
+| Post-deploy smoke | the deployed demo works after each deployment                                               |
 
-Checkout creates orders through `POST /orders`, and order history loads through `GET /orders`. The backend calculates order totals and updates product stock.
+### Coverage by feature
 
-## Run with Docker
+| Feature                                    | API | DB  | Isolated UI | Hybrid | E2E | Accessibility scans |
+| ------------------------------------------ | :-: | :-: | :---------: | :----: | :-: | :-----------------: |
+| Authentication                             |  ✓  |  ✓  |      ✓      |   ✓    |  ✓  |          ✓          |
+| Application shell                          |     |     |      ✓      |        |     |          ✓          |
+| Catalog                                    |  ✓  |  ✓  |      ✓      |   ✓    |     |          ✓          |
+| Product details                            |  ✓  |     |      ✓      |   ✓    |     |          ✓          |
+| Add to cart                                |     |     |      ✓      |        |  ✓  |                     |
+| Cart                                       |     |     |      ✓      |   ✓    |  ✓  |          ✓          |
+| Checkout                                   |  ✓  |  ✓  |      ✓      |        |  ✓  |          ✓          |
+| Order history                              |  ✓  |     |      ✓      |        |  ✓  |          ✓          |
+| Admin products                             |  ✓  |     |      ✓      |        |  ✓  |          ✓          |
+| Platform (health, routing, request errors) |  ✓  |     |             |        |     |                     |
 
-You can run NovaShop locally with Docker Compose. You do not need Node.js or PostgreSQL on your computer. You need Docker Desktop (or Docker Engine with Compose).
+✓ means that the layer has targeted tests for this feature, not that every scenario is covered there. An empty cell is a decision: the risk is owned by another layer. The reasons are in the [Test Automation Strategy](docs/test-strategy.md).
 
-1. Copy `.env.example` in the repository root to `.env`. Do not commit `.env`.
+## CI/CD
+
+| Workflow                | When                                  | What runs                                                                           |
+| ----------------------- | ------------------------------------- | ----------------------------------------------------------------------------------- |
+| CI                      | every pull request and push to `main` | quality checks, all test layers in Chromium, Docker verification; required to merge |
+| Nightly Full Regression | daily                                 | all tests in Chromium, Firefox and WebKit; report published to GitHub Pages         |
+| Manual Full Regression  | manual                                | all tests in Chromium, Firefox and WebKit                                           |
+| Smoke, Manual Targeted  | manual                                | selected tests, features and browsers                                               |
+| Deploy Demo             | after green CI on `main`              | deployment, version checks, post-deploy smoke                                       |
+
+## Tech stack
+
+- **Automation:** Playwright, TypeScript, zod, axe-core
+- **Frontend:** React, TypeScript, Redux Toolkit, React Router, Vite
+- **Backend:** Express, TypeScript, PostgreSQL, JWT
+- **Infrastructure:** Docker Compose, GitHub Actions, Render, Neon, Cloudflare Pages, GitHub Pages
+
+## Run locally
+
+### Run the application with Docker
+
+You need only Docker Desktop (or Docker Engine with Compose). Node.js and PostgreSQL are not required. The Docker setup uses multi-architecture base images and should work on Windows, macOS (Intel and Apple Silicon) and Linux. It has been run on Windows and in CI on Linux, but not on macOS.
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/alitsman/novashop.git
+   cd novashop
+   ```
+
+   Copy `.env.example` in the repository root to `.env`. Do not commit `.env`.
 
 2. Fill in the values in `.env`:
-   - `POSTGRES_PASSWORD` and `JWT_SECRET` are required. Use random hexadecimal values. Other characters can break the database connection URL.
+   - `POSTGRES_PASSWORD` and `JWT_SECRET` are required. Use random hexadecimal values; other characters can break the database connection URL.
    - `ADMIN_PASSWORD` is needed only for the seed step below. It must be at least 16 characters long.
 
-   To generate a random hexadecimal value, use one of these commands:
+   To generate a random hexadecimal value:
 
    ```bash
    # Git Bash, WSL, Linux or macOS
@@ -57,46 +105,71 @@ You can run NovaShop locally with Docker Compose. You do not need Node.js or Pos
 
    This starts PostgreSQL, runs the database migrations, and then starts the backend and the frontend.
 
-4. Open `http://localhost:8080`. Use `localhost`, not `127.0.0.1`. The backend allows requests only from `http://localhost:8080`.
+4. Open http://localhost:8080. Use `localhost`, not `127.0.0.1`: the backend accepts requests only from `http://localhost:8080`.
 
-5. Optional: add the admin account and the seed products. Set `ADMIN_PASSWORD` in `.env` and run:
+5. Optional: add the admin account and the catalog products:
 
    ```bash
    docker compose run --rm seed
    ```
 
-   The seed never runs automatically. The admin email is `admin@test.com`, and the password is your `ADMIN_PASSWORD` value. The public test accounts are not created. To create a regular user, register in the application.
+   The admin email is `admin@test.com`, and the password is your `ADMIN_PASSWORD`. To create a regular user, register in the application.
 
-6. Stop the application and keep the data:
+6. Stop the application and keep the data with `docker compose down`. Start it again with `docker compose up -d --wait backend frontend`. `docker compose down -v` deletes the database volume and all data.
+
+   `POSTGRES_PASSWORD` is applied only when the database volume is created. If you change it later, run `docker compose down -v` to recreate the database (this deletes all existing data). Keep the root `.env` file: every Compose command, including `down`, needs it.
+
+### Run the tests
+
+The tests do not use Docker Compose. Playwright starts the frontend and the backend itself and uses a separate test database.
+
+**Prerequisites:** Node.js 24 and a PostgreSQL database named `novashop_test`. The simplest way to get the database is a Docker container (host port `5432` must be free):
+
+```bash
+docker run -d --name novashop-test-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=novashop_test -p 5432:5432 postgres:17-alpine
+```
+
+1. Copy `.env.test.example` in the repository root to `.env.test`. Set the password in `DATABASE_URL` (`postgres` for the container above) and any test value for `JWT_SECRET`.
+
+2. Install the dependencies and the Playwright browsers:
 
    ```bash
-   docker compose down
+   npm --prefix frontend ci
+   npm --prefix backend ci
+   npm --prefix automation ci
+   cd automation
+   npx playwright install
    ```
 
-   Start it again with `docker compose up -d --wait backend frontend`.
+   On Linux, use `npx playwright install --with-deps` instead to install the required system libraries as well as the browsers.
 
-Important notes:
+3. Run the tests from the `automation` folder:
 
-- `docker compose down -v` deletes the database volume and all data.
-- `POSTGRES_PASSWORD` is used only when the database is created for the first time. If you change it later, the existing database keeps the old password. To use a new password, delete the volume with `docker compose down -v`.
-- Docker Compose commands, including `down`, need the root `.env` file because Compose checks the required variables.
+   | Command                                          | What runs                                                   |
+   | ------------------------------------------------ | ----------------------------------------------------------- |
+   | `npm run test:ui`                                | Isolated UI tests; no database needed                       |
+   | `npm run test:integrated`                        | API, DB, Hybrid and E2E tests; resets `novashop_test` first |
+   | `npm run check`                                  | type check, lint, formatting and test tag check             |
+   | `npm run test:report` / `npm run test:report:ui` | open the last HTML report                                   |
 
-## Local test accounts
+By default, browser tests run in Chromium. The environment variables `BROWSERS` (for example `firefox,webkit`), `FEATURE` (for example `cart,checkout`) and `SMOKE_ONLY=true` change what runs: `BROWSERS=firefox,webkit npm run test:ui` in Bash, or `$env:BROWSERS="firefox,webkit"; npm run test:ui; Remove-Item Env:BROWSERS` in PowerShell (so the setting does not affect later runs).
 
-The test database seed (`npm run seed:test` in `backend/`) creates two accounts for automated testing:
+The test seed creates two accounts, `user@test.com` / `User123!` and `admin@test.com` / `Admin123!`. These passwords work only in the `novashop_test` database; the scripts refuse to use test credentials anywhere else.
 
-| Role  | Email            | Password    |
-| ----- | ---------------- | ----------- |
-| User  | `user@test.com`  | `User123!`  |
-| Admin | `admin@test.com` | `Admin123!` |
+## Project structure
 
-These credentials are only for the isolated test database. They are not used anywhere else:
-
-- The Docker Compose seed (`docker compose run --rm seed`) reads `ADMIN_PASSWORD` from the root `.env`.
-- The local backend seed (`npm run seed` in `backend/`) reads `ADMIN_PASSWORD` from `backend/.env`.
-
-Both create only the admin account `admin@test.com`, with the password from `ADMIN_PASSWORD`, and the seed products. Regular users register in the application.
+```text
+.github/workflows/  CI, regression engine, nightly and manual runs, demo deployment
+automation/         Playwright tests, page objects, fixtures, runtime schemas
+  tests/            api, db, ui, hybrid, e2e, post-deploy, setup
+backend/            Express API, migrations, seed data
+frontend/           React application
+docs/               test strategy and deployment documentation
+scripts/            Docker verification used in CI
+compose.yaml        local Docker stack
+```
 
 ## Documentation
 
-Detailed architecture, local setup, testing, and deployment documentation will be added separately.
+- [Test Automation Strategy](docs/test-strategy.md): test layers, mock policy, test data, accessibility, cross-browser decisions, CI, out-of-scope areas and known limitations.
+- [Demo deployment](docs/deployment.md): hosting, deployment workflow, version checks and post-deploy smoke.
