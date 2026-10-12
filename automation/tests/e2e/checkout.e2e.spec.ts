@@ -28,7 +28,7 @@ const PRODUCT_PRICE = 47.5;
 const PRODUCT_STOCK = 5;
 const ORDER_QUANTITY = 2;
 
-test.describe("checkout", { tag: FeatureTag.Checkout }, () => {
+test.describe("checkout", { tag: [FeatureTag.Checkout, FeatureTag.Orders] }, () => {
   test(
     "customer purchase journey: adds a product from the catalog and completes checkout",
     {
