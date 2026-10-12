@@ -6,7 +6,7 @@
     "node": ">=24"
   },
   "type": "module",
-  "description": "Backend API for the NovaShop full-stack diploma project.",
+  "description": "Backend API for NovaShop, a web shop built as a test automation target.",
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "dev:test": "tsx --env-file-if-exists=../.env.test src/db/assertTestDatabase.ts && tsx watch --env-file-if-exists=../.env.test src/server.ts",
