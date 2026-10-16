@@ -10,6 +10,8 @@ const getCartItemsStorageKey = (userId: string): string => {
 };
 
 export const cartService = {
+  getCartItemsStorageKey,
+
   getCartItems(userId: string): CartItem[] {
     return storage.getItem<CartItem[]>(getCartItemsStorageKey(userId), []);
   },

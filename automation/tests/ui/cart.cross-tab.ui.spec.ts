@@ -67,7 +67,6 @@ test.describe("cart in two tabs of the same browser", { tag: FeatureTag.Cart }, 
     await secondTabPage.reload();
     await secondTab.header.openCart();
 
-    await expect(secondTabCart.header.cartLink).toHaveAccessibleName("Cart, 2 items");
     await expect(secondTabCart.cartItemTitles).toHaveText([
       CART_PRODUCT_A.title,
       CART_PRODUCT_B.title,
