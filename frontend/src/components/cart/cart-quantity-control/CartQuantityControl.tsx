@@ -26,8 +26,9 @@ type CartQuantityControlProps = {
   onInputRef: (productId: string, input: HTMLInputElement | null) => void;
 };
 
-// sourceQuantity is the external quantity this draft was created from.
-// If quantity changes from outside, the draft is ignored and the new quantity is shown.
+// sourceQuantity is the cart quantity this draft belongs to.
+// If the cart quantity changes to any other value (for example, from another tab),
+// the draft is ignored and the new quantity is shown.
 type QuantityInputDraft = {
   value: string;
   sourceQuantity: number;
@@ -99,11 +100,11 @@ export function CartQuantityControl({
   }, [onValidityChange, productId]);
 
   const updateQuantity = (nextQuantity: number) => {
+    // The parent saves nextQuantity in the same render, so the draft belongs to nextQuantity.
+    // Binding it to the old quantity would bring the draft back if the cart returns to that value.
     setInputDraft({
       value: String(nextQuantity),
-      // Keep the current external quantity so the local draft is shown
-      // until the parent commits the new quantity back through props.
-      sourceQuantity: quantity,
+      sourceQuantity: nextQuantity,
     });
 
     onQuantityChange(productId, nextQuantity);
@@ -132,20 +133,17 @@ export function CartQuantityControl({
       return;
     }
 
-    setInputDraft({
-      value: nextValue,
-      sourceQuantity: quantity,
-    });
-
     const validationError = validateQuantityInput(nextValue, stock);
-
-    if (validationError) {
-      return;
-    }
-
     const nextQuantity = Number(nextValue);
 
-    if (nextQuantity === quantity) {
+    // A valid draft is saved, so it belongs to nextQuantity (see updateQuantity).
+    // An invalid draft is not saved and stays bound to the current cart quantity.
+    setInputDraft({
+      value: nextValue,
+      sourceQuantity: validationError ? quantity : nextQuantity,
+    });
+
+    if (validationError || nextQuantity === quantity) {
       return;
     }
 
