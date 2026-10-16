@@ -5,6 +5,7 @@ import { expect, test } from "../../src/fixtures";
 import { prepareMockedAuthenticatedSession, prepareProductCatalog } from "../../src/helpers";
 import { CartPage, ProductCatalogPage } from "../../src/pages";
 import { CART_PRODUCT_A, CART_PRODUCT_B, CART_PRODUCTS, REGULAR_USER } from "../../src/test-data";
+import { formatUsd } from "../../src/utils";
 
 // Each tab needs its own API mocks.
 // Both tabs share the same browser context and localStorage.
@@ -71,5 +72,40 @@ test.describe("cart in two tabs of the same browser", { tag: FeatureTag.Cart }, 
       CART_PRODUCT_A.title,
       CART_PRODUCT_B.title,
     ]);
+  });
+
+  test("shows a quantity changed in another tab after the quantity was edited in this tab", async ({
+    context,
+    page,
+  }) => {
+    const firstTabCatalog = await openCatalogTab(page);
+
+    await firstTabCatalog.getProductCard(CART_PRODUCT_A.title).addToCart.submit();
+    await firstTabCatalog.header.openCart();
+
+    const firstTabItem = new CartPage(page).getCartItem(CART_PRODUCT_A.title);
+
+    // Editing the quantity in this tab is the precondition of the bug:
+    // without it the first tab has no local input value that could hide the new quantity.
+    await firstTabItem.increaseQuantity();
+    await expect(firstTabItem.quantityInput).toHaveValue("2");
+
+    const secondTabPage = await context.newPage();
+    const secondTabCatalog = await openCatalogTab(secondTabPage);
+
+    await secondTabCatalog.header.openCart();
+
+    const secondTabItem = new CartPage(secondTabPage).getCartItem(CART_PRODUCT_A.title);
+
+    await expect(secondTabItem.quantityInput).toHaveValue("2");
+    await secondTabItem.decreaseQuantity();
+    await expect(secondTabItem.quantityInput).toHaveValue("1");
+
+    // The first tab is not reloaded: the input, the item total and the header must agree.
+    await expect(firstTabCatalog.header.cartLink).toHaveAccessibleName("Cart, 1 item");
+    await expect(firstTabItem.quantityInput).toHaveValue("1");
+    await expect(firstTabItem.itemTotal).toHaveText(
+      `Item total: ${formatUsd(CART_PRODUCT_A.price)}`,
+    );
   });
 });
