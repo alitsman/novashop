@@ -274,3 +274,4 @@ The application has risks that tests document but do not remove:
 
 - **No rate limiting.** Login and registration do not limit repeated requests from one client, so password guessing is not slowed down by the server.
 - **No token revocation.** A JWT stays valid for 7 days. Logout removes it only from the browser, and a role change takes effect only after a new login.
+- **No order idempotency.** `POST /orders` has no idempotency key. Duplicate submission is blocked within a single browser tab, but concurrent submissions from different tabs or a retry after a lost response can create duplicate orders. Database transactions and row-level locks prevent overselling but do not prevent duplicate orders.
