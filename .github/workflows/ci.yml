@@ -41,3 +41,33 @@ jobs:
       - name: Verify Docker environment
         shell: bash
         run: bash scripts/verify-docker.sh
+
+  # Proves that the tests run in the Docker test runner with Docker as the only requirement.
+  docker-test-runner:
+    name: Docker test runner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    env:
+      # One browser is enough to prove the runner image; the regression jobs cover all browsers.
+      PLAYWRIGHT_BROWSERS: chromium
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Run smoke tests in the Docker test runner
+        run: docker compose -f compose.tests.yaml run --build --rm -e SMOKE_ONLY=true tests all
+
+      - name: Upload Docker test runner reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: docker-test-runner-report
+          path: automation/playwright-report
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Stop test containers
+        if: ${{ always() }}
+        run: docker compose -f compose.tests.yaml down --remove-orphans

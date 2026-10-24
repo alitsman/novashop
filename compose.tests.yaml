@@ -1,0 +1,47 @@
+# Runs the automated tests in Docker. Docker is the only requirement on the host.
+# Usage is described in README.md, "Run the tests in Docker".
+name: novashop-tests
+
+services:
+  test-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: novashop_test
+    # The integrated run recreates the schema and the seed data, so the data does not need a volume.
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d novashop_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  tests:
+    build:
+      context: .
+      dockerfile: automation/Dockerfile
+      args:
+        PLAYWRIGHT_BROWSERS: ${PLAYWRIGHT_BROWSERS:-chromium firefox webkit}
+    image: novashop-tests:local
+    # Recommended by Playwright for running browsers in Docker.
+    init: true
+    ipc: host
+    # Test-only values. The test database exists only inside this Compose project.
+    environment:
+      CI: "true"
+      PORT: "4001"
+      FRONTEND_URL: http://localhost:5173
+      API_URL: http://localhost:4001
+      VITE_API_URL: http://localhost:4001
+      DATABASE_URL: postgres://postgres:postgres@test-db:5432/novashop_test
+      JWT_SECRET: novashop-docker-test-only-jwt-secret
+    # Reports are written to the host. Playwright writes into subfolders such as
+    # playwright-report/isolated-ui, so it never deletes the mounted folders themselves.
+    volumes:
+      - ./automation/playwright-report:/app/automation/playwright-report
+      - ./automation/test-results:/app/automation/test-results
+    depends_on:
+      test-db:
+        condition: service_healthy

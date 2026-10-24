@@ -119,9 +119,42 @@ You need only Docker Desktop (or Docker Engine with Compose). Node.js and Postgr
 
    `POSTGRES_PASSWORD` is applied only when the database volume is created. If you change it later, run `docker compose down -v` to recreate the database (this deletes all existing data). Keep the root `.env` file: every Compose command, including `down`, needs it.
 
-### Run the tests
+### Run the tests in Docker
 
-The tests do not use Docker Compose. Playwright starts the frontend and the backend itself and uses a separate test database.
+You need only Docker Desktop (or Docker Engine with Compose), and no `.env` files. `compose.tests.yaml` starts a separate test database and a test runner container with Node.js, all dependencies and the Playwright browsers. It does not touch the application started with `compose.yaml`.
+
+Run the commands from the repository root. The first build downloads the browsers and takes several minutes; later builds reuse the cached layers.
+
+```bash
+docker compose -f compose.tests.yaml run --build --rm tests
+```
+
+This runs all tests: Isolated UI, then API, DB, Hybrid and E2E. The command exits with a non-zero code if any test fails.
+
+The first argument after `tests` selects the layer; everything after it goes to Playwright unchanged:
+
+| Command (after `docker compose -f compose.tests.yaml run --build --rm`)                                      | What runs                                        |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| `tests ui`                                                                                                   | Isolated UI tests                                |
+| `tests integrated`                                                                                           | API, DB, Hybrid and E2E tests                    |
+| `tests ui tests/ui/cart.cross-tab.ui.spec.ts`                                                                | one file                                         |
+| `tests ui tests/ui/cart.cross-tab.ui.spec.ts tests/ui/cart.accessibility.ui.spec.ts`                         | several files                                    |
+| `tests ui tests/ui/cart.cross-tab.ui.spec.ts --grep "shows a product added in another tab without a reload"` | one test from one file                           |
+| `tests integrated --project=api`                                                                             | one Playwright project                           |
+| `tests all --grep "adds a product to the cart"`                                                              | tests with this text in the title, in all layers |
+| `tests help`                                                                                                 | the list of layers and examples                  |
+
+Pass `BROWSERS`, `FEATURE` and `SMOKE_ONLY` (described below) with `-e`, before `tests`:
+
+```bash
+docker compose -f compose.tests.yaml run --build --rm -e FEATURE=cart -e BROWSERS=firefox,webkit tests ui
+```
+
+HTML reports are written to `automation/playwright-report/isolated-ui` and `automation/playwright-report/integrated`; open `index.html` in a browser. Stop the test database with `docker compose -f compose.tests.yaml down`.
+
+### Run the tests with Node.js
+
+Playwright starts the frontend and the backend itself and uses a separate test database.
 
 **Prerequisites:** Node.js 24 and a PostgreSQL database named `novashop_test`. The simplest way to get the database is a Docker container (host port `5432` must be free):
 
@@ -167,6 +200,7 @@ frontend/           React application
 docs/               test strategy and deployment documentation
 scripts/            Docker verification used in CI
 compose.yaml        local Docker stack
+compose.tests.yaml  test database and test runner for running the tests in Docker
 ```
 
 ## Documentation
