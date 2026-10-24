@@ -1,0 +1,25 @@
+# Used only by builds with the repository root as context (automation/Dockerfile).
+# frontend/ and backend/ have their own .dockerignore files for their images.
+
+# Dependencies are installed inside the image
+**/node_modules
+
+# Build output, test output and reports
+**/dist
+**/test-results
+**/playwright-report
+**/blob-reports
+**/coverage
+temp
+tmp
+
+# Local environment and secrets
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.test.example
+
+# Git and editor files
+.git
+.vscode
+.idea
