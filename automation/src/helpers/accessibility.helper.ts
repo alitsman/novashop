@@ -1,14 +1,19 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page, TestInfo } from "@playwright/test";
 
+type AxeResults = Awaited<ReturnType<AxeBuilder["analyze"]>>;
+type AxeResult = AxeResults["violations"][number];
+type AxeNode = AxeResult["nodes"][number];
+
 /**
  * Runs WCAG 2.1 Level A and AA automated accessibility checks.
  *
  * Every reported violation fails the test regardless of impact severity.
  * The complete axe results are attached to the Playwright report on failure.
  *
- * Incomplete results are attached separately for manual investigation,
- * but do not fail the test because axe could not determine compliance.
+ * Incomplete results do not fail the test because axe could not determine
+ * compliance. A readable summary and complete JSON are attached for manual
+ * investigation.
  *
  * Product Preview contains non-functional decorative action mockups.
  * They are hidden from the accessibility tree and intentionally styled
@@ -16,7 +21,78 @@ import type { Page, TestInfo } from "@playwright/test";
  */
 const WCAG_21_AA_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 
+const WCAG_STANDARD_BY_TAG = new Map<string, string>([
+  ["wcag2a", "WCAG 2.0 Level A"],
+  ["wcag2aa", "WCAG 2.0 Level AA"],
+  ["wcag21a", "WCAG 2.1 Level A"],
+  ["wcag21aa", "WCAG 2.1 Level AA"],
+]);
+
+const MAX_NODES_PER_RESULT = 5;
+
 const DECORATIVE_PREVIEW_ACTIONS = ".admin-product-preview__actions";
+
+function formatWcagStandards(tags: readonly string[]): string {
+  const standards = tags
+    .map((tag) => WCAG_STANDARD_BY_TAG.get(tag))
+    .filter((standard): standard is string => standard !== undefined);
+
+  const uniqueStandards = [...new Set(standards)];
+
+  return uniqueStandards.length > 0 ? uniqueStandards.join(", ") : "not reported";
+}
+
+function formatWcagCriteria(tags: readonly string[]): string {
+  const criteria = tags
+    .filter((tag) => /^wcag\d{3,}$/.test(tag))
+    .map((tag) => {
+      const digits = tag.slice("wcag".length);
+
+      return `${digits.slice(0, 1)}.${digits.slice(1, 2)}.${digits.slice(2)}`;
+    });
+
+  const uniqueCriteria = [...new Set(criteria)];
+
+  return uniqueCriteria.length > 0 ? uniqueCriteria.join(", ") : "not reported";
+}
+
+function formatNodes(nodes: readonly AxeNode[]): string {
+  const shownNodes = nodes.slice(0, MAX_NODES_PER_RESULT).map((node) => {
+    const target =
+      node.target
+        .map((selector) => (typeof selector === "string" ? selector : JSON.stringify(selector)))
+        .join(" > ") || "target not reported";
+
+    const html = node.html.replace(/\s+/g, " ").trim();
+    const reason = (node.failureSummary ?? "Reason not reported.").replaceAll("\n", "\n      ");
+
+    return [`  - Target: ${target}`, `    HTML: ${html}`, `    Reason: ${reason}`].join("\n");
+  });
+
+  const hiddenCount = nodes.length - shownNodes.length;
+
+  if (hiddenCount > 0) {
+    shownNodes.push(`  ...and ${hiddenCount} more (see the attached axe results)`);
+  }
+
+  return shownNodes.join("\n");
+}
+
+function formatAxeResults(results: readonly AxeResult[]): string {
+  return results
+    .map((result, index) => {
+      return [
+        `${index + 1}. ${result.id} [${result.impact ?? "impact not reported"}]`,
+        `Standard and level: ${formatWcagStandards(result.tags)}`,
+        `Success criteria: ${formatWcagCriteria(result.tags)}`,
+        result.help,
+        result.helpUrl,
+        "Elements:",
+        formatNodes(result.nodes),
+      ].join("\n");
+    })
+    .join("\n\n");
+}
 
 // CSS transitions can temporarily produce intermediate colors that fail contrast checks.
 // Wait for finite animations before scanning; infinite loading animations are excluded.
@@ -43,6 +119,13 @@ export async function expectNoAccessibilityViolations(
     .analyze();
 
   if (results.incomplete.length > 0) {
+    const incompleteSummary = formatAxeResults(results.incomplete);
+
+    await testInfo.attach("axe-incomplete-summary", {
+      body: `Incomplete accessibility checks: ${results.incomplete.length}\n\n${incompleteSummary}`,
+      contentType: "text/plain",
+    });
+
     await testInfo.attach("axe-incomplete-results", {
       body: JSON.stringify(results.incomplete, null, 2),
       contentType: "application/json",
@@ -58,23 +141,7 @@ export async function expectNoAccessibilityViolations(
     contentType: "application/json",
   });
 
-  const violationSummary = results.violations
-    .map((violation, index) => {
-      const targets = violation.nodes
-        .flatMap((node) => node.target)
-        .map((target) => `    - ${typeof target === "string" ? target : JSON.stringify(target)}`)
-        .join("\n");
-
-      return [
-        `${index + 1}. ${violation.id} [${violation.impact ?? "impact not reported"}]`,
-        violation.help,
-        violation.description,
-        violation.helpUrl,
-        "Targets:",
-        targets,
-      ].join("\n");
-    })
-    .join("\n\n");
+  const violationSummary = formatAxeResults(results.violations);
 
   throw new Error(`Accessibility violations: ${results.violations.length}\n\n${violationSummary}`);
 }
