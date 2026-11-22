@@ -21,7 +21,7 @@ services:
   tests:
     build:
       context: .
-      dockerfile: automation/Dockerfile
+      dockerfile: automation/Dockerfile.missing
       args:
         PLAYWRIGHT_BROWSERS: ${PLAYWRIGHT_BROWSERS:-chromium firefox webkit}
     image: novashop-tests:local
